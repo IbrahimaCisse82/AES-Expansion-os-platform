@@ -1,4 +1,5 @@
-import { Search, Bell, Plus } from 'lucide-react';
+import { Search, Bell, Plus, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const pageNames: Record<string, string> = {
   dashboard: 'Tableau de bord',
@@ -20,6 +21,11 @@ interface TopbarProps {
 }
 
 export default function Topbar({ activePage }: TopbarProps) {
+  const { signOut, user } = useAuth();
+  const initials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+    : (user?.email?.slice(0, 2).toUpperCase() || 'U');
+
   return (
     <header className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40 px-8 h-[62px] flex items-center gap-3">
       <h1 className="font-display text-lg font-semibold text-primary flex-1">
@@ -46,8 +52,16 @@ export default function Topbar({ activePage }: TopbarProps) {
       </button>
 
       <div className="w-[34px] h-[34px] rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold cursor-pointer">
-        AD
+        {initials}
       </div>
+
+      <button
+        onClick={signOut}
+        className="w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-terracotta-light hover:text-terracotta hover:border-terracotta transition-colors"
+        title="Se déconnecter"
+      >
+        <LogOut size={14} />
+      </button>
     </header>
   );
 }
