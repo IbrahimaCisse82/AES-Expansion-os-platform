@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRisks, useCountries } from '@/hooks/useExpansionData';
 import { useCreateRisk, useUpdateRisk, useDeleteRisk } from '@/hooks/useRiskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -37,7 +37,7 @@ const EMPTY_FORM: RiskForm = {
 
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
-export default function RisksPage() {
+export default function RisksPage({ addSignal }: { addSignal?: number }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: risks = [], isLoading } = useRisks();
   const { data: countries = [] } = useCountries();
@@ -52,6 +52,10 @@ export default function RisksPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<RiskForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (addSignal && addSignal > 0 && canWrite) openCreate();
+  }, [addSignal]);
 
   const highCount = risks.filter(r => r.level === 'high').length;
   const medCount = risks.filter(r => r.level === 'medium').length;

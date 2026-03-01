@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import KpiCard from '@/components/KpiCard';
 import { useBudgetEntries, useCountries } from '@/hooks/useExpansionData';
 import { useCreateBudgetEntry, useUpdateBudgetEntry, useDeleteBudgetEntry } from '@/hooks/useBudgetMutations';
@@ -42,7 +42,7 @@ const EMPTY_FORM: BudgetForm = {
 
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 
-export default function BudgetPage() {
+export default function BudgetPage({ addSignal }: { addSignal?: number }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: entries = [], isLoading } = useBudgetEntries();
   const { data: countries = [] } = useCountries();
@@ -58,6 +58,10 @@ export default function BudgetPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<BudgetForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (addSignal && addSignal > 0 && canWrite) openCreate();
+  }, [addSignal]);
 
   const byMarket = entries.filter(e => e.category === 'market');
   const byCategory = entries.filter(e => e.category !== 'market');

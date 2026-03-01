@@ -16,15 +16,21 @@ const pageNames: Record<string, string> = {
   'country-detail': 'Fiche Pays',
 };
 
+// Pages that support the "+ Ajouter" action
+const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries'];
+
 interface TopbarProps {
   activePage: string;
+  onAdd?: () => void;
 }
 
-export default function Topbar({ activePage }: TopbarProps) {
+export default function Topbar({ activePage, onAdd }: TopbarProps) {
   const { signOut, user } = useAuth();
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
     : (user?.email?.slice(0, 2).toUpperCase() || 'U');
+
+  const showAdd = ADDABLE_PAGES.includes(activePage) && !!onAdd;
 
   return (
     <header className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40 px-8 h-[62px] flex items-center gap-3">
@@ -41,10 +47,15 @@ export default function Topbar({ activePage }: TopbarProps) {
         />
       </div>
 
-      <button className="h-[34px] px-4 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg flex items-center gap-1.5 hover:bg-navy-mid transition-all hover:-translate-y-px hover:shadow-card-hover">
-        <Plus size={14} />
-        Ajouter
-      </button>
+      {showAdd && (
+        <button
+          onClick={onAdd}
+          className="h-[34px] px-4 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg flex items-center gap-1.5 hover:bg-navy-mid transition-all hover:-translate-y-px hover:shadow-card-hover"
+        >
+          <Plus size={14} />
+          Ajouter
+        </button>
+      )}
 
       <button className="relative w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-ivory transition-colors">
         <Bell size={16} />

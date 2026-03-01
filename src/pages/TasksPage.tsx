@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import StatusPill from '@/components/StatusPill';
 import { useTasks, useCountries } from '@/hooks/useExpansionData';
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTaskMutations';
@@ -38,7 +38,7 @@ const EMPTY_FORM: TaskForm = {
 
 const CAN_WRITE_ROLES = ['admin', 'director', 'country_manager'];
 
-export default function TasksPage() {
+export default function TasksPage({ addSignal }: { addSignal?: number }) {
   const { user } = useAuth();
   const { data: myRole } = useCurrentUserRole();
   const { data: tasks = [], isLoading } = useTasks();
@@ -55,6 +55,10 @@ export default function TasksPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<TaskForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (addSignal && addSignal > 0 && canWrite) openCreate();
+  }, [addSignal]);
 
   const filtered = filter === 'all' ? tasks : tasks.filter(t => t.status === filter);
   const filters = [
