@@ -1,6 +1,6 @@
 import { useComments } from '@/hooks/useExpansionData';
 
-export default function CommentsPage() {
+export default function CommentsPage({ addSignal }: { addSignal?: number }) {
   const { data: comments = [], isLoading } = useComments();
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
