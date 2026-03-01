@@ -1,11 +1,31 @@
-import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
 import StatusPill from '@/components/StatusPill';
 import { useCountries, useMilestones } from '@/hooks/useExpansionData';
+import { useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/hooks/useMilestoneMutations';
+import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 const phaseNames = [
   'Phase 0 — Prospection', 'Phase 1 — Étude & Légal', 'Phase 2 — Mise en place',
   'Phase 3 — Lancement', 'Phase 4 — Opérationnel',
 ];
+
+const milestoneSchema = z.object({
+  title: z.string().trim().min(1, 'Titre requis').max(200),
+  icon: z.string().max(10).optional(),
+  target_date: z.string().max(50).optional(),
+});
+
+type MilestoneForm = z.infer<typeof milestoneSchema>;
+const EMPTY_FORM: MilestoneForm = { title: '', icon: '📌', target_date: '' };
+const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
 interface CountryDetailPageProps {
   countryId: string;
@@ -15,10 +35,72 @@ interface CountryDetailPageProps {
 export default function CountryDetailPage({ countryId, onBack }: CountryDetailPageProps) {
   const { data: countries = [] } = useCountries();
   const { data: milestones = [] } = useMilestones(countryId);
+  const { data: myRole } = useCurrentUserRole();
+  const createMilestone = useCreateMilestone();
+  const updateMilestone = useUpdateMilestone();
+  const deleteMilestone = useDeleteMilestone();
+
+  const canWrite = CAN_WRITE.includes(myRole ?? '');
   const country = countries.find(c => c.id === countryId);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState<MilestoneForm>(EMPTY_FORM);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   if (!country) return null;
 
   const colorMap: Record<string, string> = { sage: 'text-sage', sky: 'text-sky', gold: 'text-gold', terracotta: 'text-terracotta', plum: 'text-plum' };
+
+  const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
+
+  const openEdit = (m: typeof milestones[0]) => {
+    setForm({ title: m.title, icon: m.icon, target_date: m.target_date ?? '' });
+    setEditingId(m.id);
+    setErrors({});
+    setDialogOpen(true);
+  };
+
+  const toggleDone = (m: typeof milestones[0]) => {
+    if (!canWrite) return;
+    updateMilestone.mutate({ id: m.id, is_done: !m.is_done, country_id: countryId });
+  };
+
+  const handleSubmit = () => {
+    const result = milestoneSchema.safeParse(form);
+    if (!result.success) {
+      const fe: Record<string, string> = {};
+      result.error.errors.forEach(e => { fe[e.path[0] as string] = e.message; });
+      setErrors(fe);
+      return;
+    }
+    const payload = {
+      title: result.data.title,
+      icon: result.data.icon || '📌',
+      target_date: result.data.target_date || null,
+      country_id: countryId,
+    };
+    if (editingId) {
+      updateMilestone.mutate({ id: editingId, ...payload }, {
+        onSuccess: () => { toast.success('Jalon modifié'); setDialogOpen(false); },
+        onError: (err: any) => toast.error(err.message),
+      });
+    } else {
+      createMilestone.mutate(payload, {
+        onSuccess: () => { toast.success('Jalon créé'); setDialogOpen(false); },
+        onError: (err: any) => toast.error(err.message),
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteId) return;
+    deleteMilestone.mutate({ id: deleteId, countryId }, {
+      onSuccess: () => { toast.success('Jalon supprimé'); setDeleteId(null); },
+      onError: (err: any) => toast.error(err.message),
+    });
+  };
 
   return (
     <div className="animate-page-enter">
@@ -62,15 +144,35 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
         </div>
 
         <div className="bg-card border border-border rounded-lg p-5">
-          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Jalons clés</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display text-[15.5px] font-semibold text-primary">Jalons clés</h3>
+            {canWrite && (
+              <Button onClick={openCreate} variant="outline" size="sm" className="gap-1 text-[11px] h-7">
+                <Plus className="w-3.5 h-3.5" /> Ajouter
+              </Button>
+            )}
+          </div>
+          {milestones.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun jalon</div>}
           {milestones.map(m => (
-            <div key={m.id} className="flex gap-3 py-3 border-b border-ivory last:border-b-0">
+            <div key={m.id} className="flex gap-3 py-3 border-b border-ivory last:border-b-0 group">
+              <div
+                onClick={() => toggleDone(m)}
+                className={`w-5 h-5 mt-0.5 border-2 rounded flex-shrink-0 flex items-center justify-center transition-colors ${canWrite ? 'cursor-pointer' : ''} ${m.is_done ? 'bg-accent border-accent' : 'border-border hover:border-accent'}`}
+              >
+                {m.is_done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent-foreground" strokeWidth="3"><polyline points="20,6 9,17 4,12" /></svg>}
+              </div>
               <span className="text-lg w-7 text-center flex-shrink-0">{m.icon}</span>
               <div className="flex-1">
                 <div className={`text-[13px] font-medium ${m.is_done ? 'line-through text-muted-foreground' : ''}`}>{m.title}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">{m.target_date}</div>
               </div>
               <StatusPill status={m.is_done ? 'done' : 'planning'} />
+              {canWrite && (
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => openEdit(m)} className="p-1 rounded hover:bg-muted transition-colors"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                  <button onClick={() => setDeleteId(m.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors"><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -87,6 +189,52 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
           </div>
         </div>
       </div>
+
+      {/* Milestone Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg">{editingId ? 'Modifier le jalon' : 'Nouveau jalon'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label className="text-[12.5px]">Titre *</Label>
+              <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} maxLength={200} className="mt-1" />
+              {errors.title && <p className="text-destructive text-[11px] mt-1">{errors.title}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-[12.5px]">Icône</Label>
+                <Input value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} maxLength={10} placeholder="📌" className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-[12.5px]">Date cible</Label>
+                <Input value={form.target_date} onChange={e => setForm(p => ({ ...p, target_date: e.target.value }))} maxLength={50} placeholder="Q3 2025" className="mt-1" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Annuler</Button>
+              <Button size="sm" onClick={handleSubmit} disabled={createMilestone.isPending || updateMilestone.isPending}>
+                {editingId ? 'Enregistrer' : 'Créer'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce jalon ?</AlertDialogTitle>
+            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Supprimer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
