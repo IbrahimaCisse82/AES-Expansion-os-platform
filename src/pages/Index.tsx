@@ -46,7 +46,7 @@ const Index = () => {
       case 'comments': return <CommentsPage addSignal={addSignal} />;
       case 'kpis': return <KpisPage />;
       case 'calendar': return <CalendarPage />;
-      case 'roadmap': return <RoadmapPage />;
+      case 'roadmap': return <RoadmapPage addSignal={addSignal} />;
       default: return <DashboardPage />;
     }
   };

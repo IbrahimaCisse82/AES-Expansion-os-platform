@@ -17,7 +17,7 @@ const pageNames: Record<string, string> = {
 };
 
 // Pages that support the "+ Ajouter" action
-const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries'];
+const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries', 'roadmap'];
 
 interface TopbarProps {
   activePage: string;
