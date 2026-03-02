@@ -2,9 +2,10 @@ import { useActivityLog } from '@/hooks/useExpansionData';
 
 const dotColors: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum', navy: 'bg-navy' };
 
-export default function HistoryPage() {
+export default function HistoryPage({ searchQuery = '' }: { searchQuery?: string }) {
   const { data: activity = [], isLoading } = useActivityLog();
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
+  const filtered = searchQuery ? activity.filter(a => a.action.toLowerCase().includes(searchQuery.toLowerCase()) || a.user_name?.toLowerCase().includes(searchQuery.toLowerCase())) : activity;
 
   return (
     <div className="animate-page-enter">
@@ -14,7 +15,7 @@ export default function HistoryPage() {
       </div>
       <div className="grid grid-cols-[2fr_1fr] gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
-          {activity.map(item => (
+          {filtered.map(item => (
             <div key={item.id} className="flex gap-3 py-2.5 border-b border-ivory last:border-b-0">
               <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColors[item.color || 'navy'] || 'bg-muted'}`} />
               <div className="flex-1">

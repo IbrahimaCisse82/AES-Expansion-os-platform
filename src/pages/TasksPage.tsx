@@ -38,7 +38,7 @@ const EMPTY_FORM: TaskForm = {
 
 const CAN_WRITE_ROLES = ['admin', 'director', 'country_manager'];
 
-export default function TasksPage({ addSignal }: { addSignal?: number }) {
+export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { user } = useAuth();
   const { data: myRole } = useCurrentUserRole();
   const { data: tasks = [], isLoading } = useTasks();
@@ -60,7 +60,8 @@ export default function TasksPage({ addSignal }: { addSignal?: number }) {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
   }, [addSignal]);
 
-  const filtered = filter === 'all' ? tasks : tasks.filter(t => t.status === filter);
+  const searched = searchQuery ? tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) || t.owner_name?.toLowerCase().includes(searchQuery.toLowerCase())) : tasks;
+  const filtered = filter === 'all' ? searched : searched.filter(t => t.status === filter);
   const filters = [
     { key: 'all', label: `Toutes (${tasks.length})` },
     { key: 'open', label: `À faire (${tasks.filter(t => t.status === 'open').length})` },
