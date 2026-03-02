@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { 
   LayoutDashboard, Map, Globe, ListTodo, Calendar, BarChart3, 
   Wallet, AlertTriangle, MessageSquare, Clock, Users, ChevronRight
@@ -29,9 +28,10 @@ const navItems: NavItem[] = [
 interface AppSidebarProps {
   activePage: string;
   onNavigate: (page: string) => void;
+  globalProgress?: number;
 }
 
-export default function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
+export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 }: AppSidebarProps) {
   let currentSection = '';
 
   return (
@@ -87,14 +87,17 @@ export default function AppSidebar({ activePage, onNavigate }: AppSidebarProps) 
         })}
       </nav>
 
-      {/* Footer progress */}
+      {/* Footer progress - dynamic */}
       <div className="px-3 py-3.5 border-t border-border">
         <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
           <span>Progression globale</span>
-          <strong className="text-sage-dark">52%</strong>
+          <strong className="text-sage-dark">{globalProgress}%</strong>
         </div>
         <div className="h-[5px] bg-ivory rounded-full overflow-hidden">
-          <div className="h-full w-[52%] bg-gradient-to-r from-sage to-sage-dark rounded-full transition-all duration-700" />
+          <div
+            className="h-full bg-gradient-to-r from-sage to-sage-dark rounded-full transition-all duration-700"
+            style={{ width: `${globalProgress}%` }}
+          />
         </div>
       </div>
     </aside>

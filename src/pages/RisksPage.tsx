@@ -37,7 +37,7 @@ const EMPTY_FORM: RiskForm = {
 
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
-export default function RisksPage({ addSignal }: { addSignal?: number }) {
+export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: risks = [], isLoading } = useRisks();
   const { data: countries = [] } = useCountries();
@@ -57,9 +57,10 @@ export default function RisksPage({ addSignal }: { addSignal?: number }) {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
   }, [addSignal]);
 
-  const highCount = risks.filter(r => r.level === 'high').length;
-  const medCount = risks.filter(r => r.level === 'medium').length;
-  const lowCount = risks.filter(r => r.level === 'low').length;
+  const searchedRisks = searchQuery ? risks.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) || r.category?.toLowerCase().includes(searchQuery.toLowerCase())) : risks;
+  const highCount = searchedRisks.filter(r => r.level === 'high').length;
+  const medCount = searchedRisks.filter(r => r.level === 'medium').length;
+  const lowCount = searchedRisks.filter(r => r.level === 'low').length;
 
   const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
 
@@ -135,8 +136,8 @@ export default function RisksPage({ addSignal }: { addSignal?: number }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Risques Actifs</h3>
-          {risks.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun risque enregistré</div>}
-          {risks.map(r => {
+          {searchedRisks.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun risque enregistré</div>}
+          {searchedRisks.map(r => {
             const cfg = levelConfig[r.level] || levelConfig.medium;
             return (
               <div key={r.id} className="flex items-center gap-3 py-3 border-b border-border last:border-b-0 group">

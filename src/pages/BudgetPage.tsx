@@ -42,7 +42,7 @@ const EMPTY_FORM: BudgetForm = {
 
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 
-export default function BudgetPage({ addSignal }: { addSignal?: number }) {
+export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: entries = [], isLoading } = useBudgetEntries();
   const { data: countries = [] } = useCountries();
@@ -63,8 +63,9 @@ export default function BudgetPage({ addSignal }: { addSignal?: number }) {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
   }, [addSignal]);
 
-  const byMarket = entries.filter(e => e.category === 'market');
-  const byCategory = entries.filter(e => e.category !== 'market');
+  const searched = searchQuery ? entries.filter(e => e.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) || e.category?.toLowerCase().includes(searchQuery.toLowerCase())) : entries;
+  const byMarket = searched.filter(e => e.category === 'market');
+  const byCategory = searched.filter(e => e.category !== 'market');
   const totalAllocated = byMarket.reduce((s, b) => s + b.allocated_k, 0);
   const totalSpent = byMarket.reduce((s, b) => s + b.spent_k, 0);
   const remaining = totalAllocated - totalSpent;

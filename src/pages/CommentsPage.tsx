@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useComments, useCountries } from '@/hooks/useExpansionData';
-import { useCreateComment, useDeleteComment } from '@/hooks/useCommentMutations';
+import { useCreateComment, useUpdateComment, useDeleteComment } from '@/hooks/useCommentMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil, X, Check } from 'lucide-react';
 
-export default function CommentsPage({ addSignal }: { addSignal?: number }) {
+export default function CommentsPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { user } = useAuth();
   const { data: myRole } = useCurrentUserRole();
   const { data: comments = [], isLoading } = useComments();
   const { data: countries = [] } = useCountries();
   const createComment = useCreateComment();
+  const updateComment = useUpdateComment();
   const deleteComment = useDeleteComment();
 
   const isAdmin = myRole === 'admin';
@@ -22,16 +23,18 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
   const [marketId, setMarketId] = useState('');
   const [filterMarket, setFilterMarket] = useState('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
 
   const profile = user?.user_metadata;
   const fullName = profile?.full_name || user?.email || 'Utilisateur';
   const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
 
-  const filtered = filterMarket === 'all' ? comments : comments.filter(c => c.market_id === filterMarket);
+  const marketFiltered = filterMarket === 'all' ? comments : comments.filter(c => c.market_id === filterMarket);
+  const filtered = searchQuery ? marketFiltered.filter(c => c.content.toLowerCase().includes(searchQuery.toLowerCase()) || c.author_name.toLowerCase().includes(searchQuery.toLowerCase())) : marketFiltered;
 
   useEffect(() => {
     if (addSignal && addSignal > 0) {
-      // Focus the textarea
       const ta = document.querySelector<HTMLTextAreaElement>('#comment-input');
       ta?.focus();
     }
@@ -68,6 +71,21 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
     });
   };
 
+  const startEdit = (c: typeof comments[0]) => {
+    setEditingId(c.id);
+    setEditContent(c.content);
+  };
+
+  const handleUpdate = () => {
+    if (!editingId) return;
+    const trimmed = editContent.trim();
+    if (!trimmed) { toast.error('Le commentaire ne peut pas être vide'); return; }
+    updateComment.mutate({ id: editingId, content: trimmed }, {
+      onSuccess: () => { toast.success('Commentaire modifié'); setEditingId(null); },
+      onError: (err: any) => toast.error(err.message),
+    });
+  };
+
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   return (
@@ -80,7 +98,8 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
         <div className="bg-card border border-border rounded-lg p-5">
           {filtered.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun commentaire</div>}
           {filtered.map(c => {
-            const canDelete = c.author_id === user?.id || isAdmin;
+            const canEdit = c.author_id === user?.id || isAdmin;
+            const isEditing = editingId === c.id;
             return (
               <div key={c.id} className="flex gap-3 py-3.5 border-b border-ivory last:border-b-0 group">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 mt-0.5" style={{ background: c.author_color }}>
@@ -93,13 +112,37 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
                       {new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </span>
                     <span className="text-[11px] text-muted-foreground ml-auto">{c.market_label}</span>
-                    {canDelete && (
-                      <button onClick={() => setDeleteId(c.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100">
-                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                      </button>
+                    {canEdit && !isEditing && (
+                      <>
+                        <button onClick={() => startEdit(c)} className="p-1 rounded hover:bg-muted transition-colors opacity-0 group-hover:opacity-100">
+                          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                        <button onClick={() => setDeleteId(c.id)} className="p-1 rounded hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100">
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        </button>
+                      </>
                     )}
                   </div>
-                  <div className="text-[13px] leading-relaxed">{c.content}</div>
+                  {isEditing ? (
+                    <div>
+                      <textarea
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        className="w-full p-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors resize-none font-sans"
+                        rows={2}
+                      />
+                      <div className="flex gap-1 mt-1">
+                        <button onClick={handleUpdate} disabled={updateComment.isPending} className="p-1 rounded hover:bg-sage-light transition-colors">
+                          <Check className="w-4 h-4 text-sage" />
+                        </button>
+                        <button onClick={() => setEditingId(null)} className="p-1 rounded hover:bg-muted transition-colors">
+                          <X className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[13px] leading-relaxed">{c.content}</div>
+                  )}
                   <div className="flex gap-1.5 mt-1.5">
                     {(c.tags || []).map(t => (
                       <span key={t} className="text-[10.5px] font-medium bg-ivory text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>
@@ -110,7 +153,6 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
             );
           })}
 
-          {/* New comment form */}
           {user && (
             <div className="mt-4 pt-4 border-t border-ivory">
               <textarea
@@ -143,7 +185,6 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
           )}
         </div>
 
-        {/* Filter sidebar */}
         <div className="bg-card border border-border rounded-lg p-5 h-fit">
           <h3 className="font-display text-sm font-semibold text-primary mb-3">Filtrer par marché</h3>
           <div className="space-y-1.5">
@@ -166,7 +207,6 @@ export default function CommentsPage({ addSignal }: { addSignal?: number }) {
         </div>
       </div>
 
-      {/* Delete confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

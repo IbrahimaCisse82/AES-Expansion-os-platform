@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logActivity } from './useActivityLogger';
 
 export function useCreateTask() {
   const qc = useQueryClient();
@@ -10,7 +11,11 @@ export function useCreateTask() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks'] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
+      logActivity({ action: `a créé la tâche "${data.title}"`, entityType: 'task', entityId: data.id });
+    },
   });
 }
 
@@ -22,7 +27,11 @@ export function useUpdateTask() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks'] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
+      logActivity({ action: `a modifié la tâche "${data.title}"`, entityType: 'task', entityId: data.id });
+    },
   });
 }
 
@@ -32,7 +41,12 @@ export function useDeleteTask() {
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('tasks').delete().eq('id', id);
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
+      logActivity({ action: 'a supprimé une tâche', entityType: 'task' });
+    },
   });
 }

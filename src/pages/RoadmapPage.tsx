@@ -35,7 +35,7 @@ type BarForm = z.infer<typeof barSchema>;
 const EMPTY_FORM: BarForm = { country_id: '', label: '', start_month: 1, end_month: 3, color: 'sage' };
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
-export default function RoadmapPage({ addSignal }: { addSignal?: number }) {
+export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: bars = [], isLoading } = useRoadmapBars();
   const { data: countries = [] } = useCountries();
@@ -102,10 +102,14 @@ export default function RoadmapPage({ addSignal }: { addSignal?: number }) {
 
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
-  const countryIds = [...new Set(bars.map(b => b.country_id))];
+  const searchedBars = searchQuery ? bars.filter(b => {
+    const c = countries.find(x => x.id === b.country_id);
+    return b.label.toLowerCase().includes(searchQuery.toLowerCase()) || c?.name.toLowerCase().includes(searchQuery.toLowerCase());
+  }) : bars;
+  const countryIds = [...new Set(searchedBars.map(b => b.country_id))];
   const rows = countryIds.map(cid => {
     const c = countries.find(x => x.id === cid);
-    return { flag: c?.flag || '', name: c?.name || cid, bars: bars.filter(b => b.country_id === cid) };
+    return { flag: c?.flag || '', name: c?.name || cid, bars: searchedBars.filter(b => b.country_id === cid) };
   });
 
   return (
