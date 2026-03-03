@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Play } from 'lucide-react';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +10,23 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  const handleDemo = async () => {
+    setError('');
+    setDemoLoading(true);
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke('demo-login');
+      if (fnErr) throw fnErr;
+      const { email, password } = data;
+      const { error: signErr } = await supabase.auth.signInWithPassword({ email, password });
+      if (signErr) throw signErr;
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la connexion démo');
+    } finally {
+      setDemoLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +131,18 @@ export default function AuthPage() {
         >
           {isLogin ? 'Pas encore de compte ? Inscription' : 'Déjà un compte ? Connexion'}
         </button>
+
+        <div className="mt-5 pt-5 border-t border-border">
+          <button
+            onClick={handleDemo}
+            disabled={demoLoading}
+            className="w-full py-2.5 bg-muted text-primary text-[13px] font-medium rounded-lg hover:bg-muted/80 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <Play size={14} />
+            {demoLoading ? 'Préparation…' : 'Accéder au compte démo'}
+          </button>
+          <p className="text-[11px] text-muted-foreground mt-2">Explorez la plateforme avec des données de test</p>
+        </div>
       </div>
     </div>
   );
