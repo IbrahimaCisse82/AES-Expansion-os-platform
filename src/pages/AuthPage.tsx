@@ -3,13 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChevronRight, Play } from 'lucide-react';
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [demoLoading, setDemoLoading] = useState(false);
 
   const handleDemo = async () => {
@@ -31,22 +28,11 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: fullName } },
-        });
-        if (error) throw error;
-        setSuccess('Vérifiez votre email pour confirmer votre inscription.');
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
     } finally {
@@ -62,25 +48,10 @@ export default function AuthPage() {
         </div>
         <h1 className="font-display text-[26px] font-bold text-primary mb-1.5">ExpansionOS</h1>
         <p className="text-[13px] text-muted-foreground mb-7">
-          {isLogin ? 'Connectez-vous à votre plateforme d\'expansion' : 'Créez votre compte ExpansionOS'}
+          Connectez-vous à votre plateforme d'expansion
         </p>
 
         <form onSubmit={handleSubmit} className="text-left space-y-3.5">
-          {!isLogin && (
-            <div>
-              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
-                Nom complet
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                className="w-full px-3 py-2.5 border-[1.5px] border-border rounded-lg text-[13.5px] bg-cream outline-none focus:border-sage focus:bg-card transition-colors font-sans"
-                placeholder="Alice Dupont"
-                required
-              />
-            </div>
-          )}
           <div>
             <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
               Email
@@ -112,25 +83,19 @@ export default function AuthPage() {
           {error && (
             <div className="text-[12.5px] text-terracotta bg-terracotta-light rounded-lg px-3 py-2">{error}</div>
           )}
-          {success && (
-            <div className="text-[12.5px] text-sage-dark bg-sage-light rounded-lg px-3 py-2">{success}</div>
-          )}
 
           <button
             type="submit"
             disabled={loading}
             className="w-full py-2.5 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-navy-mid transition-all disabled:opacity-50"
           >
-            {loading ? '...' : isLogin ? 'Se connecter →' : 'Créer mon compte →'}
+            {loading ? '...' : 'Se connecter →'}
           </button>
         </form>
 
-        <button
-          onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
-          className="mt-5 text-[13px] text-sage font-medium hover:underline"
-        >
-          {isLogin ? 'Pas encore de compte ? Inscription' : 'Déjà un compte ? Connexion'}
-        </button>
+        <p className="mt-5 text-[12px] text-muted-foreground">
+          Pas encore de compte ? Contactez votre administrateur pour recevoir une invitation.
+        </p>
 
         <div className="mt-5 pt-5 border-t border-border">
           <button

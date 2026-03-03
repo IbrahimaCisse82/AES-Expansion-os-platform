@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole } from '@/hooks/useUserRoles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { UserPlus } from 'lucide-react';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -24,10 +27,39 @@ const ROLE_COLORS: Record<string, string> = {
 export default function TeamPage() {
   const { user } = useAuth();
   const { data: myRole } = useCurrentUserRole();
-  const { data: users, isLoading } = useAllUsersWithRoles();
+  const { data: users, isLoading, refetch } = useAllUsersWithRoles();
   const updateRole = useUpdateUserRole();
 
   const isAdmin = myRole === 'admin';
+
+  // Invite state
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteName, setInviteName] = useState('');
+  const [inviteRole, setInviteRole] = useState('observer');
+  const [inviting, setInviting] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+
+  const handleInvite = async () => {
+    if (!inviteEmail) return;
+    setInviting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('invite-user', {
+        body: { email: inviteEmail, full_name: inviteName || inviteEmail, role: inviteRole },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitation envoyée à ${inviteEmail}`);
+      setInviteEmail('');
+      setInviteName('');
+      setInviteRole('observer');
+      setShowInvite(false);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || 'Erreur lors de l\'invitation');
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const handleRoleChange = (userId: string, newRole: string) => {
     updateRole.mutate(
@@ -41,14 +73,72 @@ export default function TeamPage() {
 
   return (
     <div className="animate-page-enter">
-      <div className="mb-6">
-        <h2 className="font-display text-[23px] font-bold text-primary mb-1">Équipe & Rôles</h2>
-        <p className="text-[12.5px] text-muted-foreground">
-          {isAdmin
-            ? 'Gérez les accès et attribuez les rôles aux membres de l\'équipe'
-            : 'Membres de l\'équipe d\'expansion internationale'}
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h2 className="font-display text-[23px] font-bold text-primary mb-1">Équipe & Rôles</h2>
+          <p className="text-[12.5px] text-muted-foreground">
+            {isAdmin
+              ? 'Gérez les accès et invitez de nouveaux membres'
+              : 'Membres de l\'équipe d\'expansion internationale'}
+          </p>
+        </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowInvite(!showInvite)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <UserPlus size={15} />
+            Inviter
+          </button>
+        )}
       </div>
+
+      {showInvite && isAdmin && (
+        <div className="bg-card border border-border rounded-lg p-5 mb-6 space-y-3">
+          <h3 className="text-[14px] font-semibold text-primary">Inviter un nouveau membre</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              placeholder="Email *"
+              className="px-3 py-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors"
+            />
+            <input
+              type="text"
+              value={inviteName}
+              onChange={e => setInviteName(e.target.value)}
+              placeholder="Nom complet"
+              className="px-3 py-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors"
+            />
+            <Select value={inviteRole} onValueChange={setInviteRole}>
+              <SelectTrigger className="h-[38px] text-[13px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-[13px]">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleInvite}
+              disabled={inviting || !inviteEmail}
+              className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {inviting ? 'Envoi…' : 'Envoyer l\'invitation'}
+            </button>
+            <button
+              onClick={() => setShowInvite(false)}
+              className="px-4 py-2 text-[13px] text-muted-foreground hover:text-primary transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Chargement…</div>
