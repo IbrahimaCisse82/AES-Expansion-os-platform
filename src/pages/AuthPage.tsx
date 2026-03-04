@@ -93,9 +93,14 @@ export default function AuthPage() {
           </button>
         </form>
 
-        <p className="mt-5 text-[12px] text-muted-foreground">
-          Pas encore de compte ? Contactez votre administrateur pour recevoir une invitation.
-        </p>
+        <div className="mt-5 flex flex-col items-center gap-1.5">
+          <a href="/forgot-password" className="text-[12px] text-primary hover:underline">
+            Mot de passe oublié ?
+          </a>
+          <p className="text-[12px] text-muted-foreground">
+            Pas encore de compte ? Contactez votre administrateur.
+          </p>
+        </div>
 
         <div className="mt-5 pt-5 border-t border-border">
           <button
