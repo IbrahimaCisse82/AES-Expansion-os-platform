@@ -55,6 +55,7 @@ const Index = () => {
       case 'calendar': return <CalendarPage />;
       case 'roadmap': return <RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />;
       case 'settings': return <SettingsPage />;
+      default: return <DashboardPage />;
     }
   };
 
