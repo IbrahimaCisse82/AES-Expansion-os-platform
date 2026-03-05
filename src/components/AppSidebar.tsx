@@ -1,28 +1,30 @@
 import { 
   LayoutDashboard, Map, Globe, ListTodo, Calendar, BarChart3, 
-  Wallet, AlertTriangle, MessageSquare, Clock, Users, ChevronRight
+  Wallet, AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings
 } from 'lucide-react';
+import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
-  badge?: number;
+  badgeKey?: 'countries' | 'tasks' | 'risks';
   section?: string;
 }
 
 const navItems: NavItem[] = [
   { id: 'dashboard', label: 'Tableau de bord', icon: <LayoutDashboard size={16} />, section: 'PILOTAGE' },
   { id: 'roadmap', label: 'Feuille de route', icon: <Map size={16} /> },
-  { id: 'countries', label: 'Pays Cibles', icon: <Globe size={16} />, badge: 6 },
-  { id: 'tasks', label: 'Tâches', icon: <ListTodo size={16} />, badge: 3, section: 'OPÉRATIONS' },
+  { id: 'countries', label: 'Pays Cibles', icon: <Globe size={16} />, badgeKey: 'countries' },
+  { id: 'tasks', label: 'Tâches', icon: <ListTodo size={16} />, badgeKey: 'tasks', section: 'OPÉRATIONS' },
   { id: 'calendar', label: 'Calendrier', icon: <Calendar size={16} /> },
   { id: 'kpis', label: 'KPIs', icon: <BarChart3 size={16} />, section: 'ANALYSE' },
   { id: 'budget', label: 'Budget', icon: <Wallet size={16} /> },
-  { id: 'risks', label: 'Risques', icon: <AlertTriangle size={16} />, badge: 2 },
+  { id: 'risks', label: 'Risques', icon: <AlertTriangle size={16} />, badgeKey: 'risks' },
   { id: 'comments', label: 'Commentaires', icon: <MessageSquare size={16} />, section: 'ÉQUIPE' },
   { id: 'history', label: 'Historique', icon: <Clock size={16} /> },
   { id: 'team', label: 'Équipe', icon: <Users size={16} /> },
+  { id: 'settings', label: 'Paramètres', icon: <Settings size={16} />, section: 'SYSTÈME' },
 ];
 
 interface AppSidebarProps {
@@ -33,6 +35,15 @@ interface AppSidebarProps {
 
 export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 }: AppSidebarProps) {
   let currentSection = '';
+  const { data: countries = [] } = useCountries();
+  const { data: tasks = [] } = useTasks();
+  const { data: risks = [] } = useRisks();
+
+  const badgeCounts: Record<string, number> = {
+    countries: countries.length,
+    tasks: tasks.filter((t: any) => t.status === 'open' || t.status === 'late').length,
+    risks: risks.filter((r: any) => r.level === 'high').length,
+  };
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[248px] bg-card border-r border-border flex flex-col z-50">
@@ -72,13 +83,13 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 
               >
                 {item.icon}
                 <span>{item.label}</span>
-                {item.badge && (
+                {item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
                   <span className={`ml-auto text-[9.5px] font-bold px-1.5 rounded-full
                     ${activePage === item.id 
                       ? 'bg-white/25 text-primary-foreground' 
                       : 'bg-terracotta text-white'
                     }`}>
-                    {item.badge}
+                    {badgeCounts[item.badgeKey]}
                   </span>
                 )}
               </button>

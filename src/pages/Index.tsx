@@ -13,6 +13,7 @@ import CommentsPage from '@/pages/CommentsPage';
 import KpisPage from '@/pages/KpisPage';
 import CalendarPage from '@/pages/CalendarPage';
 import RoadmapPage from '@/pages/RoadmapPage';
+import SettingsPage from '@/pages/SettingsPage';
 import { useCountries } from '@/hooks/useExpansionData';
 
 const Index = () => {
@@ -53,6 +54,7 @@ const Index = () => {
       case 'kpis': return <KpisPage />;
       case 'calendar': return <CalendarPage />;
       case 'roadmap': return <RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />;
+      case 'settings': return <SettingsPage />;
       default: return <DashboardPage />;
     }
   };

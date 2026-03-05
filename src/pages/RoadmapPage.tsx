@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useRoadmapBars, useCountries } from '@/hooks/useExpansionData';
 import { useCreateRoadmapBar, useUpdateRoadmapBar, useDeleteRoadmapBar } from '@/hooks/useRoadmapMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -13,12 +15,19 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-const colorOptions = [
-  { value: 'sage', label: 'Étude', css: 'bg-sage' },
-  { value: 'gold', label: 'Légal', css: 'bg-gold' },
-  { value: 'sky', label: 'Mise en place', css: 'bg-sky' },
-  { value: 'terracotta', label: 'Lancement', css: 'bg-terracotta' },
-];
+function useRoadmapTypes() {
+  return useQuery({
+    queryKey: ['roadmap_types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('roadmap_types')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      return data as { id: string; label: string; color: string; sort_order: number }[];
+    },
+  });
+}
 const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
 const currentMonth = 7;
 
@@ -39,6 +48,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
   const { data: myRole } = useCurrentUserRole();
   const { data: bars = [], isLoading } = useRoadmapBars();
   const { data: countries = [] } = useCountries();
+  const { data: roadmapTypes = [] } = useRoadmapTypes();
   const createBar = useCreateRoadmapBar();
   const updateBar = useUpdateRoadmapBar();
   const deleteBar = useDeleteRoadmapBar();
@@ -168,9 +178,9 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
           </div>
         ))}
         <div className="flex gap-4 mt-4 pt-3 border-t border-ivory">
-          {colorOptions.map(l => (
-            <div key={l.label} className="flex items-center gap-1.5 text-[12px]">
-              <div className={`w-2.5 h-2.5 rounded-full ${l.css}`} /><span className="text-muted-foreground">{l.label}</span>
+          {roadmapTypes.map(l => (
+            <div key={l.id} className="flex items-center gap-1.5 text-[12px]">
+              <div className={`w-2.5 h-2.5 rounded-full ${colorMap[l.color] || 'bg-sage'}`} /><span className="text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>
@@ -221,7 +231,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
               <Select value={form.color} onValueChange={v => setForm(p => ({ ...p, color: v }))}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {colorOptions.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                  {roadmapTypes.map(c => <SelectItem key={c.color} value={c.color}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
