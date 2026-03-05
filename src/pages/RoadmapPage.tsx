@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useRoadmapBars, useCountries } from '@/hooks/useExpansionData';
 import { useCreateRoadmapBar, useUpdateRoadmapBar, useDeleteRoadmapBar } from '@/hooks/useRoadmapMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -13,12 +15,19 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-const colorOptions = [
-  { value: 'sage', label: 'Étude', css: 'bg-sage' },
-  { value: 'gold', label: 'Légal', css: 'bg-gold' },
-  { value: 'sky', label: 'Mise en place', css: 'bg-sky' },
-  { value: 'terracotta', label: 'Lancement', css: 'bg-terracotta' },
-];
+function useRoadmapTypes() {
+  return useQuery({
+    queryKey: ['roadmap_types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('roadmap_types')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      return data as { id: string; label: string; color: string; sort_order: number }[];
+    },
+  });
+}
 const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
 const currentMonth = 7;
 
