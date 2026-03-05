@@ -48,6 +48,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
   const { data: myRole } = useCurrentUserRole();
   const { data: bars = [], isLoading } = useRoadmapBars();
   const { data: countries = [] } = useCountries();
+  const { data: roadmapTypes = [] } = useRoadmapTypes();
   const createBar = useCreateRoadmapBar();
   const updateBar = useUpdateRoadmapBar();
   const deleteBar = useDeleteRoadmapBar();
@@ -177,9 +178,9 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
           </div>
         ))}
         <div className="flex gap-4 mt-4 pt-3 border-t border-ivory">
-          {colorOptions.map(l => (
-            <div key={l.label} className="flex items-center gap-1.5 text-[12px]">
-              <div className={`w-2.5 h-2.5 rounded-full ${l.css}`} /><span className="text-muted-foreground">{l.label}</span>
+          {roadmapTypes.map(l => (
+            <div key={l.id} className="flex items-center gap-1.5 text-[12px]">
+              <div className={`w-2.5 h-2.5 rounded-full ${colorMap[l.color] || 'bg-sage'}`} /><span className="text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>
@@ -230,7 +231,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
               <Select value={form.color} onValueChange={v => setForm(p => ({ ...p, color: v }))}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {colorOptions.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                  {roadmapTypes.map(c => <SelectItem key={c.color} value={c.color}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
