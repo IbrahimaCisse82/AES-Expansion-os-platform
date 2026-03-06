@@ -1,37 +1,59 @@
+import { useMemo } from 'react';
+import { useTasks } from '@/hooks/useExpansionData';
+
 export default function CalendarPage() {
+  const { data: tasks = [], isLoading } = useTasks();
   const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-  const today = 15; // July 15
 
-  const events: Record<number, { label: string; color: string }[]> = {
-    3: [{ label: '🇩🇪 Réunion légale', color: 'bg-sage' }],
-    7: [{ label: '🇯🇵 Brief équipe', color: 'bg-sky' }],
-    10: [{ label: '🇧🇷 Call ANVISA', color: 'bg-gold' }],
-    15: [{ label: '🇩🇪 Signature bail', color: 'bg-sage' }, { label: '🇯🇵 Review KPIs', color: 'bg-sky' }],
-    20: [{ label: '🇦🇺 Prospection', color: 'bg-terracotta' }],
-    25: [{ label: '🇳🇬 Analyse cadre', color: 'bg-plum' }],
-    28: [{ label: '🇯🇵 Launch prep', color: 'bg-sky' }],
-  };
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const today = now.getDate();
 
-  // Generate calendar grid for July 2025
-  const firstDay = 1; // Tuesday (0=Mon)
-  const daysInMonth = 31;
+  const monthName = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+  // Build calendar grid
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+  const adjustedFirst = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1; // Monday-based
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
   const cells: (number | null)[] = [];
-  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let i = 0; i < adjustedFirst; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
+
+  // Map tasks with due dates to calendar days
+  const tasksByDay = useMemo(() => {
+    const map: Record<number, { label: string; color: string }[]> = {};
+    tasks.forEach(t => {
+      if (!t.due_date) return;
+      // Try to parse the date
+      const parsed = new Date(t.due_date);
+      if (isNaN(parsed.getTime())) return;
+      if (parsed.getMonth() !== currentMonth || parsed.getFullYear() !== currentYear) return;
+      const day = parsed.getDate();
+      if (!map[day]) map[day] = [];
+      const colorMap: Record<string, string> = { high: 'bg-destructive', med: 'bg-[hsl(var(--gold))]', low: 'bg-accent' };
+      map[day].push({
+        label: `${t.country_label ? t.country_label.split(' ')[0] + ' ' : ''}${t.title.slice(0, 25)}`,
+        color: colorMap[t.priority] || 'bg-accent',
+      });
+    });
+    return map;
+  }, [tasks, currentMonth, currentYear]);
+
+  if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   return (
     <div className="animate-page-enter">
       <div className="mb-6">
         <h2 className="font-display text-[23px] font-bold text-primary mb-1">Calendrier</h2>
-        <p className="text-[12.5px] text-muted-foreground">Événements et jalons par marché</p>
+        <p className="text-[12.5px] text-muted-foreground">Tâches et échéances par date</p>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-5">
         <div className="flex items-center gap-3 mb-4">
-          <button className="w-[30px] h-[30px] border border-border rounded-md bg-card flex items-center justify-center text-sm hover:bg-ivory transition-colors">‹</button>
-          <h3 className="font-display text-lg font-semibold text-primary flex-1">Juillet 2025</h3>
-          <button className="w-[30px] h-[30px] border border-border rounded-md bg-card flex items-center justify-center text-sm hover:bg-ivory transition-colors">›</button>
+          <h3 className="font-display text-lg font-semibold text-primary flex-1 capitalize">{monthName}</h3>
         </div>
 
         <div className="grid grid-cols-7 gap-1 mb-1">
@@ -45,16 +67,16 @@ export default function CalendarPage() {
             <div
               key={i}
               className={`min-h-[80px] rounded-lg p-1.5 ${
-                day === today ? 'bg-sage-light border-[1.5px] border-sage' :
-                day ? 'bg-ivory' : 'opacity-40 bg-ivory'
+                day === today ? 'bg-accent/10 border-[1.5px] border-accent' :
+                day ? 'bg-muted/30' : 'opacity-40 bg-muted/30'
               }`}
             >
               {day && (
                 <>
-                  <div className={`text-[11.5px] font-semibold mb-1 ${day === today ? 'text-sage-dark font-bold' : 'text-muted-foreground'}`}>
+                  <div className={`text-[11.5px] font-semibold mb-1 ${day === today ? 'text-accent font-bold' : 'text-muted-foreground'}`}>
                     {day}
                   </div>
-                  {events[day]?.map((ev, j) => (
+                  {tasksByDay[day]?.map((ev, j) => (
                     <div key={j} className={`text-[10px] font-medium text-white px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color}`}>
                       {ev.label}
                     </div>
@@ -64,6 +86,10 @@ export default function CalendarPage() {
             </div>
           ))}
         </div>
+
+        {tasks.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4 mt-4">Aucune tâche avec échéance. Ajoutez des dates à vos tâches pour les voir ici.</p>
+        )}
       </div>
     </div>
   );
