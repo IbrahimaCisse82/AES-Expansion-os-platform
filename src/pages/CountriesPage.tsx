@@ -107,7 +107,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
           <p className="text-[12.5px] text-muted-foreground">Vue d'ensemble des marchés · {countries.length} pays ciblés</p>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {countries.map(c => {
           const riskColor = c.risk_count > 1 ? 'text-terracotta' : c.risk_count === 1 ? 'text-gold' : 'text-sage';
           return (
