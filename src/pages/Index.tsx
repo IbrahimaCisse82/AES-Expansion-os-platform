@@ -14,6 +14,7 @@ import KpisPage from '@/pages/KpisPage';
 import CalendarPage from '@/pages/CalendarPage';
 import RoadmapPage from '@/pages/RoadmapPage';
 import SettingsPage from '@/pages/SettingsPage';
+import ProfilePage from '@/pages/ProfilePage';
 import { useCountries } from '@/hooks/useExpansionData';
 
 const Index = () => {
@@ -21,11 +22,11 @@ const Index = () => {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [addSignal, setAddSignal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: countries = [] } = useCountries();
 
   const currentPage = selectedCountry ? 'country-detail' : activePage;
 
-  // Compute global progress
   const avgPct = countries.length ? Math.round(countries.reduce((s, c) => s + c.pct, 0) / countries.length) : 0;
 
   const handleNavigate = (page: string) => {
@@ -55,16 +56,29 @@ const Index = () => {
       case 'calendar': return <CalendarPage />;
       case 'roadmap': return <RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />;
       case 'settings': return <SettingsPage />;
+      case 'profile': return <ProfilePage />;
       default: return <DashboardPage />;
     }
   };
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar activePage={selectedCountry ? 'countries' : activePage} onNavigate={handleNavigate} globalProgress={avgPct} />
-      <main className="ml-[248px] flex-1 flex flex-col min-h-screen">
-        <Topbar activePage={currentPage} onAdd={handleAdd} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-        <div className="p-8 flex-1">
+      <AppSidebar
+        activePage={selectedCountry ? 'countries' : activePage}
+        onNavigate={handleNavigate}
+        globalProgress={avgPct}
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
+      <main className="lg:ml-[248px] flex-1 flex flex-col min-h-screen">
+        <Topbar
+          activePage={currentPage}
+          onAdd={handleAdd}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onMenuToggle={() => setMobileMenuOpen(prev => !prev)}
+        />
+        <div className="p-4 lg:p-8 flex-1">
           {renderPage()}
         </div>
       </main>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Plus, LogOut } from 'lucide-react';
+import { Search, Bell, Plus, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityLog } from '@/hooks/useExpansionData';
 
@@ -15,6 +15,8 @@ const pageNames: Record<string, string> = {
   comments: 'Commentaires',
   history: 'Historique',
   team: 'Équipe',
+  profile: 'Mon profil',
+  settings: 'Paramètres',
   'country-detail': 'Fiche Pays',
 };
 
@@ -25,9 +27,10 @@ interface TopbarProps {
   onAdd?: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onMenuToggle?: () => void;
 }
 
-export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange }: TopbarProps) {
+export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange, onMenuToggle }: TopbarProps) {
   const { signOut, user } = useAuth();
   const { data: activity = [] } = useActivityLog();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -39,7 +42,6 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange 
 
   const showAdd = ADDABLE_PAGES.includes(activePage) && !!onAdd;
 
-  // Close notif dropdown on click outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
@@ -49,29 +51,34 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange 
   }, []);
 
   return (
-    <header className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40 px-8 h-[62px] flex items-center gap-3">
-      <h1 className="font-display text-lg font-semibold text-primary flex-1">
+    <header className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border z-40 px-4 lg:px-8 h-[62px] flex items-center gap-3">
+      {/* Mobile menu button */}
+      <button onClick={onMenuToggle} className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors -ml-1">
+        <Menu size={20} className="text-primary" />
+      </button>
+
+      <h1 className="font-display text-base lg:text-lg font-semibold text-primary flex-1 truncate">
         {pageNames[activePage] || activePage}
       </h1>
 
-      <div className="relative">
+      <div className="relative hidden sm:block">
         <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
           value={searchQuery}
           onChange={e => onSearchChange(e.target.value)}
           placeholder="Rechercher…"
-          className="pl-8 pr-3 py-2 border-[1.5px] border-border rounded-lg text-[13px] w-[200px] bg-card outline-none focus:border-sage focus:w-[240px] transition-all font-sans"
+          className="pl-8 pr-3 py-2 border-[1.5px] border-border rounded-lg text-[13px] w-[160px] lg:w-[200px] bg-card outline-none focus:border-accent focus:w-[200px] lg:focus:w-[240px] transition-all font-sans"
         />
       </div>
 
       {showAdd && (
         <button
           onClick={onAdd}
-          className="h-[34px] px-4 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg flex items-center gap-1.5 hover:bg-navy-mid transition-all hover:-translate-y-px hover:shadow-card-hover"
+          className="h-[34px] px-3 lg:px-4 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg flex items-center gap-1.5 hover:bg-primary/90 transition-all hover:-translate-y-px hover:shadow-card-hover"
         >
           <Plus size={14} />
-          Ajouter
+          <span className="hidden sm:inline">Ajouter</span>
         </button>
       )}
 
@@ -79,16 +86,16 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange 
       <div className="relative" ref={notifRef}>
         <button
           onClick={() => setNotifOpen(prev => !prev)}
-          className="relative w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-ivory transition-colors"
+          className="relative w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
         >
           <Bell size={16} />
           {activity.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-terracotta rounded-full border-[1.5px] border-card" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border-[1.5px] border-card" />
           )}
         </button>
 
         {notifOpen && (
-          <div className="absolute right-0 top-[42px] w-[340px] bg-card border border-border rounded-lg shadow-elevated z-50 overflow-hidden">
+          <div className="absolute right-0 top-[42px] w-[300px] sm:w-[340px] bg-card border border-border rounded-lg shadow-elevated z-50 overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
               <h3 className="text-[13px] font-semibold text-primary">Activité récente</h3>
             </div>
@@ -97,7 +104,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange 
                 <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">Aucune activité</div>
               )}
               {activity.slice(0, 10).map(item => (
-                <div key={item.id} className="px-4 py-2.5 border-b border-ivory last:border-b-0 hover:bg-ivory/50 transition-colors">
+                <div key={item.id} className="px-4 py-2.5 border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors">
                   <div className="text-[12px] leading-relaxed">
                     <span className="font-medium text-primary">{item.user_name}</span>{' '}
                     <span className="text-muted-foreground">{item.action}</span>
@@ -118,7 +125,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange 
 
       <button
         onClick={signOut}
-        className="w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-terracotta-light hover:text-terracotta hover:border-terracotta transition-colors"
+        className="w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-colors"
         title="Se déconnecter"
       >
         <LogOut size={14} />

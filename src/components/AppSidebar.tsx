@@ -1,6 +1,6 @@
 import { 
   LayoutDashboard, Map, Globe, ListTodo, Calendar, BarChart3, 
-  Wallet, AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings
+  Wallet, AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X
 } from 'lucide-react';
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
 
@@ -25,15 +25,18 @@ const navItems: NavItem[] = [
   { id: 'history', label: 'Historique', icon: <Clock size={16} /> },
   { id: 'team', label: 'Équipe', icon: <Users size={16} /> },
   { id: 'settings', label: 'Paramètres', icon: <Settings size={16} />, section: 'SYSTÈME' },
+  { id: 'profile', label: 'Mon profil', icon: <User size={16} /> },
 ];
 
 interface AppSidebarProps {
   activePage: string;
   onNavigate: (page: string) => void;
   globalProgress?: number;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 }: AppSidebarProps) {
+export default function AppSidebar({ activePage, onNavigate, globalProgress = 0, mobileOpen, onMobileClose }: AppSidebarProps) {
   let currentSection = '';
   const { data: countries = [] } = useCountries();
   const { data: tasks = [] } = useTasks();
@@ -45,19 +48,30 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 
     risks: risks.filter((r: any) => r.level === 'high').length,
   };
 
-  return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[248px] bg-card border-r border-border flex flex-col z-50">
+  const handleNav = (id: string) => {
+    onNavigate(id);
+    onMobileClose?.();
+  };
+
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="px-5 pt-6 pb-4 border-b border-border">
-        <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <ChevronRight size={16} className="text-primary-foreground" />
+      <div className="px-5 pt-6 pb-4 border-b border-border flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <ChevronRight size={16} className="text-primary-foreground" />
+            </div>
+            <span className="font-display text-[19px] font-bold text-primary">ExpansionOS</span>
           </div>
-          <span className="font-display text-[19px] font-bold text-primary">ExpansionOS</span>
+          <div className="text-[10.5px] text-muted-foreground tracking-wider uppercase">
+            Plan d'Expansion International
+          </div>
         </div>
-        <div className="text-[10.5px] text-muted-foreground tracking-wider uppercase">
-          Plan d'Expansion International
-        </div>
+        {/* Mobile close button */}
+        <button onClick={onMobileClose} className="lg:hidden p-1 rounded-lg hover:bg-muted transition-colors">
+          <X size={18} className="text-muted-foreground" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -74,7 +88,7 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 
                 </div>
               )}
               <button
-                onClick={() => onNavigate(item.id)}
+                onClick={() => handleNav(item.id)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 mb-0.5
                   ${activePage === item.id 
                     ? 'bg-primary text-primary-foreground font-medium' 
@@ -87,7 +101,7 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 
                   <span className={`ml-auto text-[9.5px] font-bold px-1.5 rounded-full
                     ${activePage === item.id 
                       ? 'bg-white/25 text-primary-foreground' 
-                      : 'bg-terracotta text-white'
+                      : 'bg-destructive text-white'
                     }`}>
                     {badgeCounts[item.badgeKey]}
                   </span>
@@ -98,19 +112,38 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0 
         })}
       </nav>
 
-      {/* Footer progress - dynamic */}
+      {/* Footer progress */}
       <div className="px-3 py-3.5 border-t border-border">
         <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
           <span>Progression globale</span>
-          <strong className="text-sage-dark">{globalProgress}%</strong>
+          <strong className="text-foreground">{globalProgress}%</strong>
         </div>
-        <div className="h-[5px] bg-ivory rounded-full overflow-hidden">
+        <div className="h-[5px] bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-sage to-sage-dark rounded-full transition-all duration-700"
+            className="h-full bg-gradient-to-r from-accent to-accent/70 rounded-full transition-all duration-700"
             style={{ width: `${globalProgress}%` }}
           />
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-[248px] bg-card border-r border-border flex-col z-50">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={onMobileClose} />
+          <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border flex flex-col z-10 animate-page-enter">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }
