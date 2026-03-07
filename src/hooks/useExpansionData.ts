@@ -15,9 +15,9 @@ export function useCountries() {
   });
 }
 
-export function useMilestones(countryId?: string) {
+export function useMilestones(countryId?: string | null) {
   return useQuery({
-    queryKey: ['milestones', countryId],
+    queryKey: ['milestones', countryId ?? 'all'],
     queryFn: async () => {
       let query = supabase.from('milestones').select('*').order('sort_order');
       if (countryId) query = query.eq('country_id', countryId);
@@ -25,7 +25,6 @@ export function useMilestones(countryId?: string) {
       if (error) throw error;
       return data;
     },
-    enabled: countryId !== undefined,
   });
 }
 
