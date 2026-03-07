@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { z } from 'zod';
+import { COUNTRY_LIST } from '@/data/countryList';
 
 const phaseNames = [
   'Phase 0 — Prospection', 'Phase 1 — Étude & Légal', 'Phase 2 — Mise en place',
@@ -19,7 +20,7 @@ const phaseNames = [
 ];
 
 const countrySchema = z.object({
-  id: z.string().trim().min(1, 'ID requis (ex: jp)').max(10),
+  id: z.string().trim().min(1, 'Pays requis').max(10),
   name: z.string().trim().min(1, 'Nom requis').max(100),
   flag: z.string().min(1, 'Drapeau requis').max(10),
   region: z.string().min(1, 'Région requise').max(100),
