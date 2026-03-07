@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import StatusPill from '@/components/StatusPill';
-import { useTasks, useCountries } from '@/hooks/useExpansionData';
+import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,8 +16,9 @@ import { z } from 'zod';
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
-  country_id: z.string().optional(),
+  country_id: z.string().min(1, 'Le marché est requis'),
   country_label: z.string().optional(),
+  milestone_id: z.string().min(1, 'Le jalon est requis'),
   priority: z.enum(['high', 'med', 'low']),
   status: z.enum(['open', 'done', 'late', 'wip']),
   due_date: z.string().optional(),
@@ -34,6 +35,7 @@ const EMPTY_FORM: TaskForm = {
   owner_name: '',
   country_id: '',
   country_label: '',
+  milestone_id: '',
 };
 
 const CAN_WRITE_ROLES = ['admin', 'director', 'country_manager'];
@@ -43,6 +45,8 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const { data: myRole } = useCurrentUserRole();
   const { data: tasks = [], isLoading } = useTasks();
   const { data: countries = [] } = useCountries();
+  const { data: allMilestones = [] } = useMilestones();
+  const countryMilestones = allMilestones.filter(m => m.country_id === form.country_id);
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -86,6 +90,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       owner_name: task.owner_name ?? '',
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
+      milestone_id: (task as any).milestone_id ?? '',
     });
     setEditingId(task.id);
     setErrors({});
@@ -94,7 +99,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
   const handleCountryChange = (countryId: string) => {
     const country = countries.find(c => c.id === countryId);
-    setForm(prev => ({ ...prev, country_id: countryId, country_label: country ? `${country.flag} ${country.name}` : '' }));
+    setForm(prev => ({ ...prev, country_id: countryId, country_label: country ? `${country.flag} ${country.name}` : '', milestone_id: '' }));
   };
 
   const handleSubmit = () => {
@@ -114,6 +119,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       owner_name: result.data.owner_name || null,
       country_id: result.data.country_id || null,
       country_label: result.data.country_label || null,
+      milestone_id: result.data.milestone_id || null,
     };
 
     if (editingId) {
@@ -184,6 +190,10 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               <div className={`text-[13px] font-medium ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</div>
               <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap mt-0.5">
                 {task.country_label && <span>{task.country_label}</span>}
+                {(task as any).milestone_id && (() => {
+                  const ms = allMilestones.find(m => m.id === (task as any).milestone_id);
+                  return ms ? <><span>·</span><span>🎯 {ms.title}</span></> : null;
+                })()}
                 {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
               </div>
@@ -221,14 +231,37 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} maxLength={200} className="mt-1" />
               {errors.title && <p className="text-destructive text-[11px] mt-1">{errors.title}</p>}
             </div>
+            <div>
+              <Label className="text-[12.5px]">Marché *</Label>
+              <Select value={form.country_id || '_none'} onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sélectionner un marché</SelectItem>
+                  {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.country_id && <p className="text-destructive text-[11px] mt-1">{errors.country_id}</p>}
+            </div>
+            <div>
+              <Label className="text-[12.5px]">Jalon *</Label>
+              <Select value={form.milestone_id || '_none'} onValueChange={v => setForm(p => ({ ...p, milestone_id: v === '_none' ? '' : v }))} disabled={!form.country_id}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder={!form.country_id ? 'Choisir un marché d\'abord' : 'Sélectionner un jalon'} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sélectionner un jalon</SelectItem>
+                  {countryMilestones.map(m => <SelectItem key={m.id} value={m.id}>{m.icon} {m.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.milestone_id && <p className="text-destructive text-[11px] mt-1">{errors.milestone_id}</p>}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-[12.5px]">Marché</Label>
-                <Select value={form.country_id || '_none'} onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}>
+                <Label className="text-[12.5px]">Priorité</Label>
+                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v as any }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="_none">Aucun</SelectItem>
-                    {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
+                    <SelectItem value="high">Haute</SelectItem>
+                    <SelectItem value="med">Moyenne</SelectItem>
+                    <SelectItem value="low">Faible</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

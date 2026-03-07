@@ -1,0 +1,1 @@
+ALTER TABLE public.tasks ADD COLUMN milestone_id uuid REFERENCES public.milestones(id) ON DELETE SET NULL DEFAULT NULL;

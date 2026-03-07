@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { z } from 'zod';
+import { COUNTRY_LIST } from '@/data/countryList';
 
 const phaseNames = [
   'Phase 0 — Prospection', 'Phase 1 — Étude & Légal', 'Phase 2 — Mise en place',
@@ -19,7 +20,7 @@ const phaseNames = [
 ];
 
 const countrySchema = z.object({
-  id: z.string().trim().min(1, 'ID requis (ex: jp)').max(10),
+  id: z.string().trim().min(1, 'Pays requis').max(10),
   name: z.string().trim().min(1, 'Nom requis').max(100),
   flag: z.string().min(1, 'Drapeau requis').max(10),
   region: z.string().min(1, 'Région requise').max(100),
@@ -43,6 +44,8 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
   const updateCountry = useUpdateCountry();
   const deleteCountry = useDeleteCountry();
 
+  const existingIds = countries.map(c => c.id);
+  const availableCountries = COUNTRY_LIST.filter(c => !existingIds.includes(c.code));
   const canWrite = CAN_WRITE.includes(myRole ?? '');
   const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
 
@@ -157,28 +160,40 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
             <DialogTitle className="font-display text-lg">{editingId ? 'Modifier le pays' : 'Nouveau pays'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-3">
+            {!editingId ? (
               <div>
-                <Label className="text-[12.5px]">ID *</Label>
-                <Input value={form.id} onChange={e => setForm(p => ({ ...p, id: e.target.value }))} maxLength={10} placeholder="jp" className="mt-1" disabled={!!editingId} />
+                <Label className="text-[12.5px]">Pays *</Label>
+                <Select value={form.id || '_none'} onValueChange={v => {
+                  if (v === '_none') { setForm(EMPTY_FORM); return; }
+                  const entry = COUNTRY_LIST.find(c => c.code === v);
+                  if (entry) setForm(prev => ({ ...prev, id: entry.code, name: entry.name, flag: entry.flag, region: entry.region }));
+                }}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionner un pays" /></SelectTrigger>
+                  <SelectContent className="max-h-[280px]">
+                    <SelectItem value="_none">Sélectionner un pays</SelectItem>
+                    {availableCountries.map(c => <SelectItem key={c.code} value={c.code}>{c.flag} {c.name} — {c.region}</SelectItem>)}
+                  </SelectContent>
+                </Select>
                 {errors.id && <p className="text-destructive text-[11px] mt-1">{errors.id}</p>}
+                {form.id && (
+                  <div className="mt-2 p-2.5 bg-secondary rounded-lg text-[12px] flex items-center gap-2">
+                    <span className="text-[24px]">{form.flag}</span>
+                    <div>
+                      <div className="font-medium text-foreground">{form.name}</div>
+                      <div className="text-muted-foreground">Code ISO : {form.id.toUpperCase()} · {form.region}</div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
-                <Label className="text-[12.5px]">Drapeau *</Label>
-                <Input value={form.flag} onChange={e => setForm(p => ({ ...p, flag: e.target.value }))} maxLength={10} placeholder="🇯🇵" className="mt-1" />
-                {errors.flag && <p className="text-destructive text-[11px] mt-1">{errors.flag}</p>}
+            ) : (
+              <div className="p-2.5 bg-secondary rounded-lg text-[12px] flex items-center gap-2">
+                <span className="text-[24px]">{form.flag}</span>
+                <div>
+                  <div className="font-medium text-foreground">{form.name}</div>
+                  <div className="text-muted-foreground">Code ISO : {form.id.toUpperCase()} · {form.region}</div>
+                </div>
               </div>
-            </div>
-            <div>
-              <Label className="text-[12.5px]">Nom *</Label>
-              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} maxLength={100} placeholder="Japon" className="mt-1" />
-              {errors.name && <p className="text-destructive text-[11px] mt-1">{errors.name}</p>}
-            </div>
-            <div>
-              <Label className="text-[12.5px]">Région *</Label>
-              <Input value={form.region} onChange={e => setForm(p => ({ ...p, region: e.target.value }))} maxLength={100} placeholder="Asie-Pacifique" className="mt-1" />
-              {errors.region && <p className="text-destructive text-[11px] mt-1">{errors.region}</p>}
-            </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Couleur</Label>
