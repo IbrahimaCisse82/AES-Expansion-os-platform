@@ -45,6 +45,8 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const { data: myRole } = useCurrentUserRole();
   const { data: tasks = [], isLoading } = useTasks();
   const { data: countries = [] } = useCountries();
+  const { data: allMilestones = [] } = useMilestones();
+  const countryMilestones = allMilestones.filter(m => m.country_id === form.country_id);
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -88,6 +90,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       owner_name: task.owner_name ?? '',
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
+      milestone_id: (task as any).milestone_id ?? '',
     });
     setEditingId(task.id);
     setErrors({});
