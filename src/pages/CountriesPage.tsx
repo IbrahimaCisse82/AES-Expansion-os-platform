@@ -191,7 +191,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
                   <div className="text-muted-foreground">Code ISO : {form.id.toUpperCase()} · {form.region}</div>
                 </div>
               </div>
-            )
+            )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
