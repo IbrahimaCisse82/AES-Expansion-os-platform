@@ -192,7 +192,6 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
                 </div>
               </div>
             )}
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Couleur</Label>
