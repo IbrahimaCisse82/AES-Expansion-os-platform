@@ -231,14 +231,37 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} maxLength={200} className="mt-1" />
               {errors.title && <p className="text-destructive text-[11px] mt-1">{errors.title}</p>}
             </div>
+            <div>
+              <Label className="text-[12.5px]">Marché *</Label>
+              <Select value={form.country_id || '_none'} onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sélectionner un marché</SelectItem>
+                  {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.country_id && <p className="text-destructive text-[11px] mt-1">{errors.country_id}</p>}
+            </div>
+            <div>
+              <Label className="text-[12.5px]">Jalon *</Label>
+              <Select value={form.milestone_id || '_none'} onValueChange={v => setForm(p => ({ ...p, milestone_id: v === '_none' ? '' : v }))} disabled={!form.country_id}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder={!form.country_id ? 'Choisir un marché d\'abord' : 'Sélectionner un jalon'} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sélectionner un jalon</SelectItem>
+                  {countryMilestones.map(m => <SelectItem key={m.id} value={m.id}>{m.icon} {m.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.milestone_id && <p className="text-destructive text-[11px] mt-1">{errors.milestone_id}</p>}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-[12.5px]">Marché</Label>
-                <Select value={form.country_id || '_none'} onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}>
+                <Label className="text-[12.5px]">Priorité</Label>
+                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v as any }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="_none">Aucun</SelectItem>
-                    {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
+                    <SelectItem value="high">Haute</SelectItem>
+                    <SelectItem value="med">Moyenne</SelectItem>
+                    <SelectItem value="low">Faible</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
