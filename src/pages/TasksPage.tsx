@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import StatusPill from '@/components/StatusPill';
-import { useTasks, useCountries } from '@/hooks/useExpansionData';
+import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,8 +16,9 @@ import { z } from 'zod';
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
-  country_id: z.string().optional(),
+  country_id: z.string().min(1, 'Le marché est requis'),
   country_label: z.string().optional(),
+  milestone_id: z.string().min(1, 'Le jalon est requis'),
   priority: z.enum(['high', 'med', 'low']),
   status: z.enum(['open', 'done', 'late', 'wip']),
   due_date: z.string().optional(),
@@ -34,6 +35,7 @@ const EMPTY_FORM: TaskForm = {
   owner_name: '',
   country_id: '',
   country_label: '',
+  milestone_id: '',
 };
 
 const CAN_WRITE_ROLES = ['admin', 'director', 'country_manager'];
