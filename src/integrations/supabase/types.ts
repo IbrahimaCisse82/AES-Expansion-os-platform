@@ -411,6 +411,7 @@ export type Database = {
           created_by: string | null
           due_date: string | null
           id: string
+          milestone_id: string | null
           owner_name: string | null
           priority: Database["public"]["Enums"]["task_priority"]
           status: Database["public"]["Enums"]["task_status"]
@@ -425,6 +426,7 @@ export type Database = {
           created_by?: string | null
           due_date?: string | null
           id?: string
+          milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
@@ -439,6 +441,7 @@ export type Database = {
           created_by?: string | null
           due_date?: string | null
           id?: string
+          milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           status?: Database["public"]["Enums"]["task_status"]
@@ -451,6 +454,13 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
         ]
