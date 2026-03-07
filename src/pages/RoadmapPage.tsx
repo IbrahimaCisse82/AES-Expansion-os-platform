@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import GanttChart from '@/components/GanttChart';
 import { z } from 'zod';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
@@ -184,6 +185,11 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Gantt Chart */}
+      <div className="mt-6">
+        <GanttChart />
       </div>
 
       {/* Create / Edit Dialog */}
