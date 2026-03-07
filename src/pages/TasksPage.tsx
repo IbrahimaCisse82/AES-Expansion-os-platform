@@ -99,7 +99,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
   const handleCountryChange = (countryId: string) => {
     const country = countries.find(c => c.id === countryId);
-    setForm(prev => ({ ...prev, country_id: countryId, country_label: country ? `${country.flag} ${country.name}` : '' }));
+    setForm(prev => ({ ...prev, country_id: countryId, country_label: country ? `${country.flag} ${country.name}` : '', milestone_id: '' }));
   };
 
   const handleSubmit = () => {
@@ -119,6 +119,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       owner_name: result.data.owner_name || null,
       country_id: result.data.country_id || null,
       country_label: result.data.country_label || null,
+      milestone_id: result.data.milestone_id || null,
     };
 
     if (editingId) {
