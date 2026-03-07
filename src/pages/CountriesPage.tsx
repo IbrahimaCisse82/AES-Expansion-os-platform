@@ -44,6 +44,8 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
   const updateCountry = useUpdateCountry();
   const deleteCountry = useDeleteCountry();
 
+  const existingIds = countries.map(c => c.id);
+  const availableCountries = COUNTRY_LIST.filter(c => !existingIds.includes(c.code));
   const canWrite = CAN_WRITE.includes(myRole ?? '');
   const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
 
