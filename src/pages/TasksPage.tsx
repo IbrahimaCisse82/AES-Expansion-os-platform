@@ -190,6 +190,10 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               <div className={`text-[13px] font-medium ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</div>
               <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap mt-0.5">
                 {task.country_label && <span>{task.country_label}</span>}
+                {(task as any).milestone_id && (() => {
+                  const ms = allMilestones.find(m => m.id === (task as any).milestone_id);
+                  return ms ? <><span>·</span><span>🎯 {ms.title}</span></> : null;
+                })()}
                 {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
               </div>
