@@ -82,10 +82,10 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
       const { id, ...updates } = result.data;
       updateCountry.mutate({ id: editingId, ...updates }, {
         onSuccess: () => { toast.success('Pays modifié'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
-      createCountry.mutate(result.data as any, {
+      createCountry.mutate(result.data, {
         onSuccess: () => { toast.success('Pays créé'); setDialogOpen(false); },
         onError: (err: any) => toast.error(err.message),
       });
