@@ -128,7 +128,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                       <textarea
                         value={editContent}
                         onChange={e => setEditContent(e.target.value)}
-                        className="w-full p-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors resize-none font-sans"
+                      className="w-full p-2 border border-border rounded-lg text-[13px] bg-background outline-none focus:border-accent transition-colors resize-none font-sans"
                         rows={2}
                       />
                       <div className="flex gap-1 mt-1">
