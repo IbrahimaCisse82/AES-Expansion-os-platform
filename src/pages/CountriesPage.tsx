@@ -109,6 +109,11 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
           <h2 className="font-display text-[23px] font-bold text-primary mb-1">Pays Cibles</h2>
           <p className="text-[12.5px] text-muted-foreground">Vue d'ensemble des marchés · {countries.length} pays ciblés</p>
         </div>
+        {canWrite && availableCountries.length > 0 && (
+          <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
+            <Plus className="w-4 h-4" /> Nouveau pays
+          </Button>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {countries.map(c => {

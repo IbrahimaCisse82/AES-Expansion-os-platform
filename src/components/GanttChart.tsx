@@ -38,13 +38,10 @@ function parseMonthIndex(dateStr: string | null): number | null {
 
 export default function GanttChart() {
   const { data: countries = [] } = useCountries();
-  const { data: milestones = [] } = useMilestones('');
-
-  // Fetch all milestones (pass undefined to get all)
-  const allMilestones = useMilestones(undefined);
+  const { data: milestones = [] } = useMilestones(null);
 
   const rows = useMemo(() => {
-    const ms = allMilestones.data ?? milestones;
+    const ms = milestones;
     return countries
       .filter(c => ms.some(m => m.country_id === c.id))
       .map(country => {
@@ -67,7 +64,7 @@ export default function GanttChart() {
           endMonth,
         };
       });
-  }, [countries, allMilestones.data, milestones]);
+  }, [countries, milestones]);
 
   if (rows.length === 0) {
     return (

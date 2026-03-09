@@ -16,6 +16,7 @@ import GanttChart from '@/components/GanttChart';
 import { z } from 'zod';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+const currentYear = new Date().getFullYear();
 function useRoadmapTypes() {
   return useQuery({
     queryKey: ['roadmap_types'],
@@ -30,7 +31,7 @@ function useRoadmapTypes() {
   });
 }
 const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
-const currentMonth = 7;
+const currentMonth = new Date().getMonth() + 1; // 1-indexed to match start_month/end_month
 
 const barSchema = z.object({
   country_id: z.string().min(1, 'Pays requis'),
@@ -128,7 +129,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="font-display text-[23px] font-bold text-primary mb-1">Feuille de Route</h2>
-          <p className="text-[12.5px] text-muted-foreground">Timeline interactive des marchés · 2025</p>
+          <p className="text-[12.5px] text-muted-foreground">Timeline interactive des marchés · {currentYear}</p>
         </div>
         {canWrite && (
           <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
