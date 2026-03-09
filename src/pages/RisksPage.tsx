@@ -113,7 +113,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
     if (!deleteId) return;
     deleteRisk.mutate(deleteId, {
       onSuccess: () => { toast.success('Risque supprimé'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
