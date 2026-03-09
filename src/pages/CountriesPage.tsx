@@ -130,13 +130,13 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
               </div>
               <div onClick={() => onSelectCountry(c.id)}>
                 <div className="text-[12.5px] font-medium mb-2">{phaseNames[c.phase] || `Phase ${c.phase}`}</div>
-                <div className="h-1 bg-ivory rounded-full overflow-hidden mb-1.5">
-                  <div className={`h-full rounded-full ${colorMap[c.color] || 'bg-sage'}`} style={{ width: `${c.pct}%` }} />
+                <div className="h-1 bg-secondary rounded-full overflow-hidden mb-1.5">
+                  <div className={`h-full rounded-full ${colorMap[c.color] || 'bg-accent'}`} style={{ width: `${c.pct}%` }} />
                 </div>
                 <div className="flex justify-between text-[11.5px] text-muted-foreground mb-3.5">
                   <span>Avancement</span><span className="font-semibold">{c.pct}%</span>
                 </div>
-                <div className="grid grid-cols-3 gap-1.5 border-t border-ivory pt-3 text-center">
+                <div className="grid grid-cols-3 gap-1.5 border-t border-border pt-3 text-center">
                   <div><div className="font-display text-sm font-bold text-primary">{c.budget}</div><div className="text-[9.5px] text-muted-foreground mt-0.5">Budget</div></div>
                   <div><div className="font-display text-sm font-bold text-primary">{c.team_size}</div><div className="text-[9.5px] text-muted-foreground mt-0.5">Équipe</div></div>
                   <div><div className={`font-display text-sm font-bold ${riskColor}`}>{c.risk_count}</div><div className="text-[9.5px] text-muted-foreground mt-0.5">Risques</div></div>
