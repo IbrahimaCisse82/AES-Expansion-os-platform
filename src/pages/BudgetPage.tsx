@@ -36,8 +36,10 @@ const budgetSchema = z.object({
 
 type BudgetForm = z.infer<typeof budgetSchema>;
 
+const currentYear = new Date().getFullYear();
+
 const EMPTY_FORM: BudgetForm = {
-  country_label: '', country_id: '', category: 'market', allocated_k: 0, spent_k: 0, color: 'sage', fiscal_year: 2025,
+  country_label: '', country_id: '', category: 'market', allocated_k: 0, spent_k: 0, color: 'sage', fiscal_year: currentYear,
 };
 
 const CAN_WRITE = ['admin', 'director', 'analyst'];
