@@ -145,7 +145,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                   )}
                   <div className="flex gap-1.5 mt-1.5">
                     {(c.tags || []).map(t => (
-                      <span key={t} className="text-[10.5px] font-medium bg-ivory text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>
+                      <span key={t} className="text-[10.5px] font-medium bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>
                     ))}
                   </div>
                 </div>
