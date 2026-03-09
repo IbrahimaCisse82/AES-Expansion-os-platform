@@ -59,7 +59,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
 
     createComment.mutate(payload, {
       onSuccess: () => { toast.success('Commentaire publié'); setContent(''); setMarketId(''); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
@@ -67,7 +67,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     if (!deleteId) return;
     deleteComment.mutate(deleteId, {
       onSuccess: () => { toast.success('Commentaire supprimé'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
