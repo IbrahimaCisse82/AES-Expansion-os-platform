@@ -84,12 +84,12 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
     if (editingId) {
       updateMilestone.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Jalon modifié'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createMilestone.mutate(payload, {
         onSuccess: () => { toast.success('Jalon créé'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
