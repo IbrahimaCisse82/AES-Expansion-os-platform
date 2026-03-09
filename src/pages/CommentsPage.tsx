@@ -154,7 +154,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           })}
 
           {user && (
-            <div className="mt-4 pt-4 border-t border-ivory">
+            <div className="mt-4 pt-4 border-t border-border">
               <textarea
                 id="comment-input"
                 value={content}
