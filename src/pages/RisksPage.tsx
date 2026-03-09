@@ -133,7 +133,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Risques Actifs</h3>
           {searchedRisks.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun risque enregistré</div>}
