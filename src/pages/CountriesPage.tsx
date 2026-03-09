@@ -85,7 +85,15 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
         onError: (err: Error) => toast.error(err.message),
       });
     } else {
-      createCountry.mutate(result.data, {
+      const newCountry = {
+        id: result.data.id,
+        name: result.data.name,
+        flag: result.data.flag,
+        region: result.data.region,
+        color: result.data.color,
+        status: result.data.status,
+      };
+      createCountry.mutate(newCountry, {
         onSuccess: () => { toast.success('Pays créé'); setDialogOpen(false); },
         onError: (err: Error) => toast.error(err.message),
       });
