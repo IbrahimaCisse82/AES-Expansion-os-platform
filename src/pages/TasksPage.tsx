@@ -326,7 +326,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               </div>
               <div>
                 <Label className="text-[12.5px]">Statut</Label>
-                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as any }))}>
+                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as TaskForm['status'] }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="open">À faire</SelectItem>

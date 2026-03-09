@@ -67,7 +67,7 @@ export default function TeamPage() {
       { userId, newRole },
       {
         onSuccess: () => toast.success('Rôle mis à jour'),
-        onError: (err: any) => toast.error(err.message || 'Erreur lors de la mise à jour'),
+        onError: (err: Error) => toast.error(err.message || 'Erreur lors de la mise à jour'),
       }
     );
   };

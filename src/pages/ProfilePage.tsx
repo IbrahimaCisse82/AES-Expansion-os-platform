@@ -81,8 +81,8 @@ export default function ProfilePage() {
       toast.success('Mot de passe modifié');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
     } finally {
       setChangingPw(false);
     }
