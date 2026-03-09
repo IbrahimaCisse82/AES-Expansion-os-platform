@@ -101,7 +101,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
             const canEdit = c.author_id === user?.id || isAdmin;
             const isEditing = editingId === c.id;
             return (
-              <div key={c.id} className="flex gap-3 py-3.5 border-b border-ivory last:border-b-0 group">
+              <div key={c.id} className="flex gap-3 py-3.5 border-b border-border last:border-b-0 group">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 mt-0.5" style={{ background: c.author_color }}>
                   {c.author_initials}
                 </div>
