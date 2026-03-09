@@ -47,20 +47,20 @@ export default function SettingsPage() {
 
   const createType = useMutation({
     mutationFn: async (payload: { label: string; color: string; sort_order: number }) => {
-      const { error } = await supabase.from('roadmap_types').insert(payload as any);
+      const { error } = await supabase.from('roadmap_types').insert(payload);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['roadmap_types'] }); toast.success('Type créé'); setDialogOpen(false); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const updateType = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; label: string; color: string }) => {
-      const { error } = await supabase.from('roadmap_types').update(updates as any).eq('id', id);
+      const { error } = await supabase.from('roadmap_types').update(updates).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['roadmap_types'] }); toast.success('Type modifié'); setDialogOpen(false); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const deleteType = useMutation({
@@ -69,7 +69,7 @@ export default function SettingsPage() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['roadmap_types'] }); toast.success('Type supprimé'); setDeleteId(null); },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: Error) => toast.error(err.message),
   });
 
   const openCreate = () => { setLabel(''); setColor('sage'); setEditingId(null); setDialogOpen(true); };
