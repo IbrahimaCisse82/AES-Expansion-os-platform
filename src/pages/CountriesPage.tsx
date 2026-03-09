@@ -47,7 +47,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
   const existingIds = countries.map(c => c.id);
   const availableCountries = COUNTRY_LIST.filter(c => !existingIds.includes(c.code));
   const canWrite = CAN_WRITE.includes(myRole ?? '');
-  const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
+  const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
