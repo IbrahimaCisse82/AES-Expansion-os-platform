@@ -64,7 +64,7 @@ export default function GanttChart() {
           endMonth,
         };
       });
-  }, [countries, allMilestones.data, milestones]);
+  }, [countries, milestones]);
 
   if (rows.length === 0) {
     return (
