@@ -199,7 +199,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Niveau</Label>
-                <Select value={form.level} onValueChange={v => setForm(p => ({ ...p, level: v as any }))}>
+                <Select value={form.level} onValueChange={v => setForm(p => ({ ...p, level: v as 'high' | 'medium' | 'low' }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="high">Élevé</SelectItem>

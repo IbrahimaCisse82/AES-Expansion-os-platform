@@ -96,7 +96,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
     if (!deleteId) return;
     deleteCountry.mutate(deleteId, {
       onSuccess: () => { toast.success('Pays supprimé'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
