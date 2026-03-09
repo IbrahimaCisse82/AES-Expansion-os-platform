@@ -123,7 +123,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     if (!deleteId) return;
     deleteEntry.mutate(deleteId, {
       onSuccess: () => { toast.success('Entrée supprimée'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 

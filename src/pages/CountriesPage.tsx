@@ -219,7 +219,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
               </div>
               <div>
                 <Label className="text-[12.5px]">Statut</Label>
-                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as any }))}>
+                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as CountryForm['status'] }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="planning">Planning</SelectItem>

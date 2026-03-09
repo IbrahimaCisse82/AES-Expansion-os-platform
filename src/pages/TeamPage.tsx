@@ -54,8 +54,8 @@ export default function TeamPage() {
       setInviteRole('observer');
       setShowInvite(false);
       refetch();
-    } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de l\'invitation');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur lors de l\'invitation';
     } finally {
       setInviting(false);
     }
