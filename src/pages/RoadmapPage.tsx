@@ -142,7 +142,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
         <div className="grid grid-cols-[165px_repeat(12,1fr)] mb-1.5 min-w-[900px]">
           <div className="text-[10px] font-semibold text-muted-foreground">Marché</div>
           {months.map((m, i) => (
-            <div key={m} className={`text-[10px] font-semibold text-center py-1 ${i + 1 === currentMonth ? 'text-terracotta' : 'text-muted-foreground'}`}>{m}</div>
+            <div key={m} className={`text-[10px] font-semibold text-center py-1 ${i + 1 === currentMonth ? 'text-destructive' : 'text-muted-foreground'}`}>{m}</div>
           ))}
         </div>
         {rows.map((row, ri) => (
