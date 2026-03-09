@@ -109,12 +109,12 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     if (editingId) {
       updateEntry.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Entrée modifiée'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createEntry.mutate(payload, {
         onSuccess: () => { toast.success('Entrée créée'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
