@@ -108,7 +108,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
     if (!deleteId) return;
     deleteBar.mutate(deleteId, {
       onSuccess: () => { toast.success('Barre supprimée'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 

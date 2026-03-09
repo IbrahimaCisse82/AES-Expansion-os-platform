@@ -64,7 +64,8 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
   useEffect(() => {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
-  }, [addSignal]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addSignal, canWrite]);
 
   const searched = searchQuery
     ? tasks.filter(t =>

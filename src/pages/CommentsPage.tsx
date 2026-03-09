@@ -82,7 +82,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     if (!trimmed) { toast.error('Le commentaire ne peut pas être vide'); return; }
     updateComment.mutate({ id: editingId, content: trimmed }, {
       onSuccess: () => { toast.success('Commentaire modifié'); setEditingId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 

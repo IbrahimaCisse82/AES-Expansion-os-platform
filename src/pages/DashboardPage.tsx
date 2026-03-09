@@ -49,7 +49,7 @@ export default function DashboardPage() {
                     <div className="text-[13px] font-medium">{c.name}</div>
                     <div className="text-[11px] text-muted-foreground">{c.region}</div>
                   </div>
-                  <StatusPill status={c.status as any} />
+                  <StatusPill status={c.status} />
                   <div className="text-right hidden sm:block">
                     <div className="h-1 w-[90px] bg-muted rounded-full overflow-hidden mb-1">
                       <div className={`h-full rounded-full ${colorMap[c.color] || 'bg-accent'}`} style={{ width: `${c.pct}%` }} />
