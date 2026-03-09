@@ -36,8 +36,10 @@ const budgetSchema = z.object({
 
 type BudgetForm = z.infer<typeof budgetSchema>;
 
+const currentYear = new Date().getFullYear();
+
 const EMPTY_FORM: BudgetForm = {
-  country_label: '', country_id: '', category: 'market', allocated_k: 0, spent_k: 0, color: 'sage', fiscal_year: 2025,
+  country_label: '', country_id: '', category: 'market', allocated_k: 0, spent_k: 0, color: 'sage', fiscal_year: currentYear,
 };
 
 const CAN_WRITE = ['admin', 'director', 'analyst'];
@@ -156,8 +158,8 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     <div className="animate-page-enter">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-display text-[23px] font-bold text-primary mb-1">Budget & Finances</h2>
-          <p className="text-[12.5px] text-muted-foreground">Allocation et consommation · Exercice 2025</p>
+        <h2 className="font-display text-[23px] font-bold text-primary mb-1">Budget & Finances</h2>
+          <p className="text-[12.5px] text-muted-foreground">Allocation et consommation · Exercice {currentYear}</p>
         </div>
         {canWrite && (
           <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">

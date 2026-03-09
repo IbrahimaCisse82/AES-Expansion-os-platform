@@ -101,7 +101,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
             const canEdit = c.author_id === user?.id || isAdmin;
             const isEditing = editingId === c.id;
             return (
-              <div key={c.id} className="flex gap-3 py-3.5 border-b border-ivory last:border-b-0 group">
+              <div key={c.id} className="flex gap-3 py-3.5 border-b border-border last:border-b-0 group">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 mt-0.5" style={{ background: c.author_color }}>
                   {c.author_initials}
                 </div>
@@ -145,7 +145,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                   )}
                   <div className="flex gap-1.5 mt-1.5">
                     {(c.tags || []).map(t => (
-                      <span key={t} className="text-[10.5px] font-medium bg-ivory text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>
+                      <span key={t} className="text-[10.5px] font-medium bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>
                     ))}
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           })}
 
           {user && (
-            <div className="mt-4 pt-4 border-t border-ivory">
+            <div className="mt-4 pt-4 border-t border-border">
               <textarea
                 id="comment-input"
                 value={content}
@@ -176,7 +176,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 <button
                   onClick={handlePublish}
                   disabled={createComment.isPending || !content.trim()}
-                  className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-navy-mid transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50"
                 >
                   Publier →
                 </button>
@@ -190,7 +190,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           <div className="space-y-1.5">
             <button
               onClick={() => setFilterMarket('all')}
-              className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-ivory'}`}
+              className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-secondary'}`}
             >
               Tous les marchés
             </button>
@@ -198,7 +198,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
               <button
                 key={c.id}
                 onClick={() => setFilterMarket(c.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === c.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-ivory'}`}
+                className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === c.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-secondary'}`}
               >
                 {c.flag} {c.name}
               </button>

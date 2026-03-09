@@ -30,7 +30,7 @@ function useRoadmapTypes() {
     },
   });
 }
-const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
+const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
 const currentMonth = new Date().getMonth() + 1; // 1-indexed to match start_month/end_month
 
 const barSchema = z.object({
@@ -142,7 +142,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
         <div className="grid grid-cols-[165px_repeat(12,1fr)] mb-1.5 min-w-[900px]">
           <div className="text-[10px] font-semibold text-muted-foreground">Marché</div>
           {months.map((m, i) => (
-            <div key={m} className={`text-[10px] font-semibold text-center py-1 ${i + 1 === currentMonth ? 'text-terracotta' : 'text-muted-foreground'}`}>{m}</div>
+            <div key={m} className={`text-[10px] font-semibold text-center py-1 ${i + 1 === currentMonth ? 'text-destructive' : 'text-muted-foreground'}`}>{m}</div>
           ))}
         </div>
         {rows.map((row, ri) => (
@@ -155,11 +155,11 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
               const bar = row.bars.find(b => b.start_month === monthIdx);
               const isToday = monthIdx === currentMonth;
               return (
-                <div key={ci} className="h-9 border-l border-ivory relative">
-                  {isToday && <div className="absolute w-0.5 bg-terracotta top-0 bottom-0 z-10 left-1/2 -translate-x-1/2" />}
+              <div key={ci} className="h-9 border-l border-border relative">
+                  {isToday && <div className="absolute w-0.5 bg-destructive top-0 bottom-0 z-10 left-1/2 -translate-x-1/2" />}
                   {bar && (
                     <div
-                      className={`absolute h-6 top-1.5 ${colorMap[bar.color] || 'bg-sage'} rounded-md flex items-center px-2 text-[10px] font-medium text-white whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:brightness-110 transition-all z-[1] group`}
+                      className={`absolute h-6 top-1.5 ${colorMap[bar.color] || 'bg-accent'} rounded-md flex items-center px-2 text-[10px] font-medium text-white whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:brightness-110 transition-all z-[1] group`}
                       style={{ left: '2px', width: `calc(${bar.end_month - bar.start_month} * 100% - 4px)` }}
                       onClick={() => canWrite && openEdit(bar)}
                     >
@@ -179,10 +179,10 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
             })}
           </div>
         ))}
-        <div className="flex gap-4 mt-4 pt-3 border-t border-ivory">
+        <div className="flex gap-4 mt-4 pt-3 border-t border-border">
           {roadmapTypes.map(l => (
             <div key={l.id} className="flex items-center gap-1.5 text-[12px]">
-              <div className={`w-2.5 h-2.5 rounded-full ${colorMap[l.color] || 'bg-sage'}`} /><span className="text-muted-foreground">{l.label}</span>
+              <div className={`w-2.5 h-2.5 rounded-full ${colorMap[l.color] || 'bg-accent'}`} /><span className="text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>

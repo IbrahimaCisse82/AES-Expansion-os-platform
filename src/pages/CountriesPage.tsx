@@ -47,7 +47,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
   const existingIds = countries.map(c => c.id);
   const availableCountries = COUNTRY_LIST.filter(c => !existingIds.includes(c.code));
   const canWrite = CAN_WRITE.includes(myRole ?? '');
-  const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
+  const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -82,12 +82,20 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
       const { id, ...updates } = result.data;
       updateCountry.mutate({ id: editingId, ...updates }, {
         onSuccess: () => { toast.success('Pays modifié'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
-      createCountry.mutate(result.data as any, {
+      const newCountry = {
+        id: result.data.id,
+        name: result.data.name,
+        flag: result.data.flag,
+        region: result.data.region,
+        color: result.data.color,
+        status: result.data.status,
+      };
+      createCountry.mutate(newCountry, {
         onSuccess: () => { toast.success('Pays créé'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
@@ -96,7 +104,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
     if (!deleteId) return;
     deleteCountry.mutate(deleteId, {
       onSuccess: () => { toast.success('Pays supprimé'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
@@ -130,13 +138,13 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
               </div>
               <div onClick={() => onSelectCountry(c.id)}>
                 <div className="text-[12.5px] font-medium mb-2">{phaseNames[c.phase] || `Phase ${c.phase}`}</div>
-                <div className="h-1 bg-ivory rounded-full overflow-hidden mb-1.5">
-                  <div className={`h-full rounded-full ${colorMap[c.color] || 'bg-sage'}`} style={{ width: `${c.pct}%` }} />
+                <div className="h-1 bg-secondary rounded-full overflow-hidden mb-1.5">
+                  <div className={`h-full rounded-full ${colorMap[c.color] || 'bg-accent'}`} style={{ width: `${c.pct}%` }} />
                 </div>
                 <div className="flex justify-between text-[11.5px] text-muted-foreground mb-3.5">
                   <span>Avancement</span><span className="font-semibold">{c.pct}%</span>
                 </div>
-                <div className="grid grid-cols-3 gap-1.5 border-t border-ivory pt-3 text-center">
+                <div className="grid grid-cols-3 gap-1.5 border-t border-border pt-3 text-center">
                   <div><div className="font-display text-sm font-bold text-primary">{c.budget}</div><div className="text-[9.5px] text-muted-foreground mt-0.5">Budget</div></div>
                   <div><div className="font-display text-sm font-bold text-primary">{c.team_size}</div><div className="text-[9.5px] text-muted-foreground mt-0.5">Équipe</div></div>
                   <div><div className={`font-display text-sm font-bold ${riskColor}`}>{c.risk_count}</div><div className="text-[9.5px] text-muted-foreground mt-0.5">Risques</div></div>
@@ -152,7 +160,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
                   </button>
                 </div>
               )}
-              <div onClick={() => onSelectCountry(c.id)} className="text-center mt-3 text-[12px] text-sage font-medium opacity-0 group-hover:opacity-100 transition-opacity">Voir la fiche détaillée →</div>
+              <div onClick={() => onSelectCountry(c.id)} className="text-center mt-3 text-[12px] text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity">Voir la fiche détaillée →</div>
             </div>
           );
         })}

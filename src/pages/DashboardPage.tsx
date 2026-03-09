@@ -18,7 +18,7 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-page-enter">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <KpiCard label="Marchés actifs" value={String(countries.length)} meta="marchés ciblés" accentColor="sage" />
         <KpiCard label="Progression" value={`${avgPct}%`} meta="avancement moyen" accentColor="sky" />
         <KpiCard label="Tâches en retard" value={String(lateTasks)} meta="nécessitent attention" accentColor="terracotta" />
