@@ -160,7 +160,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 maxLength={1000}
-                className="w-full p-3 border-[1.5px] border-border rounded-lg text-[13.5px] bg-cream outline-none focus:border-sage focus:bg-card transition-colors resize-none font-sans"
+                className="w-full p-3 border-[1.5px] border-border rounded-lg text-[13.5px] bg-background outline-none focus:border-accent focus:bg-card transition-colors resize-none font-sans"
                 rows={3}
                 placeholder="Ajouter un commentaire…"
               />
