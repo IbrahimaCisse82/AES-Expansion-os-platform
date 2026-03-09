@@ -155,8 +155,8 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
               const bar = row.bars.find(b => b.start_month === monthIdx);
               const isToday = monthIdx === currentMonth;
               return (
-                <div key={ci} className="h-9 border-l border-ivory relative">
-                  {isToday && <div className="absolute w-0.5 bg-terracotta top-0 bottom-0 z-10 left-1/2 -translate-x-1/2" />}
+              <div key={ci} className="h-9 border-l border-border relative">
+                  {isToday && <div className="absolute w-0.5 bg-destructive top-0 bottom-0 z-10 left-1/2 -translate-x-1/2" />}
                   {bar && (
                     <div
                       className={`absolute h-6 top-1.5 ${colorMap[bar.color] || 'bg-sage'} rounded-md flex items-center px-2 text-[10px] font-medium text-white whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:brightness-110 transition-all z-[1] group`}
