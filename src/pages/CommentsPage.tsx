@@ -132,7 +132,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                         rows={2}
                       />
                       <div className="flex gap-1 mt-1">
-                        <button onClick={handleUpdate} disabled={updateComment.isPending} className="p-1 rounded hover:bg-sage-light transition-colors">
+                        <button onClick={handleUpdate} disabled={updateComment.isPending} className="p-1 rounded hover:bg-accent/10 transition-colors">
                           <Check className="w-4 h-4 text-sage" />
                         </button>
                         <button onClick={() => setEditingId(null)} className="p-1 rounded hover:bg-muted transition-colors">
