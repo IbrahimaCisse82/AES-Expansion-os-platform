@@ -138,12 +138,12 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
     if (editingId) {
       updateTask.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Tâche modifiée'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createTask.mutate({ ...payload, created_by: user?.id ?? null }, {
         onSuccess: () => { toast.success('Tâche créée'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
