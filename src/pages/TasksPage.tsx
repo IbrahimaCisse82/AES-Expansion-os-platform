@@ -315,7 +315,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Priorité</Label>
-                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v as any }))}>
+                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v as TaskForm['priority'] }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="high">Haute</SelectItem>
