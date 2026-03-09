@@ -99,12 +99,12 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
     if (editingId) {
       updateRisk.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Risque modifié'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createRisk.mutate(payload, {
         onSuccess: () => { toast.success('Risque créé'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
