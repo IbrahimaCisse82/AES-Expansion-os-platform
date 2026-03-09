@@ -94,7 +94,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
         <h2 className="font-display text-[23px] font-bold text-primary mb-1">Commentaires & Discussions</h2>
         <p className="text-[12.5px] text-muted-foreground">Échanges de l'équipe sur les marchés et tâches</p>
       </div>
-      <div className="grid grid-cols-[2fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
           {filtered.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun commentaire</div>}
           {filtered.map(c => {
