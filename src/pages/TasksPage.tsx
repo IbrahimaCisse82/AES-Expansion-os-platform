@@ -45,8 +45,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const { data: myRole } = useCurrentUserRole();
   const { data: tasks = [], isLoading } = useTasks();
   const { data: countries = [] } = useCountries();
-  const { data: allMilestones = [] } = useMilestones();
-  const countryMilestones = allMilestones.filter(m => m.country_id === form.country_id);
+  const { data: allMilestones = [] } = useMilestones(null);
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -60,11 +59,20 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const [form, setForm] = useState<TaskForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Computed AFTER form state is declared
+  const countryMilestones = allMilestones.filter(m => m.country_id === form.country_id);
+
   useEffect(() => {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
   }, [addSignal]);
 
-  const searched = searchQuery ? tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) || t.owner_name?.toLowerCase().includes(searchQuery.toLowerCase())) : tasks;
+  const searched = searchQuery
+    ? tasks.filter(t =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.owner_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : tasks;
   const filtered = filter === 'all' ? searched : searched.filter(t => t.status === filter);
   const filters = [
     { key: 'all', label: `Toutes (${tasks.length})` },
@@ -90,7 +98,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       owner_name: task.owner_name ?? '',
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
-      milestone_id: (task as any).milestone_id ?? '',
+      milestone_id: task.milestone_id ?? '',
     });
     setEditingId(task.id);
     setErrors({});
@@ -99,7 +107,12 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
   const handleCountryChange = (countryId: string) => {
     const country = countries.find(c => c.id === countryId);
-    setForm(prev => ({ ...prev, country_id: countryId, country_label: country ? `${country.flag} ${country.name}` : '', milestone_id: '' }));
+    setForm(prev => ({
+      ...prev,
+      country_id: countryId,
+      country_label: country ? `${country.flag} ${country.name}` : '',
+      milestone_id: '',
+    }));
   };
 
   const handleSubmit = () => {
@@ -165,10 +178,16 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
         )}
       </div>
 
-      <div className="flex gap-1 bg-secondary p-1 rounded-lg mb-5 w-fit">
+      {/* Filters */}
+      <div className="flex gap-1 bg-secondary p-1 rounded-lg mb-5 w-fit overflow-x-auto max-w-full">
         {filters.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)}
-            className={`px-4 py-1.5 rounded-md text-[12.5px] font-medium transition-all ${filter === f.key ? 'bg-card text-primary shadow-card' : 'text-muted-foreground hover:text-foreground'}`}>
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`px-4 py-1.5 rounded-md text-[12.5px] font-medium transition-all whitespace-nowrap ${
+              filter === f.key ? 'bg-card text-primary shadow-card' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
             {f.label}
           </button>
         ))}
@@ -184,24 +203,36 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               onClick={() => toggleDone(task)}
               className={`w-[19px] h-[19px] border-2 rounded-[5px] flex-shrink-0 mt-0.5 transition-colors flex items-center justify-center ${canWrite ? 'cursor-pointer' : ''} ${task.status === 'done' ? 'bg-accent border-accent' : 'border-border hover:border-accent'}`}
             >
-              {task.status === 'done' && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent-foreground" strokeWidth="3"><polyline points="20,6 9,17 4,12" /></svg>}
+              {task.status === 'done' && (
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent-foreground" strokeWidth="3">
+                  <polyline points="20,6 9,17 4,12" />
+                </svg>
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className={`text-[13px] font-medium ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{task.title}</div>
+              <div className={`text-[13px] font-medium ${task.status === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                {task.title}
+              </div>
               <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap mt-0.5">
                 {task.country_label && <span>{task.country_label}</span>}
-                {(task as any).milestone_id && (() => {
-                  const ms = allMilestones.find(m => m.id === (task as any).milestone_id);
+                {task.milestone_id && (() => {
+                  const ms = allMilestones.find(m => m.id === task.milestone_id);
                   return ms ? <><span>·</span><span>🎯 {ms.title}</span></> : null;
                 })()}
                 {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {task.status === 'late' && <StatusPill status="late" />}
               {task.status === 'done' && <StatusPill status="done" />}
-              <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-destructive/10 text-destructive' : task.priority === 'med' ? 'bg-[hsl(var(--gold))]/10 text-[hsl(var(--gold))]' : 'bg-accent/10 text-accent'}`}>
+              <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${
+                task.priority === 'high'
+                  ? 'bg-destructive/10 text-destructive'
+                  : task.priority === 'med'
+                  ? 'bg-gold/10 text-gold'
+                  : 'bg-accent/10 text-accent'
+              }`}>
                 {task.priority === 'high' ? 'Haute' : task.priority === 'med' ? 'Moyenne' : 'Faible'}
               </span>
               {canWrite && (
@@ -223,36 +254,63 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg">{editingId ? 'Modifier la tâche' : 'Nouvelle tâche'}</DialogTitle>
+            <DialogTitle className="font-display text-lg">
+              {editingId ? 'Modifier la tâche' : 'Nouvelle tâche'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
+            {/* Title */}
             <div>
               <Label className="text-[12.5px]">Titre *</Label>
-              <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} maxLength={200} className="mt-1" />
+              <Input
+                value={form.title}
+                onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                maxLength={200}
+                className="mt-1"
+              />
               {errors.title && <p className="text-destructive text-[11px] mt-1">{errors.title}</p>}
             </div>
+
+            {/* Market */}
             <div>
               <Label className="text-[12.5px]">Marché *</Label>
-              <Select value={form.country_id || '_none'} onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}>
+              <Select
+                value={form.country_id || '_none'}
+                onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}
+              >
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">Sélectionner un marché</SelectItem>
-                  {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
+                  {countries.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.country_id && <p className="text-destructive text-[11px] mt-1">{errors.country_id}</p>}
             </div>
+
+            {/* Milestone */}
             <div>
               <Label className="text-[12.5px]">Jalon *</Label>
-              <Select value={form.milestone_id || '_none'} onValueChange={v => setForm(p => ({ ...p, milestone_id: v === '_none' ? '' : v }))} disabled={!form.country_id}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder={!form.country_id ? 'Choisir un marché d\'abord' : 'Sélectionner un jalon'} /></SelectTrigger>
+              <Select
+                value={form.milestone_id || '_none'}
+                onValueChange={v => setForm(p => ({ ...p, milestone_id: v === '_none' ? '' : v }))}
+                disabled={!form.country_id}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder={!form.country_id ? "Choisir un marché d'abord" : 'Sélectionner un jalon'} />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">Sélectionner un jalon</SelectItem>
-                  {countryMilestones.map(m => <SelectItem key={m.id} value={m.id}>{m.icon} {m.title}</SelectItem>)}
+                  {countryMilestones.map(m => (
+                    <SelectItem key={m.id} value={m.id}>{m.icon} {m.title}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.milestone_id && <p className="text-destructive text-[11px] mt-1">{errors.milestone_id}</p>}
             </div>
+
+            {/* Priority + Status */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Priorité</Label>
@@ -265,19 +323,6 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-[12.5px]">Priorité</Label>
-                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v as any }))}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">Haute</SelectItem>
-                    <SelectItem value="med">Moyenne</SelectItem>
-                    <SelectItem value="low">Faible</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Statut</Label>
                 <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as any }))}>
@@ -290,15 +335,31 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Due date + Owner */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-[12.5px]">Échéance</Label>
-                <Input type="date" value={form.due_date} onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))} className="mt-1" />
+                <Input
+                  type="date"
+                  value={form.due_date}
+                  onChange={e => setForm(p => ({ ...p, due_date: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-[12.5px]">Responsable</Label>
+                <Input
+                  value={form.owner_name}
+                  onChange={e => setForm(p => ({ ...p, owner_name: e.target.value }))}
+                  maxLength={100}
+                  placeholder="Nom du responsable"
+                  className="mt-1"
+                />
               </div>
             </div>
-            <div>
-              <Label className="text-[12.5px]">Responsable</Label>
-              <Input value={form.owner_name} onChange={e => setForm(p => ({ ...p, owner_name: e.target.value }))} maxLength={100} placeholder="Nom du responsable" className="mt-1" />
-            </div>
+
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Annuler</Button>
               <Button size="sm" onClick={handleSubmit} disabled={createTask.isPending || updateTask.isPending}>
@@ -318,7 +379,10 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
