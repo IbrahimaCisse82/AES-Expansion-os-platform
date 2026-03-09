@@ -172,7 +172,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
         <KpiCard label="Restant" value={`${(remaining / 1000).toFixed(1)}M€`} meta="disponible" accentColor="sky" trend={{ value: totalAllocated > 0 ? `${Math.round(remaining / totalAllocated * 100)}%` : '0%', up: true }} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Par Marché</h3>
           {byMarket.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucune entrée</div>}
