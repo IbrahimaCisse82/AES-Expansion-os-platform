@@ -56,6 +56,7 @@ export default function TeamPage() {
       refetch();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur lors de l\'invitation';
+      toast.error(message);
     } finally {
       setInviting(false);
     }
