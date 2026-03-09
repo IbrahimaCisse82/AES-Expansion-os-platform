@@ -94,7 +94,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
         <h2 className="font-display text-[23px] font-bold text-primary mb-1">Commentaires & Discussions</h2>
         <p className="text-[12.5px] text-muted-foreground">Échanges de l'équipe sur les marchés et tâches</p>
       </div>
-      <div className="grid grid-cols-[2fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
           {filtered.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun commentaire</div>}
           {filtered.map(c => {
@@ -128,12 +128,12 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                       <textarea
                         value={editContent}
                         onChange={e => setEditContent(e.target.value)}
-                        className="w-full p-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors resize-none font-sans"
+                      className="w-full p-2 border border-border rounded-lg text-[13px] bg-background outline-none focus:border-accent transition-colors resize-none font-sans"
                         rows={2}
                       />
                       <div className="flex gap-1 mt-1">
-                        <button onClick={handleUpdate} disabled={updateComment.isPending} className="p-1 rounded hover:bg-sage-light transition-colors">
-                          <Check className="w-4 h-4 text-sage" />
+                        <button onClick={handleUpdate} disabled={updateComment.isPending} className="p-1 rounded hover:bg-accent/10 transition-colors">
+                          <Check className="w-4 h-4 text-accent" />
                         </button>
                         <button onClick={() => setEditingId(null)} className="p-1 rounded hover:bg-muted transition-colors">
                           <X className="w-4 h-4 text-muted-foreground" />
@@ -160,7 +160,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 maxLength={1000}
-                className="w-full p-3 border-[1.5px] border-border rounded-lg text-[13.5px] bg-cream outline-none focus:border-sage focus:bg-card transition-colors resize-none font-sans"
+                className="w-full p-3 border-[1.5px] border-border rounded-lg text-[13.5px] bg-background outline-none focus:border-accent focus:bg-card transition-colors resize-none font-sans"
                 rows={3}
                 placeholder="Ajouter un commentaire…"
               />

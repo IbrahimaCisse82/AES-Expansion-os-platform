@@ -102,14 +102,14 @@ export default function TeamPage() {
               value={inviteEmail}
               onChange={e => setInviteEmail(e.target.value)}
               placeholder="Email *"
-              className="px-3 py-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors"
+              className="px-3 py-2 border border-border rounded-lg text-[13px] bg-background outline-none focus:border-accent transition-colors"
             />
             <input
               type="text"
               value={inviteName}
               onChange={e => setInviteName(e.target.value)}
               placeholder="Nom complet"
-              className="px-3 py-2 border border-border rounded-lg text-[13px] bg-cream outline-none focus:border-sage transition-colors"
+              className="px-3 py-2 border border-border rounded-lg text-[13px] bg-background outline-none focus:border-accent transition-colors"
             />
             <Select value={inviteRole} onValueChange={setInviteRole}>
               <SelectTrigger className="h-[38px] text-[13px]">
