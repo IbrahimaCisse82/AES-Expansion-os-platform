@@ -134,7 +134,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
                   <div className="font-display text-[17px] font-bold text-primary">{c.name}</div>
                   <div className="text-[11.5px] text-muted-foreground">{c.region}</div>
                 </div>
-                <StatusPill status={c.status as any} />
+                <StatusPill status={c.status} />
               </div>
               <div onClick={() => onSelectCountry(c.id)}>
                 <div className="text-[12.5px] font-medium mb-2">{phaseNames[c.phase] || `Phase ${c.phase}`}</div>
@@ -219,7 +219,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
               </div>
               <div>
                 <Label className="text-[12.5px]">Statut</Label>
-                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as any }))}>
+                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v as CountryForm['status'] }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="planning">Planning</SelectItem>

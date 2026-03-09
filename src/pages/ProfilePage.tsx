@@ -58,8 +58,8 @@ export default function ProfilePage() {
       if (error) throw error;
       toast.success('Profil mis à jour');
       qc.invalidateQueries({ queryKey: ['my-profile'] });
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
     } finally {
       setSaving(false);
     }
@@ -81,8 +81,8 @@ export default function ProfilePage() {
       toast.success('Mot de passe modifié');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
     } finally {
       setChangingPw(false);
     }

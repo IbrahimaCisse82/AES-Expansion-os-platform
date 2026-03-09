@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from './useAuth';
 
 export function useCurrentUserRole() {
@@ -53,7 +54,7 @@ export function useUpdateUserRole() {
     mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
       const { error } = await supabase
         .from('user_roles')
-        .update({ role: newRole as any })
+        .update({ role: newRole as Database['public']['Enums']['app_role'] })
         .eq('user_id', userId);
       if (error) throw error;
     },

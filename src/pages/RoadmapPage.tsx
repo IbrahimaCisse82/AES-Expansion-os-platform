@@ -94,12 +94,12 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
     if (editingId) {
       updateBar.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Barre modifiée'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createBar.mutate(payload, {
         onSuccess: () => { toast.success('Barre créée'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
@@ -108,7 +108,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
     if (!deleteId) return;
     deleteBar.mutate(deleteId, {
       onSuccess: () => { toast.success('Barre supprimée'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 

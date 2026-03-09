@@ -84,12 +84,12 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
     if (editingId) {
       updateMilestone.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Jalon modifié'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createMilestone.mutate(payload, {
         onSuccess: () => { toast.success('Jalon créé'); setDialogOpen(false); },
-        onError: (err: any) => toast.error(err.message),
+        onError: (err: Error) => toast.error(err.message),
       });
     }
   };
@@ -98,7 +98,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
     if (!deleteId) return;
     deleteMilestone.mutate({ id: deleteId, countryId }, {
       onSuccess: () => { toast.success('Jalon supprimé'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
@@ -113,7 +113,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
           <h2 className="font-display text-[26px] font-bold text-primary">{country.name}</h2>
           <p className="text-[13px] text-muted-foreground">{country.region} · {phaseNames[country.phase]}</p>
         </div>
-        <StatusPill status={country.status as any} />
+        <StatusPill status={country.status} />
       </div>
 
       <div className="flex items-center gap-0 mb-6">
