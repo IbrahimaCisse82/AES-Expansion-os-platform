@@ -16,6 +16,7 @@ import GanttChart from '@/components/GanttChart';
 import { z } from 'zod';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+const currentYear = new Date().getFullYear();
 function useRoadmapTypes() {
   return useQuery({
     queryKey: ['roadmap_types'],
