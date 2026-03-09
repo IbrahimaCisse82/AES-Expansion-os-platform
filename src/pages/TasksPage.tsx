@@ -152,7 +152,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
     if (!deleteId) return;
     deleteTask.mutate(deleteId, {
       onSuccess: () => { toast.success('Tâche supprimée'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
