@@ -30,7 +30,7 @@ function useRoadmapTypes() {
     },
   });
 }
-const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
+const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
 const currentMonth = new Date().getMonth() + 1; // 1-indexed to match start_month/end_month
 
 const barSchema = z.object({
