@@ -134,7 +134,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
                   <div className="font-display text-[17px] font-bold text-primary">{c.name}</div>
                   <div className="text-[11.5px] text-muted-foreground">{c.region}</div>
                 </div>
-                <StatusPill status={c.status as any} />
+                <StatusPill status={c.status} />
               </div>
               <div onClick={() => onSelectCountry(c.id)}>
                 <div className="text-[12.5px] font-medium mb-2">{phaseNames[c.phase] || `Phase ${c.phase}`}</div>
