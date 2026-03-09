@@ -190,7 +190,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           <div className="space-y-1.5">
             <button
               onClick={() => setFilterMarket('all')}
-              className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-ivory'}`}
+              className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-secondary'}`}
             >
               Tous les marchés
             </button>
@@ -198,7 +198,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
               <button
                 key={c.id}
                 onClick={() => setFilterMarket(c.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === c.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-ivory'}`}
+                className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === c.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-secondary'}`}
               >
                 {c.flag} {c.name}
               </button>

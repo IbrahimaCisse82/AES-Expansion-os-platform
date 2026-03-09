@@ -152,7 +152,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
                   </button>
                 </div>
               )}
-              <div onClick={() => onSelectCountry(c.id)} className="text-center mt-3 text-[12px] text-sage font-medium opacity-0 group-hover:opacity-100 transition-opacity">Voir la fiche détaillée →</div>
+              <div onClick={() => onSelectCountry(c.id)} className="text-center mt-3 text-[12px] text-accent font-medium opacity-0 group-hover:opacity-100 transition-opacity">Voir la fiche détaillée →</div>
             </div>
           );
         })}

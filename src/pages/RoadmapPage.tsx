@@ -179,10 +179,10 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
             })}
           </div>
         ))}
-        <div className="flex gap-4 mt-4 pt-3 border-t border-ivory">
+        <div className="flex gap-4 mt-4 pt-3 border-t border-border">
           {roadmapTypes.map(l => (
             <div key={l.id} className="flex items-center gap-1.5 text-[12px]">
-              <div className={`w-2.5 h-2.5 rounded-full ${colorMap[l.color] || 'bg-sage'}`} /><span className="text-muted-foreground">{l.label}</span>
+              <div className={`w-2.5 h-2.5 rounded-full ${colorMap[l.color] || 'bg-accent'}`} /><span className="text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>
