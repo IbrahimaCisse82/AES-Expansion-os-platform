@@ -31,7 +31,7 @@ function useRoadmapTypes() {
   });
 }
 const colorMap: Record<string, string> = { sage: 'bg-sage', sky: 'bg-sky', gold: 'bg-gold', terracotta: 'bg-terracotta', plum: 'bg-plum' };
-const currentMonth = 7;
+const currentMonth = new Date().getMonth() + 1; // 1-indexed to match start_month/end_month
 
 const barSchema = z.object({
   country_id: z.string().min(1, 'Pays requis'),
