@@ -176,7 +176,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 <button
                   onClick={handlePublish}
                   disabled={createComment.isPending || !content.trim()}
-                  className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-navy-mid transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50"
                 >
                   Publier →
                 </button>
