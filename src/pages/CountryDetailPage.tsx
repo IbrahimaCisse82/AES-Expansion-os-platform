@@ -98,7 +98,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
     if (!deleteId) return;
     deleteMilestone.mutate({ id: deleteId, countryId }, {
       onSuccess: () => { toast.success('Jalon supprimé'); setDeleteId(null); },
-      onError: (err: any) => toast.error(err.message),
+      onError: (err: Error) => toast.error(err.message),
     });
   };
 
