@@ -361,13 +361,25 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               </div>
               <div>
                 <Label className="text-[12.5px]">Responsable</Label>
-                <Input
-                  value={form.owner_name}
-                  onChange={e => setForm(p => ({ ...p, owner_name: e.target.value }))}
-                  maxLength={100}
-                  placeholder="Nom du responsable"
-                  className="mt-1"
-                />
+                <Select
+                  value={form.owner_name || '_none'}
+                  onValueChange={v => {
+                    if (v === '_none') {
+                      setForm(p => ({ ...p, owner_name: '', assigned_to: undefined }));
+                    } else {
+                      const profile = profiles.find(p => p.user_id === v);
+                      setForm(p => ({ ...p, owner_name: profile?.full_name || '', assigned_to: v } as any));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">Non assigné</SelectItem>
+                    {profiles.map(p => (
+                      <SelectItem key={p.user_id} value={p.user_id}>{p.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
