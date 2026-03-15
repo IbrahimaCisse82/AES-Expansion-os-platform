@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import StatusPill from '@/components/StatusPill';
 import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +25,7 @@ const taskSchema = z.object({
   status: z.enum(['open', 'done', 'late', 'wip']),
   due_date: z.string().optional(),
   owner_name: z.string().max(100).optional(),
+  assigned_to: z.string().optional(),
 });
 
 type TaskForm = z.infer<typeof taskSchema>;
@@ -33,6 +36,7 @@ const EMPTY_FORM: TaskForm = {
   status: 'open',
   due_date: '',
   owner_name: '',
+  assigned_to: '',
   country_id: '',
   country_label: '',
   milestone_id: '',
@@ -46,6 +50,14 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const { data: tasks = [], isLoading } = useTasks();
   const { data: countries = [] } = useCountries();
   const { data: allMilestones = [] } = useMilestones(null);
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('profiles').select('*').order('full_name');
+      if (error) throw error;
+      return data;
+    },
+  });
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -97,6 +109,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       status: task.status,
       due_date: task.due_date ?? '',
       owner_name: task.owner_name ?? '',
+      assigned_to: task.assigned_to ?? '',
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
       milestone_id: task.milestone_id ?? '',
@@ -131,6 +144,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       status: result.data.status,
       due_date: result.data.due_date || null,
       owner_name: result.data.owner_name || null,
+      assigned_to: result.data.assigned_to || null,
       country_id: result.data.country_id || null,
       country_label: result.data.country_label || null,
       milestone_id: result.data.milestone_id || null,
@@ -351,13 +365,25 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               </div>
               <div>
                 <Label className="text-[12.5px]">Responsable</Label>
-                <Input
-                  value={form.owner_name}
-                  onChange={e => setForm(p => ({ ...p, owner_name: e.target.value }))}
-                  maxLength={100}
-                  placeholder="Nom du responsable"
-                  className="mt-1"
-                />
+                <Select
+                  value={form.assigned_to || '_none'}
+                  onValueChange={v => {
+                    if (v === '_none') {
+                      setForm(p => ({ ...p, owner_name: '', assigned_to: '' }));
+                    } else {
+                      const profile = profiles.find(pr => pr.user_id === v);
+                      setForm(p => ({ ...p, owner_name: profile?.full_name || '', assigned_to: v }));
+                    }
+                  }}
+                >
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">Non assigné</SelectItem>
+                    {profiles.map(p => (
+                      <SelectItem key={p.user_id} value={p.user_id}>{p.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
