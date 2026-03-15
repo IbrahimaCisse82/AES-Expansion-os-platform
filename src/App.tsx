@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useAuth } from "./hooks/useAuth";
+import { useTaskRealtimeNotifications } from "./hooks/useTaskRealtimeNotifications";
 
 const queryClient = new QueryClient();
 
