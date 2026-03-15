@@ -75,7 +75,7 @@ export default function GanttChart() {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5 overflow-x-auto">
+    <div className="bg-card border border-border rounded-lg p-5">
       <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Diagramme de Gantt — Jalons</h3>
 
       {/* Header */}
