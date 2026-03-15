@@ -138,15 +138,15 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-5 overflow-x-auto">
-        <div className="grid grid-cols-[165px_repeat(12,1fr)] mb-1.5 min-w-[900px]">
+      <div className="bg-card border border-border rounded-lg p-5">
+        <div className="grid grid-cols-[140px_repeat(12,1fr)] mb-1.5">
           <div className="text-[10px] font-semibold text-muted-foreground">Marché</div>
           {months.map((m, i) => (
             <div key={m} className={`text-[10px] font-semibold text-center py-1 ${i + 1 === currentMonth ? 'text-destructive' : 'text-muted-foreground'}`}>{m}</div>
           ))}
         </div>
         {rows.map((row, ri) => (
-          <div key={ri} className="grid grid-cols-[165px_repeat(12,1fr)] items-center mb-1 min-w-[900px]">
+          <div key={ri} className="grid grid-cols-[140px_repeat(12,1fr)] items-center mb-1">
             <div className="text-[12.5px] font-medium flex items-center gap-2">
               <span className="text-lg">{row.flag}</span>{row.name}
             </div>
