@@ -230,7 +230,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
                 {errors.allocated_k && <p className="text-destructive text-[11px] mt-1">{errors.allocated_k}</p>}
               </div>
               <div>
-                <Label className="text-[12.5px]">Dépensé (K€) *</Label>
+                <Label className="text-[12.5px]">Dépensé (K FCFA) *</Label>
                 <Input type="number" min={0} value={form.spent_k} onChange={e => setForm(p => ({ ...p, spent_k: Number(e.target.value) }))} className="mt-1" />
                 {errors.spent_k && <p className="text-destructive text-[11px] mt-1">{errors.spent_k}</p>}
               </div>
