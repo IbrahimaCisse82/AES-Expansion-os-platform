@@ -10,7 +10,10 @@ export function useCreateMilestone() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: ['milestones', vars.country_id] }),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ['milestones', vars.country_id] });
+      qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+    },
   });
 }
 
@@ -22,7 +25,10 @@ export function useUpdateMilestone() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => qc.invalidateQueries({ queryKey: ['milestones', data.country_id] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['milestones', data.country_id] });
+      qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+    },
   });
 }
 
@@ -34,6 +40,9 @@ export function useDeleteMilestone() {
       if (error) throw error;
       return countryId;
     },
-    onSuccess: (countryId) => qc.invalidateQueries({ queryKey: ['milestones', countryId] }),
+    onSuccess: (countryId) => {
+      qc.invalidateQueries({ queryKey: ['milestones', countryId] });
+      qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+    },
   });
 }

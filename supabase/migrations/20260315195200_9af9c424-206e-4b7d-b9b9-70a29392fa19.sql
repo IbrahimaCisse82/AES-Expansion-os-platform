@@ -1,0 +1,1 @@
+UPDATE public.milestones SET end_date = target_date WHERE target_date IS NOT NULL AND target_date != '';

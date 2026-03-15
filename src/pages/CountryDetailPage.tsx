@@ -20,11 +20,12 @@ const phaseNames = [
 const milestoneSchema = z.object({
   title: z.string().trim().min(1, 'Titre requis').max(200),
   icon: z.string().max(10).optional(),
-  target_date: z.string().max(50).optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
 });
 
 type MilestoneForm = z.infer<typeof milestoneSchema>;
-const EMPTY_FORM: MilestoneForm = { title: '', icon: '📌', target_date: '' };
+const EMPTY_FORM: MilestoneForm = { title: '', icon: '📌', start_date: '', end_date: '' };
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
 interface CountryDetailPageProps {
@@ -56,7 +57,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
   const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
 
   const openEdit = (m: typeof milestones[0]) => {
-    setForm({ title: m.title, icon: m.icon, target_date: m.target_date ?? '' });
+    setForm({ title: m.title, icon: m.icon, start_date: (m as any).start_date ?? '', end_date: (m as any).end_date ?? '' });
     setEditingId(m.id);
     setErrors({});
     setDialogOpen(true);
@@ -78,9 +79,11 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
     const payload = {
       title: result.data.title,
       icon: result.data.icon || '📌',
-      target_date: result.data.target_date || null,
+      target_date: result.data.end_date || null,
+      start_date: result.data.start_date || null,
+      end_date: result.data.end_date || null,
       country_id: countryId,
-    };
+    } as any;
     if (editingId) {
       updateMilestone.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Jalon modifié'); setDialogOpen(false); },
@@ -164,7 +167,11 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
               <span className="text-lg w-7 text-center flex-shrink-0">{m.icon}</span>
               <div className="flex-1">
                 <div className={`text-[13px] font-medium ${m.is_done ? 'line-through text-muted-foreground' : ''}`}>{m.title}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{m.target_date}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  {(m as any).start_date && (m as any).end_date 
+                    ? `${(m as any).start_date} → ${(m as any).end_date}` 
+                    : (m as any).end_date || (m as any).start_date || m.target_date}
+                </div>
               </div>
               <StatusPill status={m.is_done ? 'done' : 'planning'} />
               {canWrite && (
@@ -202,14 +209,18 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
               <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} maxLength={200} className="mt-1" />
               {errors.title && <p className="text-destructive text-[11px] mt-1">{errors.title}</p>}
             </div>
+            <div>
+              <Label className="text-[12.5px]">Icône</Label>
+              <Input value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} maxLength={10} placeholder="📌" className="mt-1" />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-[12.5px]">Icône</Label>
-                <Input value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} maxLength={10} placeholder="📌" className="mt-1" />
+                <Label className="text-[12.5px]">Date début</Label>
+                <Input type="date" value={form.start_date} onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-[12.5px]">Date cible</Label>
-                <Input value={form.target_date} onChange={e => setForm(p => ({ ...p, target_date: e.target.value }))} maxLength={50} placeholder="Q3 2025" className="mt-1" />
+                <Label className="text-[12.5px]">Date fin</Label>
+                <Input type="date" value={form.end_date} onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))} className="mt-1" />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

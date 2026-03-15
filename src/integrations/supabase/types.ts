@@ -223,30 +223,36 @@ export type Database = {
         Row: {
           country_id: string
           created_at: string
+          end_date: string | null
           icon: string
           id: string
           is_done: boolean
           sort_order: number
+          start_date: string | null
           target_date: string | null
           title: string
         }
         Insert: {
           country_id: string
           created_at?: string
+          end_date?: string | null
           icon?: string
           id?: string
           is_done?: boolean
           sort_order?: number
+          start_date?: string | null
           target_date?: string | null
           title: string
         }
         Update: {
           country_id?: string
           created_at?: string
+          end_date?: string | null
           icon?: string
           id?: string
           is_done?: boolean
           sort_order?: number
+          start_date?: string | null
           target_date?: string | null
           title?: string
         }
