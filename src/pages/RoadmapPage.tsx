@@ -146,7 +146,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
           ))}
         </div>
         {rows.map((row, ri) => (
-          <div key={ri} className="grid grid-cols-[165px_repeat(12,1fr)] items-center mb-1 min-w-[900px]">
+          <div key={ri} className="grid grid-cols-[140px_repeat(12,1fr)] items-center mb-1">
             <div className="text-[12.5px] font-medium flex items-center gap-2">
               <span className="text-lg">{row.flag}</span>{row.name}
             </div>
