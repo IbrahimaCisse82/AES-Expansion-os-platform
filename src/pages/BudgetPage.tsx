@@ -137,7 +137,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           <span className="text-[13px] font-medium">{b.category === 'market' ? b.country_label : b.category}</span>
           <div className="flex items-center gap-2">
             <span className={`text-[11.5px] font-semibold ${textColors[b.color || 'sage']}`}>
-              {b.spent_k}K / {b.allocated_k}K€ · {pct}%
+              {b.spent_k}K / {b.allocated_k}K FCFA · {pct}%
             </span>
             {canWrite && (
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
