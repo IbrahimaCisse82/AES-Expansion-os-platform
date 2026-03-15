@@ -209,14 +209,18 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
               <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} maxLength={200} className="mt-1" />
               {errors.title && <p className="text-destructive text-[11px] mt-1">{errors.title}</p>}
             </div>
+            <div>
+              <Label className="text-[12.5px]">Icône</Label>
+              <Input value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} maxLength={10} placeholder="📌" className="mt-1" />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-[12.5px]">Icône</Label>
-                <Input value={form.icon} onChange={e => setForm(p => ({ ...p, icon: e.target.value }))} maxLength={10} placeholder="📌" className="mt-1" />
+                <Label className="text-[12.5px]">Date début</Label>
+                <Input type="date" value={form.start_date} onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-[12.5px]">Date cible</Label>
-                <Input value={form.target_date} onChange={e => setForm(p => ({ ...p, target_date: e.target.value }))} maxLength={50} placeholder="Q3 2025" className="mt-1" />
+                <Label className="text-[12.5px]">Date fin</Label>
+                <Input type="date" value={form.end_date} onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))} className="mt-1" />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
