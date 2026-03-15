@@ -167,7 +167,11 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
               <span className="text-lg w-7 text-center flex-shrink-0">{m.icon}</span>
               <div className="flex-1">
                 <div className={`text-[13px] font-medium ${m.is_done ? 'line-through text-muted-foreground' : ''}`}>{m.title}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{m.target_date}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">
+                  {(m as any).start_date && (m as any).end_date 
+                    ? `${(m as any).start_date} → ${(m as any).end_date}` 
+                    : (m as any).end_date || (m as any).start_date || m.target_date}
+                </div>
               </div>
               <StatusPill status={m.is_done ? 'done' : 'planning'} />
               {canWrite && (
