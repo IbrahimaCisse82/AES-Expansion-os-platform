@@ -16,7 +16,7 @@ const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { session, loading } = useAuth();
-
+  useTaskRealtimeNotifications();
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
