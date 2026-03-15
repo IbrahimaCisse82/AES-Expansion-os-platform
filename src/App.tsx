@@ -10,12 +10,13 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useAuth } from "./hooks/useAuth";
+import { useTaskRealtimeNotifications } from "./hooks/useTaskRealtimeNotifications";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { session, loading } = useAuth();
-
+  useTaskRealtimeNotifications();
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
