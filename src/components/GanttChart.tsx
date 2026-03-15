@@ -109,24 +109,22 @@ export default function GanttChart() {
 
           {/* Month cells */}
           {Array.from({ length: 12 }, (_, ci) => {
-            const isInRange = ci >= startMonth && ci <= endMonth;
-            const milestone = cms.find(m => m.monthIdx === ci);
+            const milestone = cms.find(m => (m.startMonthIdx ?? m.endMonthIdx) === ci);
             const isToday = ci === currentMonth;
 
             return (
               <div key={ci} className="h-12 border-l border-border relative flex items-center justify-center">
-                {/* Today indicator */}
                 {isToday && (
                   <div className="absolute w-0.5 bg-destructive top-0 bottom-0 z-10 left-1/2 -translate-x-1/2 opacity-40" />
                 )}
 
-                {/* Progress bar spanning months */}
-                {ci === startMonth && endMonth > startMonth && (
+                {/* Bar spanning start to end for each milestone */}
+                {milestone && milestone.startMonthIdx !== null && milestone.endMonthIdx !== null && milestone.endMonthIdx > milestone.startMonthIdx && (
                   <div
                     className={`absolute h-2 top-1/2 -translate-y-1/2 rounded-full ${colorMap[country.color] || 'bg-accent'} opacity-30 z-[1]`}
                     style={{
                       left: '50%',
-                      width: `calc(${endMonth - startMonth} * 100%)`,
+                      width: `calc(${milestone.endMonthIdx - milestone.startMonthIdx} * 100%)`,
                     }}
                   />
                 )}
@@ -141,12 +139,13 @@ export default function GanttChart() {
                           : `bg-card ${borderColorMap[country.color] || 'border-accent'}`
                       } transition-transform hover:scale-125`}
                     />
-                    {/* Tooltip */}
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
                       <div className="bg-popover border border-border text-popover-foreground rounded-lg shadow-lg px-3 py-2 whitespace-nowrap text-[11px]">
                         <div className="font-semibold">{milestone.icon} {milestone.title}</div>
                         <div className="text-muted-foreground mt-0.5">
-                          {milestone.target_date} · {milestone.is_done ? '✅ Terminé' : '⏳ En cours'}
+                          {(milestone as any).start_date && (milestone as any).end_date
+                            ? `${(milestone as any).start_date} → ${(milestone as any).end_date}`
+                            : milestone.target_date} · {milestone.is_done ? '✅ Terminé' : '⏳ En cours'}
                         </div>
                       </div>
                     </div>
