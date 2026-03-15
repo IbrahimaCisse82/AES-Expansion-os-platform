@@ -109,6 +109,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       status: task.status,
       due_date: task.due_date ?? '',
       owner_name: task.owner_name ?? '',
+      assigned_to: task.assigned_to ?? '',
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
       milestone_id: task.milestone_id ?? '',
