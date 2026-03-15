@@ -25,7 +25,10 @@ export function useUpdateMilestone() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => qc.invalidateQueries({ queryKey: ['milestones', data.country_id] }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['milestones', data.country_id] });
+      qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+    },
   });
 }
 
