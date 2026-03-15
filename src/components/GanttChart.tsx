@@ -79,7 +79,7 @@ export default function GanttChart() {
       <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Diagramme de Gantt — Jalons</h3>
 
       {/* Header */}
-      <div className="grid grid-cols-[160px_repeat(12,1fr)] mb-2 min-w-[900px]">
+      <div className="grid grid-cols-[140px_repeat(12,1fr)] mb-2">
         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Marché</div>
         {months.map((m, i) => (
           <div
