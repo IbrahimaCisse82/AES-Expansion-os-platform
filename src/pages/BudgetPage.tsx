@@ -137,7 +137,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           <span className="text-[13px] font-medium">{b.category === 'market' ? b.country_label : b.category}</span>
           <div className="flex items-center gap-2">
             <span className={`text-[11.5px] font-semibold ${textColors[b.color || 'sage']}`}>
-              {b.spent_k}K / {b.allocated_k}K€ · {pct}%
+              {b.spent_k}K / {b.allocated_k}K FCFA · {pct}%
             </span>
             {canWrite && (
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -169,9 +169,9 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        <KpiCard label="Budget Total" value={`${(totalAllocated / 1000).toFixed(1)}M€`} meta="Approuvé CA" accentColor="sage" />
-        <KpiCard label="Dépensé" value={`${(totalSpent / 1000).toFixed(1)}M€`} meta="du budget" accentColor="gold" trend={{ value: totalAllocated > 0 ? `${Math.round(totalSpent / totalAllocated * 100)}%` : '0%', up: false }} />
-        <KpiCard label="Restant" value={`${(remaining / 1000).toFixed(1)}M€`} meta="disponible" accentColor="sky" trend={{ value: totalAllocated > 0 ? `${Math.round(remaining / totalAllocated * 100)}%` : '0%', up: true }} />
+        <KpiCard label="Budget Total" value={`${(totalAllocated / 1000).toFixed(1)}M FCFA`} meta="Approuvé CA" accentColor="sage" />
+        <KpiCard label="Dépensé" value={`${(totalSpent / 1000).toFixed(1)}M FCFA`} meta="du budget" accentColor="gold" trend={{ value: totalAllocated > 0 ? `${Math.round(totalSpent / totalAllocated * 100)}%` : '0%', up: false }} />
+        <KpiCard label="Restant" value={`${(remaining / 1000).toFixed(1)}M FCFA`} meta="disponible" accentColor="sky" trend={{ value: totalAllocated > 0 ? `${Math.round(remaining / totalAllocated * 100)}%` : '0%', up: true }} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -225,12 +225,12 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-[12.5px]">Alloué (K€) *</Label>
+                <Label className="text-[12.5px]">Alloué (K FCFA) *</Label>
                 <Input type="number" min={0} value={form.allocated_k} onChange={e => setForm(p => ({ ...p, allocated_k: Number(e.target.value) }))} className="mt-1" />
                 {errors.allocated_k && <p className="text-destructive text-[11px] mt-1">{errors.allocated_k}</p>}
               </div>
               <div>
-                <Label className="text-[12.5px]">Dépensé (K€) *</Label>
+                <Label className="text-[12.5px]">Dépensé (K FCFA) *</Label>
                 <Input type="number" min={0} value={form.spent_k} onChange={e => setForm(p => ({ ...p, spent_k: Number(e.target.value) }))} className="mt-1" />
                 {errors.spent_k && <p className="text-destructive text-[11px] mt-1">{errors.spent_k}</p>}
               </div>
