@@ -75,11 +75,11 @@ export default function GanttChart() {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-5 overflow-x-auto">
+    <div className="bg-card border border-border rounded-lg p-5">
       <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Diagramme de Gantt — Jalons</h3>
 
       {/* Header */}
-      <div className="grid grid-cols-[160px_repeat(12,1fr)] mb-2 min-w-[900px]">
+      <div className="grid grid-cols-[140px_repeat(12,1fr)] mb-2">
         <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Marché</div>
         {months.map((m, i) => (
           <div
@@ -97,7 +97,7 @@ export default function GanttChart() {
       {rows.map(({ country, milestones: cms, startMonth, endMonth }) => (
         <div
           key={country.id}
-          className="grid grid-cols-[160px_repeat(12,1fr)] items-center min-w-[900px] border-t border-border"
+          className="grid grid-cols-[140px_repeat(12,1fr)] items-center border-t border-border"
         >
           {/* Country label */}
           <div className="text-[12.5px] font-medium flex items-center gap-2 py-3">
