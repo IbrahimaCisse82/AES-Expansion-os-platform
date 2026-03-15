@@ -49,13 +49,15 @@ export default function GanttChart() {
           .filter(m => m.country_id === country.id)
           .map(m => ({
             ...m,
-            monthIdx: parseMonthIndex(m.target_date),
+            startMonthIdx: parseMonthIndex((m as any).start_date) ?? parseMonthIndex(m.target_date),
+            endMonthIdx: parseMonthIndex((m as any).end_date) ?? parseMonthIndex(m.target_date),
           }))
-          .filter(m => m.monthIdx !== null)
-          .sort((a, b) => (a.monthIdx ?? 0) - (b.monthIdx ?? 0));
+          .filter(m => m.startMonthIdx !== null || m.endMonthIdx !== null)
+          .sort((a, b) => (a.startMonthIdx ?? a.endMonthIdx ?? 0) - (b.startMonthIdx ?? b.endMonthIdx ?? 0));
 
-        const startMonth = countryMilestones.length > 0 ? Math.min(...countryMilestones.map(m => m.monthIdx!)) : 0;
-        const endMonth = countryMilestones.length > 0 ? Math.max(...countryMilestones.map(m => m.monthIdx!)) : 11;
+        const allMonths = countryMilestones.flatMap(m => [m.startMonthIdx, m.endMonthIdx].filter((v): v is number => v !== null));
+        const startMonth = allMonths.length > 0 ? Math.min(...allMonths) : 0;
+        const endMonth = allMonths.length > 0 ? Math.max(...allMonths) : 11;
 
         return {
           country,
