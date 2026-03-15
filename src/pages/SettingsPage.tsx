@@ -17,6 +17,11 @@ const COLOR_OPTIONS = [
   { value: 'sky', label: 'Bleu', css: 'bg-sky' },
   { value: 'terracotta', label: 'Orange', css: 'bg-terracotta' },
   { value: 'plum', label: 'Violet', css: 'bg-plum' },
+  { value: 'coral', label: 'Corail', css: 'bg-coral' },
+  { value: 'teal', label: 'Sarcelle', css: 'bg-teal' },
+  { value: 'indigo', label: 'Indigo', css: 'bg-indigo' },
+  { value: 'amber', label: 'Ambre', css: 'bg-amber' },
+  { value: 'rose', label: 'Rose', css: 'bg-rose' },
 ];
 
 function useRoadmapTypes() {
