@@ -40,6 +40,9 @@ export function useDeleteMilestone() {
       if (error) throw error;
       return countryId;
     },
-    onSuccess: (countryId) => qc.invalidateQueries({ queryKey: ['milestones', countryId] }),
+    onSuccess: (countryId) => {
+      qc.invalidateQueries({ queryKey: ['milestones', countryId] });
+      qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+    },
   });
 }
