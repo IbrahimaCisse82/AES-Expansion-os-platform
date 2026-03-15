@@ -362,13 +362,14 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
               <div>
                 <Label className="text-[12.5px]">Responsable</Label>
                 <Select
-                  value={form.owner_name || '_none'}
+                  value={(form as any).assigned_to || '_none'}
                   onValueChange={v => {
                     if (v === '_none') {
-                      setForm(p => ({ ...p, owner_name: '', assigned_to: undefined }));
+                      setForm(p => ({ ...p, owner_name: '' }));
+                      (setForm as any)(((p: any) => ({ ...p, assigned_to: undefined })));
                     } else {
-                      const profile = profiles.find(p => p.user_id === v);
-                      setForm(p => ({ ...p, owner_name: profile?.full_name || '', assigned_to: v } as any));
+                      const profile = profiles.find(pr => pr.user_id === v);
+                      setForm(p => ({ ...p, owner_name: profile?.full_name || '' }));
                     }
                   }}
                 >
