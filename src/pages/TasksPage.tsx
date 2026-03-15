@@ -25,6 +25,7 @@ const taskSchema = z.object({
   status: z.enum(['open', 'done', 'late', 'wip']),
   due_date: z.string().optional(),
   owner_name: z.string().max(100).optional(),
+  assigned_to: z.string().optional(),
 });
 
 type TaskForm = z.infer<typeof taskSchema>;
@@ -35,6 +36,7 @@ const EMPTY_FORM: TaskForm = {
   status: 'open',
   due_date: '',
   owner_name: '',
+  assigned_to: '',
   country_id: '',
   country_label: '',
   milestone_id: '',
