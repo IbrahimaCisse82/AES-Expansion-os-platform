@@ -169,9 +169,9 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        <KpiCard label="Budget Total" value={`${(totalAllocated / 1000).toFixed(1)}M€`} meta="Approuvé CA" accentColor="sage" />
-        <KpiCard label="Dépensé" value={`${(totalSpent / 1000).toFixed(1)}M€`} meta="du budget" accentColor="gold" trend={{ value: totalAllocated > 0 ? `${Math.round(totalSpent / totalAllocated * 100)}%` : '0%', up: false }} />
-        <KpiCard label="Restant" value={`${(remaining / 1000).toFixed(1)}M€`} meta="disponible" accentColor="sky" trend={{ value: totalAllocated > 0 ? `${Math.round(remaining / totalAllocated * 100)}%` : '0%', up: true }} />
+        <KpiCard label="Budget Total" value={`${(totalAllocated / 1000).toFixed(1)}M FCFA`} meta="Approuvé CA" accentColor="sage" />
+        <KpiCard label="Dépensé" value={`${(totalSpent / 1000).toFixed(1)}M FCFA`} meta="du budget" accentColor="gold" trend={{ value: totalAllocated > 0 ? `${Math.round(totalSpent / totalAllocated * 100)}%` : '0%', up: false }} />
+        <KpiCard label="Restant" value={`${(remaining / 1000).toFixed(1)}M FCFA`} meta="disponible" accentColor="sky" trend={{ value: totalAllocated > 0 ? `${Math.round(remaining / totalAllocated * 100)}%` : '0%', up: true }} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
