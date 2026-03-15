@@ -79,9 +79,11 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
     const payload = {
       title: result.data.title,
       icon: result.data.icon || '📌',
-      target_date: result.data.target_date || null,
+      target_date: result.data.end_date || null,
+      start_date: result.data.start_date || null,
+      end_date: result.data.end_date || null,
       country_id: countryId,
-    };
+    } as any;
     if (editingId) {
       updateMilestone.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Jalon modifié'); setDialogOpen(false); },
