@@ -97,7 +97,7 @@ export default function GanttChart() {
       {rows.map(({ country, milestones: cms, startMonth, endMonth }) => (
         <div
           key={country.id}
-          className="grid grid-cols-[160px_repeat(12,1fr)] items-center min-w-[900px] border-t border-border"
+          className="grid grid-cols-[140px_repeat(12,1fr)] items-center border-t border-border"
         >
           {/* Country label */}
           <div className="text-[12.5px] font-medium flex items-center gap-2 py-3">
