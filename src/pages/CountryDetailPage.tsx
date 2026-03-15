@@ -20,11 +20,12 @@ const phaseNames = [
 const milestoneSchema = z.object({
   title: z.string().trim().min(1, 'Titre requis').max(200),
   icon: z.string().max(10).optional(),
-  target_date: z.string().max(50).optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
 });
 
 type MilestoneForm = z.infer<typeof milestoneSchema>;
-const EMPTY_FORM: MilestoneForm = { title: '', icon: '📌', target_date: '' };
+const EMPTY_FORM: MilestoneForm = { title: '', icon: '📌', start_date: '', end_date: '' };
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
 interface CountryDetailPageProps {
