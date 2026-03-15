@@ -48,6 +48,14 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const { data: tasks = [], isLoading } = useTasks();
   const { data: countries = [] } = useCountries();
   const { data: allMilestones = [] } = useMilestones(null);
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('profiles').select('*').order('full_name');
+      if (error) throw error;
+      return data;
+    },
+  });
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
