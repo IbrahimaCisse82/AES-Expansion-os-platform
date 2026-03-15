@@ -57,7 +57,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
   const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
 
   const openEdit = (m: typeof milestones[0]) => {
-    setForm({ title: m.title, icon: m.icon, target_date: m.target_date ?? '' });
+    setForm({ title: m.title, icon: m.icon, start_date: (m as any).start_date ?? '', end_date: (m as any).end_date ?? '' });
     setEditingId(m.id);
     setErrors({});
     setDialogOpen(true);
