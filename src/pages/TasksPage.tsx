@@ -144,6 +144,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       status: result.data.status,
       due_date: result.data.due_date || null,
       owner_name: result.data.owner_name || null,
+      assigned_to: result.data.assigned_to || null,
       country_id: result.data.country_id || null,
       country_label: result.data.country_label || null,
       milestone_id: result.data.milestone_id || null,
