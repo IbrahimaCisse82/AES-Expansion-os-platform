@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { id: 'tasks', label: 'Tâches', icon: <ListTodo size={16} />, badgeKey: 'tasks', section: 'OPÉRATIONS' },
   { id: 'calendar', label: 'Calendrier', icon: <Calendar size={16} /> },
   { id: 'kpis', label: 'KPIs', icon: <BarChart3 size={16} />, section: 'ANALYSE' },
+  { id: 'market-analysis', label: 'Analyse Marché', icon: <Globe size={16} /> },
   { id: 'budget', label: 'Budget', icon: <Wallet size={16} /> },
   { id: 'risks', label: 'Risques', icon: <AlertTriangle size={16} />, badgeKey: 'risks' },
   { id: 'comments', label: 'Commentaires', icon: <MessageSquare size={16} />, section: 'ÉQUIPE' },
