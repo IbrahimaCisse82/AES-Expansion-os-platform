@@ -1,68 +1,62 @@
-import { ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Maximize2, Minimize2 } from 'lucide-react';
 import { useCountries } from '@/hooks/useExpansionData';
 
 const ANALYSIS_BASE_URL = 'https://africa-deal-spark.lovable.app';
 
 export default function MarketAnalysisPage() {
   const { data: countries = [], isLoading } = useCountries();
+  const [fullscreen, setFullscreen] = useState(false);
 
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   return (
     <div className="animate-page-enter">
-      <div className="mb-6">
-        <h2 className="font-display text-[23px] font-bold text-primary mb-1">Analyse Marché</h2>
-        <p className="text-[12.5px] text-muted-foreground">
-          Informations économiques et commerciales pour vos marchés cibles · Mis à jour automatiquement
-        </p>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="font-display text-[23px] font-bold text-primary mb-1">Analyse Marché</h2>
+          <p className="text-[12.5px] text-muted-foreground">
+            {countries.length} marché{countries.length > 1 ? 's' : ''} ciblé{countries.length > 1 ? 's' : ''} · Données en temps réel
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFullscreen(f => !f)}
+            className="p-2 rounded-lg border border-border hover:bg-muted transition-colors text-muted-foreground"
+            title={fullscreen ? 'Réduire' : 'Plein écran'}
+          >
+            {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
+          <a
+            href={ANALYSIS_BASE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 rounded-lg border border-border hover:bg-muted transition-colors text-muted-foreground"
+            title="Ouvrir dans un nouvel onglet"
+          >
+            <ExternalLink size={16} />
+          </a>
+        </div>
       </div>
 
-      {/* Link to full platform */}
-      <a
-        href={ANALYSIS_BASE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 mb-6 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-      >
-        <ExternalLink size={15} />
-        Ouvrir la plateforme d'analyse complète
-      </a>
+      <div className={`bg-card border border-border rounded-lg overflow-hidden transition-all ${fullscreen ? 'fixed inset-4 z-50' : ''}`}>
+        {fullscreen && (
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/50">
+            <span className="text-sm font-medium text-primary">Africa Deal Spark</span>
+            <button onClick={() => setFullscreen(false)} className="p-1 rounded hover:bg-muted transition-colors">
+              <Minimize2 size={16} className="text-muted-foreground" />
+            </button>
+          </div>
+        )}
+        <iframe
+          src={ANALYSIS_BASE_URL}
+          className={`w-full border-0 ${fullscreen ? 'h-[calc(100%-41px)]' : 'h-[calc(100vh-220px)]'}`}
+          title="Analyse Marché - Africa Deal Spark"
+          allow="clipboard-read; clipboard-write"
+        />
+      </div>
 
-      {countries.length === 0 ? (
-        <div className="bg-card border border-border rounded-lg p-8 text-center text-sm text-muted-foreground">
-          Ajoutez des pays cibles pour accéder à leurs analyses de marché
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {countries.map(c => (
-            <a
-              key={c.id}
-              href={ANALYSIS_BASE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-card border border-border rounded-lg p-5 hover:shadow-card hover:border-primary/30 transition-all group cursor-pointer"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-[28px]">{c.flag}</span>
-                <div>
-                  <div className="text-sm font-semibold text-primary group-hover:text-accent transition-colors">{c.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{c.region}</div>
-                </div>
-                <ExternalLink size={14} className="ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="space-y-1.5 text-[12px]">
-                {c.population && <div className="flex justify-between"><span className="text-muted-foreground">Population</span><span className="font-medium">{c.population}</span></div>}
-                {c.gdp && <div className="flex justify-between"><span className="text-muted-foreground">PIB</span><span className="font-medium">{c.gdp}</span></div>}
-                {c.language && <div className="flex justify-between"><span className="text-muted-foreground">Langue</span><span className="font-medium">{c.language}</span></div>}
-              </div>
-              <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${c.status === 'active' ? 'bg-accent' : c.status === 'done' ? 'bg-[hsl(var(--sky))]' : 'bg-[hsl(var(--gold))]'}`} />
-                <span className="text-[11px] text-muted-foreground capitalize">{c.status}</span>
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
+      {fullscreen && <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setFullscreen(false)} />}
     </div>
   );
 }
