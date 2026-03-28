@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole } from '@/hooks/useUserRoles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw } from 'lucide-react';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -24,11 +24,21 @@ const ROLE_COLORS: Record<string, string> = {
   partner: 'bg-[hsl(var(--sage))]/15 text-[hsl(var(--sage))]',
 };
 
+interface UserStatus {
+  user_id: string;
+  email: string;
+  email_confirmed: boolean;
+  last_sign_in: string | null;
+  banned: boolean;
+}
+
 export default function TeamPage() {
   const { user } = useAuth();
   const { data: myRole } = useCurrentUserRole();
   const { data: users, isLoading, refetch } = useAllUsersWithRoles();
   const updateRole = useUpdateUserRole();
+  const [statuses, setStatuses] = useState<UserStatus[]>([]);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   const isAdmin = myRole === 'admin';
 
@@ -38,6 +48,61 @@ export default function TeamPage() {
   const [inviteRole, setInviteRole] = useState('observer');
   const [inviting, setInviting] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+
+  // Fetch auth statuses
+  const fetchStatuses = async () => {
+    if (!isAdmin) return;
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: 'list_status' },
+      });
+      if (error) throw error;
+      setStatuses(data?.statuses ?? []);
+    } catch {
+      // silent
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) fetchStatuses();
+  }, [isAdmin]);
+
+  const getStatus = (userId: string) => statuses.find((s) => s.user_id === userId);
+
+  const handleResendInvite = async (userId: string) => {
+    const status = getStatus(userId);
+    if (!status?.email) return;
+    setLoadingAction(userId + '-resend');
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: 'resend_invite', email: status.email },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitation renvoyée à ${status.email}`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleToggleBlock = async (userId: string, currentlyBanned: boolean) => {
+    setLoadingAction(userId + '-block');
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: currentlyBanned ? 'unblock' : 'block', user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(currentlyBanned ? 'Accès restauré' : 'Utilisateur bloqué');
+      fetchStatuses();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   const handleInvite = async () => {
     if (!inviteEmail) return;
@@ -54,6 +119,7 @@ export default function TeamPage() {
       setInviteRole('observer');
       setShowInvite(false);
       refetch();
+      fetchStatuses();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur lors de l\'invitation';
       toast.error(message);
@@ -149,58 +215,118 @@ export default function TeamPage() {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Utilisateur</th>
-                <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Inscription</th>
+                <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Statut</th>
                 <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Rôle</th>
+                {isAdmin && (
+                  <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody>
-              {(users ?? []).map((u) => (
-                <tr key={u.user_id} className="border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors">
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-primary-foreground"
-                        style={{ backgroundColor: u.avatar_color }}
-                      >
-                        {u.initials}
+              {(users ?? []).map((u) => {
+                const status = getStatus(u.user_id);
+                const isBanned = status?.banned ?? false;
+                const isConfirmed = status?.email_confirmed ?? true;
+                const isMe = u.user_id === user?.id;
+
+                return (
+                  <tr
+                    key={u.user_id}
+                    className={`border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors ${isBanned ? 'opacity-50' : ''}`}
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-primary-foreground"
+                          style={{ backgroundColor: u.avatar_color }}
+                        >
+                          {u.initials}
+                        </div>
+                        <div>
+                          <div className="text-[13.5px] font-semibold text-primary">
+                            {u.full_name}
+                            {isBanned && <Ban size={13} className="inline ml-1.5 text-destructive" />}
+                          </div>
+                          {isMe && (
+                            <span className="text-[10.5px] text-muted-foreground">(vous)</span>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-[13.5px] font-semibold text-primary">{u.full_name}</div>
-                        {u.user_id === user?.id && (
-                          <span className="text-[10.5px] text-muted-foreground">(vous)</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      {isBanned ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-destructive/15 text-destructive">
+                          <Ban size={11} /> Bloqué
+                        </span>
+                      ) : isConfirmed ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[hsl(var(--sage))]/15 text-[hsl(var(--sage))]">
+                          <ShieldCheck size={11} /> Actif
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]">
+                          <MailCheck size={11} /> En attente
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      {isAdmin && !isMe ? (
+                        <Select
+                          value={u.role}
+                          onValueChange={(val) => handleRoleChange(u.user_id, val)}
+                          disabled={updateRole.isPending}
+                        >
+                          <SelectTrigger className="w-[160px] h-8 text-[12.5px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLES.map((r) => (
+                              <SelectItem key={r.value} value={r.value} className="text-[12.5px]">
+                                {r.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-[11.5px] font-medium ${ROLE_COLORS[u.role] ?? ROLE_COLORS.observer}`}>
+                          {ROLES.find((r) => r.value === u.role)?.label ?? u.role}
+                        </span>
+                      )}
+                    </td>
+                    {isAdmin && (
+                      <td className="px-5 py-4">
+                        {!isMe && (
+                          <div className="flex items-center gap-2">
+                            {!isConfirmed && !isBanned && (
+                              <button
+                                onClick={() => handleResendInvite(u.user_id)}
+                                disabled={loadingAction === u.user_id + '-resend'}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                                title="Relancer l'invitation"
+                              >
+                                <RefreshCw size={12} className={loadingAction === u.user_id + '-resend' ? 'animate-spin' : ''} />
+                                Relancer
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleToggleBlock(u.user_id, isBanned)}
+                              disabled={loadingAction === u.user_id + '-block'}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium rounded-md transition-colors disabled:opacity-50 ${
+                                isBanned
+                                  ? 'bg-[hsl(var(--sage))]/10 text-[hsl(var(--sage))] hover:bg-[hsl(var(--sage))]/20'
+                                  : 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                              }`}
+                              title={isBanned ? 'Débloquer' : 'Bloquer'}
+                            >
+                              {isBanned ? <ShieldCheck size={12} /> : <Ban size={12} />}
+                              {isBanned ? 'Débloquer' : 'Bloquer'}
+                            </button>
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-[12.5px] text-muted-foreground">
-                    {new Date(u.created_at).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td className="px-5 py-4">
-                    {isAdmin && u.user_id !== user?.id ? (
-                      <Select
-                        value={u.role}
-                        onValueChange={(val) => handleRoleChange(u.user_id, val)}
-                        disabled={updateRole.isPending}
-                      >
-                        <SelectTrigger className="w-[180px] h-8 text-[12.5px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ROLES.map((r) => (
-                            <SelectItem key={r.value} value={r.value} className="text-[12.5px]">
-                              {r.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <span className={`inline-block px-2.5 py-1 rounded-full text-[11.5px] font-medium ${ROLE_COLORS[u.role] ?? ROLE_COLORS.observer}`}>
-                        {ROLES.find((r) => r.value === u.role)?.label ?? u.role}
-                      </span>
+                      </td>
                     )}
-                  </td>
-                </tr>
-              ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
