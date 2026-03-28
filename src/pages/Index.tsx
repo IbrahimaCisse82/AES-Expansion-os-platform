@@ -14,6 +14,7 @@ import KpisPage from '@/pages/KpisPage';
 import CalendarPage from '@/pages/CalendarPage';
 import RoadmapPage from '@/pages/RoadmapPage';
 import SettingsPage from '@/pages/SettingsPage';
+import MarketAnalysisPage from '@/pages/MarketAnalysisPage';
 import ProfilePage from '@/pages/ProfilePage';
 import { useCountries } from '@/hooks/useExpansionData';
 
@@ -53,6 +54,7 @@ const Index = () => {
       case 'team': return <TeamPage />;
       case 'comments': return <CommentsPage addSignal={addSignal} searchQuery={searchQuery} />;
       case 'kpis': return <KpisPage />;
+      case 'market-analysis': return <MarketAnalysisPage />;
       case 'calendar': return <CalendarPage />;
       case 'roadmap': return <RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />;
       case 'settings': return <SettingsPage />;
