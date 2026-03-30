@@ -99,6 +99,7 @@ export default function MarketAnalysisPage() {
           </div>
         )}
         <iframe
+          key={activeTab}
           src={iframeUrl}
           className={`w-full border-0 ${fullscreen ? 'h-[calc(100%-41px)]' : 'h-[calc(100vh-280px)]'}`}
           title={`Analyse Marché${activeCountry ? ` - ${activeCountry.name}` : ''}`}
