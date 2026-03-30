@@ -12,7 +12,9 @@ export default function MarketAnalysisPage() {
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   const activeCountry = countries.find(c => c.id === activeTab);
-  const iframeUrl = ANALYSIS_BASE_URL;
+  const iframeUrl = activeCountry
+    ? `${ANALYSIS_BASE_URL}?country=${encodeURIComponent(activeCountry.name)}`
+    : ANALYSIS_BASE_URL;
 
   return (
     <div className="animate-page-enter">
