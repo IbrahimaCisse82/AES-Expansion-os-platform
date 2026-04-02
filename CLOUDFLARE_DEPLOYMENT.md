@@ -15,7 +15,7 @@ Ce guide vous explique comment déployer votre application sur Cloudflare Pages.
 1. Connectez-vous à votre [Dashboard Cloudflare](https://dash.cloudflare.com/)
 2. Allez dans **Workers & Pages** dans le menu de gauche
 3. Cliquez sur **Create application**
-4. Sélectionnez l'onglet **Pages**
+4. **IMPORTANT : Sélectionnez l'onglet "Pages" (PAS "Workers")**
 5. Cliquez sur **Connect to Git**
 6. Autorisez Cloudflare à accéder à votre compte GitHub/GitLab
 7. Sélectionnez le repository de votre application
@@ -26,9 +26,9 @@ Utilisez les paramètres suivants :
 
 - **Project name** : `expansion-tracker` (ou le nom de votre choix)
 - **Production branch** : `main` (ou votre branche principale)
-- **Build command** : `npm run build`
+- **Build command** : `bun run build` (ou `npm run build` si vous utilisez npm)
 - **Build output directory** : `dist`
-- **Root directory** : `/` (laisser vide)
+- **Root directory** : `/` (laisser vide ou par défaut)
 
 ### Étape 3 : Ajouter les variables d'environnement
 
