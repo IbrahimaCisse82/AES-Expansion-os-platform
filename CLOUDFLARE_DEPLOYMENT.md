@@ -26,9 +26,12 @@ Utilisez les paramètres suivants :
 
 - **Project name** : `expansion-tracker` (ou le nom de votre choix)
 - **Production branch** : `main` (ou votre branche principale)
+- **Framework preset** : Sélectionnez "None" ou "Vite"
 - **Build command** : `bun run build` (ou `npm run build` si vous utilisez npm)
 - **Build output directory** : `dist`
 - **Root directory** : `/` (laisser vide ou par défaut)
+
+**IMPORTANT** : Ne configurez AUCUNE commande de déploiement (Deploy command). Laissez ce champ vide ou supprimez-le s'il est rempli automatiquement. Pour Cloudflare Pages, le déploiement se fait automatiquement après le build.
 
 ### Étape 3 : Ajouter les variables d'environnement
 
@@ -127,12 +130,23 @@ Si un déploiement pose problème :
 
 ## Troubleshooting
 
+### Erreur "Missing entry-point to Worker script"
+
+Cela signifie que vous avez configuré une "Deploy command" alors que ce n'est pas nécessaire pour Pages.
+
+**Solution** :
+1. Allez dans les paramètres de votre projet Pages sur Cloudflare
+2. Allez dans **Settings** → **Builds & deployments**
+3. Dans la section "Deploy command", assurez-vous que ce champ est **VIDE** ou **NON CONFIGURÉ**
+4. Sauvegardez et redéployez
+
 ### Le build échoue
 
 Vérifiez que :
 - Les variables d'environnement sont bien configurées
-- La commande de build est correcte : `npm run build`
+- La commande de build est correcte : `npm run build` ou `bun run build`
 - Le répertoire de sortie est bien `dist`
+- Aucune "Deploy command" n'est configurée
 
 ### L'application ne se charge pas
 
