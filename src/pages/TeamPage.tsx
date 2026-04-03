@@ -75,11 +75,19 @@ export default function TeamPage() {
     setLoadingAction(userId + '-resend');
     try {
       const { data, error } = await supabase.functions.invoke('manage-user', {
-        body: { action: 'resend_invite', email: status.email },
+        body: { action: 'resend_invite', user_id: userId },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Invitation renvoyée à ${status.email}`);
+
+      if (data?.temporary_password) {
+        toast.success(
+          `Invitation relancee pour ${data.email}\n\nNouveau mot de passe temporaire: ${data.temporary_password}`,
+          { duration: 15000 }
+        );
+      } else {
+        toast.success(`Invitation renvoyee a ${status.email}`);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erreur');
     } finally {
@@ -235,7 +243,7 @@ export default function TeamPage() {
               {(users ?? []).map((u) => {
                 const status = getStatus(u.user_id);
                 const isBanned = status?.banned ?? false;
-                const isConfirmed = status?.email_confirmed ?? true;
+                const hasSignedIn = !!status?.last_sign_in;
                 const isMe = u.user_id === user?.id;
 
                 return (
@@ -265,9 +273,9 @@ export default function TeamPage() {
                     <td className="px-5 py-4">
                       {isBanned ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-destructive/15 text-destructive">
-                          <Ban size={11} /> Bloqué
+                          <Ban size={11} /> Bloque
                         </span>
-                      ) : isConfirmed ? (
+                      ) : hasSignedIn ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[hsl(var(--sage))]/15 text-[hsl(var(--sage))]">
                           <ShieldCheck size={11} /> Actif
                         </span>
@@ -305,7 +313,7 @@ export default function TeamPage() {
                       <td className="px-5 py-4">
                         {!isMe && (
                           <div className="flex items-center gap-2">
-                            {!isConfirmed && !isBanned && (
+                            {!hasSignedIn && !isBanned && (
                               <button
                                 onClick={() => handleResendInvite(u.user_id)}
                                 disabled={loadingAction === u.user_id + '-resend'}

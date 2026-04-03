@@ -1,13 +1,18 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
   }
 
   try {
@@ -15,7 +20,6 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify caller is admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Non autorisé" }), {
@@ -40,7 +44,6 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Check admin role
     const { data: roleData } = await admin
       .from("user_roles")
       .select("role")
@@ -57,11 +60,10 @@ Deno.serve(async (req) => {
 
     const { action, user_id, email } = await req.json();
 
-    // List auth status for all users
     if (action === "list_status") {
       const { data: { users }, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
       if (error) throw error;
-      const statuses = (users ?? []).map((u) => ({
+      const statuses = (users ?? []).map((u: any) => ({
         user_id: u.id,
         email: u.email,
         email_confirmed: !!u.email_confirmed_at,
@@ -74,21 +76,41 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Resend invitation
     if (action === "resend_invite") {
-      if (!email) throw new Error("Email requis");
-      const { error } = await admin.auth.admin.inviteUserByEmail(email);
-      if (error) throw error;
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (!user_id) throw new Error("user_id requis");
+
+      const { data: { user: targetUser }, error: getUserErr } = await admin.auth.admin.getUserById(user_id);
+      if (getUserErr) throw getUserErr;
+      if (!targetUser) throw new Error("Utilisateur introuvable");
+
+      if (targetUser.last_sign_in_at) {
+        return new Response(
+          JSON.stringify({ error: "Cet utilisateur s'est déjà connecté, l'invitation ne peut pas être relancée" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const tempPassword = `Temp${Math.random().toString(36).slice(2, 10)}!`;
+
+      const { error: updateErr } = await admin.auth.admin.updateUserById(user_id, {
+        password: tempPassword,
       });
+      if (updateErr) throw updateErr;
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          email: targetUser.email,
+          temporary_password: tempPassword,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Block user
     if (action === "block") {
       if (!user_id) throw new Error("user_id requis");
       const { error } = await admin.auth.admin.updateUserById(user_id, {
-        ban_duration: "876000h", // ~100 years
+        ban_duration: "876000h",
       });
       if (error) throw error;
       return new Response(JSON.stringify({ success: true }), {
@@ -96,7 +118,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Unblock user
     if (action === "unblock") {
       if (!user_id) throw new Error("user_id requis");
       const { error } = await admin.auth.admin.updateUserById(user_id, {
@@ -112,10 +133,13 @@ Deno.serve(async (req) => {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (err: unknown) {
+    return new Response(
+      JSON.stringify({ error: err instanceof Error ? err.message : "Une erreur est survenue" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 });
