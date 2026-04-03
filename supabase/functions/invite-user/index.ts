@@ -1,21 +1,25 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
   }
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify the caller is an admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Non autorisé" }), {
@@ -36,7 +40,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check admin role using service role client
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -54,7 +57,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Parse request
     const { email, full_name, role } = await req.json();
     if (!email) {
       return new Response(JSON.stringify({ error: "Email requis" }), {
@@ -63,10 +65,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate temporary password
     const tempPassword = `Temp${Math.random().toString(36).slice(2, 10)}!`;
 
-    // Create user with email/password
     const { data: createData, error: createErr } = await admin.auth.admin.createUser({
       email,
       password: tempPassword,
@@ -77,14 +77,12 @@ Deno.serve(async (req) => {
     if (createErr) throw createErr;
     if (!createData.user) throw new Error("Erreur lors de la création de l'utilisateur");
 
-    // Wait a moment for trigger to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    // Set role using SECURITY DEFINER function to bypass RLS
     if (role) {
       const { error: roleErr } = await admin.rpc('set_user_role', {
         target_user_id: createData.user.id,
-        new_role: role
+        new_role: role,
       });
 
       if (roleErr) throw roleErr;
@@ -99,8 +97,9 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Une erreur est survenue";
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
