@@ -63,22 +63,35 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Invite user via admin API (sends magic link email)
-    const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
-      data: { full_name: full_name || email },
+    // Generate temporary password
+    const tempPassword = `Temp${Math.random().toString(36).slice(2, 10)}!`;
+
+    // Create user with email/password
+    const { data: createData, error: createErr } = await admin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { full_name: full_name || email },
     });
-    if (inviteErr) throw inviteErr;
+
+    if (createErr) throw createErr;
+    if (!createData.user) throw new Error("Erreur lors de la création de l'utilisateur");
 
     // Set role if specified
-    if (role && inviteData.user) {
+    if (role) {
       await admin
         .from("user_roles")
         .update({ role })
-        .eq("user_id", inviteData.user.id);
+        .eq("user_id", createData.user.id);
     }
 
     return new Response(
-      JSON.stringify({ success: true, user_id: inviteData.user.id }),
+      JSON.stringify({
+        success: true,
+        user_id: createData.user.id,
+        email,
+        temporary_password: tempPassword,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {

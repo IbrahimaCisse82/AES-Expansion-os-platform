@@ -113,7 +113,16 @@ export default function TeamPage() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Invitation envoyée à ${inviteEmail}`);
+
+      if (data?.temporary_password) {
+        toast.success(
+          `Utilisateur créé avec succès!\n\nEmail: ${data.email}\nMot de passe temporaire: ${data.temporary_password}\n\nL'utilisateur devra changer ce mot de passe à la première connexion.`,
+          { duration: 10000 }
+        );
+      } else {
+        toast.success(`Invitation envoyée à ${inviteEmail}`);
+      }
+
       setInviteEmail('');
       setInviteName('');
       setInviteRole('observer');
