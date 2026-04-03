@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
 import Topbar from '@/components/Topbar';
 import DashboardPage from '@/pages/DashboardPage';
@@ -19,20 +20,23 @@ import ProfilePage from '@/pages/ProfilePage';
 import { useCountries } from '@/hooks/useExpansionData';
 
 const Index = () => {
-  const [activePage, setActivePage] = useState('dashboard');
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [addSignal, setAddSignal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: countries = [] } = useCountries();
 
-  const currentPage = selectedCountry ? 'country-detail' : activePage;
+  const getActivePage = () => {
+    const path = location.pathname.replace(/^\/app\/?/, '').split('/')[0] || 'dashboard';
+    return path;
+  };
 
+  const activePage = getActivePage();
   const avgPct = countries.length ? Math.round(countries.reduce((s, c) => s + c.pct, 0) / countries.length) : 0;
 
   const handleNavigate = (page: string) => {
-    setActivePage(page);
-    setSelectedCountry(null);
+    navigate(`/app/${page}`);
     setSearchQuery('');
   };
 
@@ -40,33 +44,18 @@ const Index = () => {
     setAddSignal(prev => prev + 1);
   }, []);
 
-  const renderPage = () => {
-    if (selectedCountry) {
-      return <CountryDetailPage countryId={selectedCountry} onBack={() => setSelectedCountry(null)} />;
-    }
-    switch (activePage) {
-      case 'dashboard': return <DashboardPage />;
-      case 'countries': return <CountriesPage onSelectCountry={setSelectedCountry} addSignal={addSignal} />;
-      case 'tasks': return <TasksPage addSignal={addSignal} searchQuery={searchQuery} />;
-      case 'budget': return <BudgetPage addSignal={addSignal} searchQuery={searchQuery} />;
-      case 'risks': return <RisksPage addSignal={addSignal} searchQuery={searchQuery} />;
-      case 'history': return <HistoryPage searchQuery={searchQuery} />;
-      case 'team': return <TeamPage />;
-      case 'comments': return <CommentsPage addSignal={addSignal} searchQuery={searchQuery} />;
-      case 'kpis': return <KpisPage />;
-      case 'market-analysis': return <MarketAnalysisPage />;
-      case 'calendar': return <CalendarPage />;
-      case 'roadmap': return <RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />;
-      case 'settings': return <SettingsPage />;
-      case 'profile': return <ProfilePage />;
-      default: return <DashboardPage />;
-    }
+  const handleSelectCountry = (countryId: string) => {
+    navigate(`/app/countries/${countryId}`);
+  };
+
+  const handleBackFromCountry = () => {
+    navigate('/app/countries');
   };
 
   return (
     <div className="flex min-h-screen">
       <AppSidebar
-        activePage={selectedCountry ? 'countries' : activePage}
+        activePage={activePage === 'countries' || activePage.startsWith('countries/') ? 'countries' : activePage}
         onNavigate={handleNavigate}
         globalProgress={avgPct}
         mobileOpen={mobileMenuOpen}
@@ -74,14 +63,31 @@ const Index = () => {
       />
       <main className="lg:ml-[248px] flex-1 flex flex-col min-h-screen">
         <Topbar
-          activePage={currentPage}
+          activePage={activePage}
           onAdd={handleAdd}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onMenuToggle={() => setMobileMenuOpen(prev => !prev)}
         />
         <div className="p-4 lg:p-8 flex-1">
-          {renderPage()}
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/countries" element={<CountriesPage onSelectCountry={handleSelectCountry} addSignal={addSignal} />} />
+            <Route path="/countries/:countryId" element={<CountryDetailPage onBack={handleBackFromCountry} />} />
+            <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />
+            <Route path="/team" element={<TeamPage />} />
+            <Route path="/comments" element={<CommentsPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/kpis" element={<KpisPage />} />
+            <Route path="/market-analysis" element={<MarketAnalysisPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/roadmap" element={<RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Routes>
         </div>
       </main>
     </div>

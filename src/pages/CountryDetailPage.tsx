@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
 import StatusPill from '@/components/StatusPill';
 import { useCountries, useMilestones } from '@/hooks/useExpansionData';
@@ -29,11 +30,12 @@ const EMPTY_FORM: MilestoneForm = { title: '', icon: '📌', start_date: '', end
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
 interface CountryDetailPageProps {
-  countryId: string;
   onBack: () => void;
 }
 
-export default function CountryDetailPage({ countryId, onBack }: CountryDetailPageProps) {
+export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
+  const { countryId } = useParams<{ countryId: string }>();
+  if (!countryId) return null;
   const { data: countries = [] } = useCountries();
   const { data: milestones = [] } = useMilestones(countryId);
   const { data: myRole } = useCurrentUserRole();
@@ -57,7 +59,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
   const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
 
   const openEdit = (m: typeof milestones[0]) => {
-    setForm({ title: m.title, icon: m.icon, start_date: (m as any).start_date ?? '', end_date: (m as any).end_date ?? '' });
+    setForm({ title: m.title, icon: m.icon, start_date: m.start_date ?? '', end_date: m.end_date ?? '' });
     setEditingId(m.id);
     setErrors({});
     setDialogOpen(true);
@@ -83,7 +85,7 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
       start_date: result.data.start_date || null,
       end_date: result.data.end_date || null,
       country_id: countryId,
-    } as any;
+    };
     if (editingId) {
       updateMilestone.mutate({ id: editingId, ...payload }, {
         onSuccess: () => { toast.success('Jalon modifié'); setDialogOpen(false); },
@@ -168,9 +170,9 @@ export default function CountryDetailPage({ countryId, onBack }: CountryDetailPa
               <div className="flex-1">
                 <div className={`text-[13px] font-medium ${m.is_done ? 'line-through text-muted-foreground' : ''}`}>{m.title}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {(m as any).start_date && (m as any).end_date 
-                    ? `${(m as any).start_date} → ${(m as any).end_date}` 
-                    : (m as any).end_date || (m as any).start_date || m.target_date}
+                  {m.start_date && m.end_date
+                    ? `${m.start_date} → ${m.end_date}`
+                    : m.end_date || m.start_date || m.target_date}
                 </div>
               </div>
               <StatusPill status={m.is_done ? 'done' : 'planning'} />

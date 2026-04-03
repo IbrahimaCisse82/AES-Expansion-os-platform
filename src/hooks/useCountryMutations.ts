@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logActivity } from './useActivityLogger';
 
 export function useCreateCountry() {
   const qc = useQueryClient();
@@ -10,7 +11,15 @@ export function useCreateCountry() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['countries'] }),
+    onSuccess: (data) => {
+      logActivity({
+        action: 'created',
+        entity_type: 'country',
+        entity_id: data.id,
+        description: `Pays créé: ${data.flag} ${data.name}`,
+      });
+      qc.invalidateQueries({ queryKey: ['countries'] });
+    },
   });
 }
 
@@ -22,7 +31,15 @@ export function useUpdateCountry() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['countries'] }),
+    onSuccess: (data) => {
+      logActivity({
+        action: 'updated',
+        entity_type: 'country',
+        entity_id: data.id,
+        description: `Pays modifié: ${data.flag} ${data.name}`,
+      });
+      qc.invalidateQueries({ queryKey: ['countries'] });
+    },
   });
 }
 
@@ -33,6 +50,14 @@ export function useDeleteCountry() {
       const { error } = await supabase.from('countries').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['countries'] }),
+    onSuccess: (_, id) => {
+      logActivity({
+        action: 'deleted',
+        entity_type: 'country',
+        entity_id: id,
+        description: 'Pays supprimé',
+      });
+      qc.invalidateQueries({ queryKey: ['countries'] });
+    },
   });
 }

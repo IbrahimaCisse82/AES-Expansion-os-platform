@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logActivity } from './useActivityLogger';
 
 export function useCreateMilestone() {
   const qc = useQueryClient();
@@ -10,7 +11,13 @@ export function useCreateMilestone() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_d, vars) => {
+    onSuccess: (data, vars) => {
+      logActivity({
+        action: 'created',
+        entity_type: 'milestone',
+        entity_id: data.id,
+        description: `Jalon créé: ${data.title}`,
+      });
       qc.invalidateQueries({ queryKey: ['milestones', vars.country_id] });
       qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
     },
@@ -26,6 +33,12 @@ export function useUpdateMilestone() {
       return data;
     },
     onSuccess: (data) => {
+      logActivity({
+        action: 'updated',
+        entity_type: 'milestone',
+        entity_id: data.id,
+        description: `Jalon modifié: ${data.title}`,
+      });
       qc.invalidateQueries({ queryKey: ['milestones', data.country_id] });
       qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
     },
@@ -41,6 +54,12 @@ export function useDeleteMilestone() {
       return countryId;
     },
     onSuccess: (countryId) => {
+      logActivity({
+        action: 'deleted',
+        entity_type: 'milestone',
+        entity_id: countryId,
+        description: 'Jalon supprimé',
+      });
       qc.invalidateQueries({ queryKey: ['milestones', countryId] });
       qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
     },

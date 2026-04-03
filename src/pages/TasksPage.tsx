@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { z } from 'zod';
+import { exportToCSV } from '@/lib/csvExport';
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
@@ -177,6 +178,21 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
     updateTask.mutate({ id: task.id, status: newStatus });
   };
 
+  const handleExportCSV = () => {
+    const dataToExport = filtered.map(t => ({
+      'Titre': t.title,
+      'Marché': t.country_label || '',
+      'Jalon': t.milestone_id ? allMilestones.find(m => m.id === t.milestone_id)?.title : '',
+      'Priorité': t.priority,
+      'Statut': t.status,
+      'Échéance': t.due_date || '',
+      'Assigné à': t.assigned_to || '',
+      'Propriétaire': t.owner_name || '',
+    }));
+    exportToCSV(dataToExport, 'taches');
+    toast.success('Tâches exportées en CSV');
+  };
+
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   return (
@@ -186,11 +202,16 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
           <h2 className="font-display text-[23px] font-bold text-primary mb-1">Tâches</h2>
           <p className="text-[12.5px] text-muted-foreground">Suivi des tâches par marché et priorité</p>
         </div>
-        {canWrite && (
-          <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
-            <Plus className="w-4 h-4" /> Nouvelle tâche
+        <div className="flex gap-2">
+          <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12.5px]">
+            <Download className="w-4 h-4" /> Exporter
           </Button>
-        )}
+          {canWrite && (
+            <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
+              <Plus className="w-4 h-4" /> Nouvelle tâche
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logActivity } from './useActivityLogger';
 
 export function useCreateRoadmapBar() {
   const qc = useQueryClient();
@@ -10,7 +11,15 @@ export function useCreateRoadmapBar() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['roadmap_bars'] }),
+    onSuccess: (data) => {
+      logActivity({
+        action: 'created',
+        entity_type: 'roadmap_bar',
+        entity_id: data.id,
+        description: `Barre roadmap créée`,
+      });
+      qc.invalidateQueries({ queryKey: ['roadmap_bars'] });
+    },
   });
 }
 
@@ -22,7 +31,15 @@ export function useUpdateRoadmapBar() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['roadmap_bars'] }),
+    onSuccess: (data) => {
+      logActivity({
+        action: 'updated',
+        entity_type: 'roadmap_bar',
+        entity_id: data.id,
+        description: `Barre roadmap modifiée`,
+      });
+      qc.invalidateQueries({ queryKey: ['roadmap_bars'] });
+    },
   });
 }
 
@@ -33,6 +50,14 @@ export function useDeleteRoadmapBar() {
       const { error } = await supabase.from('roadmap_bars').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['roadmap_bars'] }),
+    onSuccess: (_, id) => {
+      logActivity({
+        action: 'deleted',
+        entity_type: 'roadmap_bar',
+        entity_id: id,
+        description: 'Barre roadmap supprimée',
+      });
+      qc.invalidateQueries({ queryKey: ['roadmap_bars'] });
+    },
   });
 }

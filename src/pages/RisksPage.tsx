@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download } from 'lucide-react';
+import { exportToCSV } from '@/lib/csvExport';
 import { z } from 'zod';
 
 const levelConfig: Record<string, { bg: string; text: string; bar: string; label: string }> = {
@@ -117,6 +118,19 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
     });
   };
 
+  const handleExportCSV = () => {
+    const dataToExport = searched.map(r => ({
+      'Titre': r.title,
+      'Niveau': levelConfig[r.level]?.label || r.level,
+      'Catégorie': r.category || '',
+      'Marché': r.country_label || '',
+      'Description': r.description || '',
+      'Mitigation': r.mitigation || '',
+    }));
+    exportToCSV(dataToExport, 'risques');
+    toast.success('Risques exportés en CSV');
+  };
+
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   return (
@@ -126,11 +140,16 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
           <h2 className="font-display text-[23px] font-bold text-primary mb-1">Registre des Risques</h2>
           <p className="text-[12.5px] text-muted-foreground">Suivi et priorisation des risques par marché</p>
         </div>
-        {canWrite && (
-          <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
-            <Plus className="w-4 h-4" /> Nouveau risque
+        <div className="flex gap-2">
+          <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12.5px]">
+            <Download className="w-4 h-4" /> Exporter
           </Button>
-        )}
+          {canWrite && (
+            <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
+              <Plus className="w-4 h-4" /> Nouveau risque
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

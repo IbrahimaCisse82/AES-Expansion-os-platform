@@ -15,7 +15,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { email, password, full_name } = await req.json();
+    const { email, password, full_name, role = "observer" } = await req.json();
 
     if (!email || !password) {
       return new Response(
@@ -27,14 +27,53 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Non autorisé" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
     const { createClient } = await import("npm:@supabase/supabase-js@2");
 
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: callerUser }, error: authErr } = await admin.auth.getUser(token);
+
+    if (authErr || !callerUser) {
+      return new Response(
+        JSON.stringify({ error: "Token invalide" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { data: callerRole } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerUser.id)
+      .maybeSingle();
+
+    if (callerRole?.role !== "admin") {
+      return new Response(
+        JSON.stringify({ error: "Seuls les administrateurs peuvent créer des utilisateurs" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     const { data: userData, error: createErr } = await admin.auth.admin.createUser({
       email,
@@ -48,7 +87,7 @@ Deno.serve(async (req: Request) => {
     if (userData.user) {
       await admin.from("user_roles").insert({
         user_id: userData.user.id,
-        role: "admin",
+        role: role,
       });
     }
 

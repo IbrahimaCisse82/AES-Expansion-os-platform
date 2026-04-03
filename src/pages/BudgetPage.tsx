@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download } from 'lucide-react';
+import { exportToCSV } from '@/lib/csvExport';
 import { z } from 'zod';
 
 const budgetColors: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
@@ -127,6 +128,19 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     });
   };
 
+  const handleExportCSV = () => {
+    const dataToExport = entries.map(b => ({
+      'Catégorie': b.category === 'market' ? b.country_label : b.category,
+      'Type': b.category,
+      'Marché': b.country_label || '',
+      'Alloué (K FCFA)': b.allocated_k,
+      'Dépensé (K FCFA)': b.spent_k,
+      'Pourcentage': b.allocated_k > 0 ? Math.round(b.spent_k / b.allocated_k * 100) : 0,
+    }));
+    exportToCSV(dataToExport, 'budget');
+    toast.success('Budget exporté en CSV');
+  };
+
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   const renderEntryRow = (b: typeof entries[0]) => {
@@ -161,11 +175,16 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
         <h2 className="font-display text-[23px] font-bold text-primary mb-1">Budget & Finances</h2>
           <p className="text-[12.5px] text-muted-foreground">Allocation et consommation · Exercice {currentYear}</p>
         </div>
-        {canWrite && (
-          <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
-            <Plus className="w-4 h-4" /> Nouvelle entrée
+        <div className="flex gap-2">
+          <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12.5px]">
+            <Download className="w-4 h-4" /> Exporter
           </Button>
-        )}
+          {canWrite && (
+            <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
+              <Plus className="w-4 h-4" /> Nouvelle entrée
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -35,13 +35,12 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPw, setChangingPw] = useState(false);
 
-  // Sync form with profile data
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFullName(profile.full_name);
       setInitials(profile.initials);
     }
-  });
+  }, [profile]);
 
   const currentName = fullName || profile?.full_name || '';
   const currentInitials = initials || profile?.initials || '';
