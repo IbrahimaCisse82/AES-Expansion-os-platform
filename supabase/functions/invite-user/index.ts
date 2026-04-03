@@ -77,12 +77,12 @@ Deno.serve(async (req) => {
     if (createErr) throw createErr;
     if (!createData.user) throw new Error("Erreur lors de la création de l'utilisateur");
 
-    // Set role if specified
+    // Set role if specified (upsert to handle trigger-created default role)
     if (role) {
-      await admin
+      const { error: roleErr } = await admin
         .from("user_roles")
-        .update({ role })
-        .eq("user_id", createData.user.id);
+        .upsert({ user_id: createData.user.id, role }, { onConflict: 'user_id' });
+      if (roleErr) throw roleErr;
     }
 
     return new Response(
