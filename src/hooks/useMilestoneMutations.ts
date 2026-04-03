@@ -13,13 +13,13 @@ export function useCreateMilestone() {
     },
     onSuccess: (data, vars) => {
       logActivity({
-        action: 'created',
-        entity_type: 'milestone',
-        entity_id: data.id,
-        description: `Jalon créé: ${data.title}`,
+        action: `a créé le jalon "${data.title}"`,
+        entityType: 'milestone',
+        entityId: data.id,
       });
       qc.invalidateQueries({ queryKey: ['milestones', vars.country_id] });
       qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }
@@ -34,13 +34,13 @@ export function useUpdateMilestone() {
     },
     onSuccess: (data) => {
       logActivity({
-        action: 'updated',
-        entity_type: 'milestone',
-        entity_id: data.id,
-        description: `Jalon modifié: ${data.title}`,
+        action: `a modifié le jalon "${data.title}"`,
+        entityType: 'milestone',
+        entityId: data.id,
       });
       qc.invalidateQueries({ queryKey: ['milestones', data.country_id] });
       qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }
@@ -55,13 +55,13 @@ export function useDeleteMilestone() {
     },
     onSuccess: (countryId) => {
       logActivity({
-        action: 'deleted',
-        entity_type: 'milestone',
-        entity_id: countryId,
-        description: 'Jalon supprimé',
+        action: 'a supprimé un jalon',
+        entityType: 'milestone',
+        entityId: countryId,
       });
       qc.invalidateQueries({ queryKey: ['milestones', countryId] });
       qc.invalidateQueries({ queryKey: ['milestones', 'all'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }

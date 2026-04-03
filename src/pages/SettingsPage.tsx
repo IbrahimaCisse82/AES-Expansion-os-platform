@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, Info } from 'lucide-react';
+import { useCountries, useTasks, useRisks, useBudgetEntries } from '@/hooks/useExpansionData';
+import { exportToCSV } from '@/lib/csvExport';
 
 const COLOR_OPTIONS = [
   { value: 'sage', label: 'Vert', css: 'bg-sage' },
@@ -23,6 +25,95 @@ const COLOR_OPTIONS = [
   { value: 'amber', label: 'Ambre', css: 'bg-amber' },
   { value: 'rose', label: 'Rose', css: 'bg-rose' },
 ];
+
+function DataExportSection() {
+  const { data: countries = [] } = useCountries();
+  const { data: tasks = [] } = useTasks();
+  const { data: risks = [] } = useRisks();
+  const { data: budget = [] } = useBudgetEntries();
+
+  const exportAll = (type: 'countries' | 'tasks' | 'risks' | 'budget') => {
+    if (type === 'countries') {
+      exportToCSV(countries.map(c => ({
+        'Pays': c.name, 'Region': c.region, 'Statut': c.status, 'Phase': c.phase,
+        'Progression': `${c.pct}%`, 'Population': c.population, 'PIB': c.gdp,
+        'Langue': c.language, 'Contact': c.local_contact,
+      })), 'pays');
+    } else if (type === 'tasks') {
+      exportToCSV(tasks.map(t => ({
+        'Titre': t.title, 'Marche': t.country_label || '', 'Priorite': t.priority,
+        'Statut': t.status, 'Echeance': t.due_date || '', 'Responsable': t.owner_name || '',
+      })), 'taches');
+    } else if (type === 'risks') {
+      exportToCSV(risks.map(r => ({
+        'Titre': r.title, 'Niveau': r.level, 'Impact': r.impact,
+        'Probabilite': r.probability, 'Marche': r.country_label || '',
+        'Mitigation': r.mitigation || '',
+      })), 'risques');
+    } else {
+      exportToCSV(budget.map(b => ({
+        'Categorie': b.category === 'market' ? b.country_label : b.category,
+        'Alloue (K FCFA)': b.allocated_k, 'Depense (K FCFA)': b.spent_k,
+        'Exercice': b.fiscal_year,
+      })), 'budget');
+    }
+    toast.success('Export CSV termine');
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-6">
+      <div className="mb-4">
+        <h3 className="font-display text-[16px] font-semibold text-primary">Export de donnees</h3>
+        <p className="text-[12px] text-muted-foreground">Exportez vos donnees au format CSV</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {[
+          { key: 'countries' as const, label: 'Pays', count: countries.length },
+          { key: 'tasks' as const, label: 'Taches', count: tasks.length },
+          { key: 'risks' as const, label: 'Risques', count: risks.length },
+          { key: 'budget' as const, label: 'Budget', count: budget.length },
+        ].map(item => (
+          <button
+            key={item.key}
+            onClick={() => exportAll(item.key)}
+            disabled={item.count === 0}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-medium text-foreground">{item.label}</div>
+              <div className="text-[11px] text-muted-foreground">{item.count} entrees</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlatformInfoSection() {
+  return (
+    <div className="bg-card border border-border rounded-lg p-6">
+      <div className="mb-4">
+        <h3 className="font-display text-[16px] font-semibold text-primary">A propos</h3>
+        <p className="text-[12px] text-muted-foreground">Informations sur la plateforme</p>
+      </div>
+      <div className="space-y-3">
+        {[
+          ['Plateforme', 'ExpansionOS'],
+          ['Version', '1.0.0'],
+          ['Editeur', 'GrowHub Senegal'],
+          ['Base de donnees', 'Supabase (PostgreSQL)'],
+        ].map(([k, v]) => (
+          <div key={k} className="flex items-center justify-between py-1.5 border-b border-border last:border-b-0">
+            <span className="text-[12.5px] text-muted-foreground">{k}</span>
+            <span className="text-[12.5px] font-medium text-foreground">{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function useRoadmapTypes() {
   return useQuery({
@@ -101,10 +192,13 @@ export default function SettingsPage() {
   return (
     <div className="animate-page-enter">
       <h2 className="font-display text-[23px] font-bold text-primary mb-1">Paramètres</h2>
-      <p className="text-[12.5px] text-muted-foreground mb-8">Gérez les types et catégories de votre plateforme</p>
+      <p className="text-[12.5px] text-muted-foreground mb-8">Gerez les parametres de votre plateforme</p>
 
-      {/* Roadmap Types */}
-      <div className="bg-card border border-border rounded-lg p-6 max-w-xl">
+      <div className="space-y-6 max-w-xl">
+
+      <DataExportSection />
+
+      <div className="bg-card border border-border rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-display text-[16px] font-semibold text-primary">Types de Roadmap</h3>
@@ -141,7 +235,10 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Dialog */}
+      <PlatformInfoSection />
+
+      </div>
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>

@@ -13,12 +13,13 @@ export function useCreateCountry() {
     },
     onSuccess: (data) => {
       logActivity({
-        action: 'created',
-        entity_type: 'country',
-        entity_id: data.id,
-        description: `Pays créé: ${data.flag} ${data.name}`,
+        action: `a ajouté le pays ${data.flag} ${data.name}`,
+        entityType: 'country',
+        entityId: data.id,
+        marketFlag: data.flag ?? '',
       });
       qc.invalidateQueries({ queryKey: ['countries'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }
@@ -33,12 +34,13 @@ export function useUpdateCountry() {
     },
     onSuccess: (data) => {
       logActivity({
-        action: 'updated',
-        entity_type: 'country',
-        entity_id: data.id,
-        description: `Pays modifié: ${data.flag} ${data.name}`,
+        action: `a modifié le pays ${data.flag} ${data.name}`,
+        entityType: 'country',
+        entityId: data.id,
+        marketFlag: data.flag ?? '',
       });
       qc.invalidateQueries({ queryKey: ['countries'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }
@@ -52,12 +54,12 @@ export function useDeleteCountry() {
     },
     onSuccess: (_, id) => {
       logActivity({
-        action: 'deleted',
-        entity_type: 'country',
-        entity_id: id,
-        description: 'Pays supprimé',
+        action: 'a supprimé un pays',
+        entityType: 'country',
+        entityId: id,
       });
       qc.invalidateQueries({ queryKey: ['countries'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }

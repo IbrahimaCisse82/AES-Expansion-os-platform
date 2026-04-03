@@ -26,24 +26,23 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
-  const [fullName, setFullName] = useState('');
-  const [initials, setInitials] = useState('');
+  const [fullName, setFullName] = useState<string | null>(null);
+  const [initials, setInitials] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Password change
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPw, setChangingPw] = useState(false);
 
   useEffect(() => {
     if (profile) {
-      setFullName(profile.full_name);
-      setInitials(profile.initials);
+      setFullName(profile.full_name ?? '');
+      setInitials(profile.initials ?? '');
     }
   }, [profile]);
 
-  const currentName = fullName || profile?.full_name || '';
-  const currentInitials = initials || profile?.initials || '';
+  const currentName = fullName ?? profile?.full_name ?? '';
+  const currentInitials = initials ?? profile?.initials ?? '';
 
   const handleSaveProfile = async () => {
     if (!user || !currentName.trim()) return;

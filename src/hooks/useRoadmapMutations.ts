@@ -13,12 +13,12 @@ export function useCreateRoadmapBar() {
     },
     onSuccess: (data) => {
       logActivity({
-        action: 'created',
-        entity_type: 'roadmap_bar',
-        entity_id: data.id,
-        description: `Barre roadmap créée`,
+        action: `a créé une barre roadmap "${data.label}"`,
+        entityType: 'roadmap_bar',
+        entityId: data.id,
       });
       qc.invalidateQueries({ queryKey: ['roadmap_bars'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }
@@ -33,12 +33,12 @@ export function useUpdateRoadmapBar() {
     },
     onSuccess: (data) => {
       logActivity({
-        action: 'updated',
-        entity_type: 'roadmap_bar',
-        entity_id: data.id,
-        description: `Barre roadmap modifiée`,
+        action: `a modifié la barre roadmap "${data.label}"`,
+        entityType: 'roadmap_bar',
+        entityId: data.id,
       });
       qc.invalidateQueries({ queryKey: ['roadmap_bars'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }
@@ -52,12 +52,12 @@ export function useDeleteRoadmapBar() {
     },
     onSuccess: (_, id) => {
       logActivity({
-        action: 'deleted',
-        entity_type: 'roadmap_bar',
-        entity_id: id,
-        description: 'Barre roadmap supprimée',
+        action: 'a supprimé une barre roadmap',
+        entityType: 'roadmap_bar',
+        entityId: id,
       });
       qc.invalidateQueries({ queryKey: ['roadmap_bars'] });
+      qc.invalidateQueries({ queryKey: ['activity_log'] });
     },
   });
 }

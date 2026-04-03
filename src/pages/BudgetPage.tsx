@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { z } from 'zod';
+import BudgetCharts from '@/components/BudgetCharts';
 
 const budgetColors: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
 const textColors: Record<string, string> = { sage: 'text-accent', sky: 'text-[hsl(var(--sky))]', gold: 'text-[hsl(var(--gold))]', terracotta: 'text-destructive', plum: 'text-[hsl(var(--plum))]' };
@@ -192,6 +193,8 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
         <KpiCard label="Dépensé" value={`${(totalSpent / 1000).toFixed(1)}M FCFA`} meta="du budget" accentColor="gold" trend={{ value: totalAllocated > 0 ? `${Math.round(totalSpent / totalAllocated * 100)}%` : '0%', up: false }} />
         <KpiCard label="Restant" value={`${(remaining / 1000).toFixed(1)}M FCFA`} meta="disponible" accentColor="sky" trend={{ value: totalAllocated > 0 ? `${Math.round(remaining / totalAllocated * 100)}%` : '0%', up: true }} />
       </div>
+
+      <BudgetCharts entries={searched} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-5">

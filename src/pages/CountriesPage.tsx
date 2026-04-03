@@ -10,9 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { z } from 'zod';
 import { COUNTRY_LIST } from '@/data/countryList';
+import { exportToCSV } from '@/lib/csvExport';
 
 const phaseNames = [
   'Phase 0 — Prospection', 'Phase 1 — Étude & Légal', 'Phase 2 — Mise en place',
@@ -117,11 +118,24 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
           <h2 className="font-display text-[23px] font-bold text-primary mb-1">Pays Cibles</h2>
           <p className="text-[12.5px] text-muted-foreground">Vue d'ensemble des marchés · {countries.length} pays ciblés</p>
         </div>
-        {canWrite && availableCountries.length > 0 && (
-          <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
-            <Plus className="w-4 h-4" /> Nouveau pays
+        <div className="flex gap-2">
+          <Button onClick={() => {
+            exportToCSV(countries.map(c => ({
+              'Pays': c.name, 'Drapeau': c.flag, 'Region': c.region, 'Statut': c.status,
+              'Phase': phaseNames[c.phase] || `Phase ${c.phase}`, 'Progression': `${c.pct}%`,
+              'Population': c.population, 'PIB': c.gdp, 'Langue': c.language,
+              'Contact local': c.local_contact, 'Budget': c.budget, 'Equipe': c.team_size, 'Risques': c.risk_count,
+            })), 'pays');
+            toast.success('Pays exportes en CSV');
+          }} variant="outline" size="sm" className="gap-1.5 text-[12.5px]">
+            <Download className="w-4 h-4" /> Exporter
           </Button>
-        )}
+          {canWrite && availableCountries.length > 0 && (
+            <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
+              <Plus className="w-4 h-4" /> Nouveau pays
+            </Button>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {countries.map(c => {
