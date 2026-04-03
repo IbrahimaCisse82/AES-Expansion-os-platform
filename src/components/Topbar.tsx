@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Plus, LogOut, Menu } from 'lucide-react';
+import { Search, Bell, Plus, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityLog } from '@/hooks/useExpansionData';
+import { useTheme } from '@/hooks/useTheme';
 
 const pageNames: Record<string, string> = {
   dashboard: 'Tableau de bord',
@@ -33,6 +34,7 @@ interface TopbarProps {
 export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange, onMenuToggle }: TopbarProps) {
   const { signOut, user } = useAuth();
   const { data: activity = [] } = useActivityLog();
+  const { isDark, toggleTheme } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -122,6 +124,14 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
       <div className="w-[34px] h-[34px] rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold cursor-pointer">
         {initials}
       </div>
+
+      <button
+        onClick={toggleTheme}
+        className="w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+        title={isDark ? 'Mode clair' : 'Mode sombre'}
+      >
+        {isDark ? <Sun size={14} /> : <Moon size={14} />}
+      </button>
 
       <button
         onClick={signOut}
