@@ -77,11 +77,16 @@ Deno.serve(async (req) => {
     if (createErr) throw createErr;
     if (!createData.user) throw new Error("Erreur lors de la création de l'utilisateur");
 
-    // Set role if specified (upsert to handle trigger-created default role)
+    // Wait a moment for trigger to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Set role using SECURITY DEFINER function to bypass RLS
     if (role) {
-      const { error: roleErr } = await admin
-        .from("user_roles")
-        .upsert({ user_id: createData.user.id, role }, { onConflict: 'user_id' });
+      const { error: roleErr } = await admin.rpc('set_user_role', {
+        target_user_id: createData.user.id,
+        new_role: role
+      });
+
       if (roleErr) throw roleErr;
     }
 
