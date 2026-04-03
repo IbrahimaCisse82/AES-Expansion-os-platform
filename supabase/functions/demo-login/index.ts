@@ -50,7 +50,11 @@ Deno.serve(async (req) => {
       const { data: users2 } = await admin.auth.admin.listUsers();
       const newUser = users2?.users?.find((u: any) => u.email === DEMO_EMAIL);
       if (newUser) {
-        await admin.from("user_roles").update({ role: "admin" }).eq("user_id", newUser.id);
+        // Use SECURITY DEFINER function to bypass RLS
+        await admin.rpc('set_user_role', {
+          target_user_id: newUser.id,
+          new_role: 'admin'
+        });
       }
     }
 
