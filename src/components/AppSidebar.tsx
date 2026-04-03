@@ -1,7 +1,4 @@
-import { 
-  LayoutDashboard, Map, Globe, ListTodo, Calendar, BarChart3, 
-  Wallet, AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X
-} from 'lucide-react';
+import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X } from 'lucide-react';
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
 
 interface NavItem {
@@ -93,7 +90,7 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 mb-0.5
                   ${activePage === item.id 
                     ? 'bg-primary text-primary-foreground font-medium' 
-                    : 'text-muted-foreground hover:bg-ivory hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
               >
                 {item.icon}

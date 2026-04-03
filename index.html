@@ -15,6 +15,17 @@
   </head>
 
   <body>
+    <script>
+      (function(){
+        var t=localStorage.getItem('theme-mode');
+        if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme='dark';
+        }else{
+          document.documentElement.style.colorScheme='light';
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

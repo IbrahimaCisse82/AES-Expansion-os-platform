@@ -127,7 +127,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
             <div className={`flex-1 py-2 px-1.5 text-center text-[11px] font-semibold rounded-lg border-[1.5px] transition-all ${
               i < country.phase ? 'bg-sage-light text-sage-dark border-sage' :
               i === country.phase ? 'bg-primary text-primary-foreground border-primary shadow-card-hover' :
-              'bg-ivory text-muted-foreground border-border'
+              'bg-muted text-muted-foreground border-border'
             }`}>{phase.split(' — ')[0]}</div>
             {i < 4 && <div className="w-5 text-center text-border text-sm flex-shrink-0">›</div>}
           </div>
@@ -139,13 +139,13 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Informations</h3>
           <div className="grid grid-cols-2 gap-3 mb-4">
             {[['Population', country.population], ['PIB', country.gdp], ['Langue', country.language], ['Contact', country.local_contact]].map(([k, v]) => (
-              <div key={k} className="bg-ivory rounded-lg p-3">
+              <div key={k} className="bg-muted rounded-lg p-3">
                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1">{k}</div>
                 <div className="text-[13.5px] font-semibold text-primary">{v}</div>
               </div>
             ))}
           </div>
-          <div className="bg-ivory rounded-lg p-3.5 text-[13px] leading-relaxed">{country.description}</div>
+          <div className="bg-muted rounded-lg p-3.5 text-[13px] leading-relaxed">{country.description}</div>
         </div>
 
         <div className="bg-card border border-border rounded-lg p-5">
@@ -159,7 +159,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
           </div>
           {milestones.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun jalon</div>}
           {milestones.map(m => (
-            <div key={m.id} className="flex gap-3 py-3 border-b border-ivory last:border-b-0 group">
+            <div key={m.id} className="flex gap-3 py-3 border-b border-border last:border-b-0 group">
               <div
                 onClick={() => toggleDone(m)}
                 className={`w-5 h-5 mt-0.5 border-2 rounded flex-shrink-0 flex items-center justify-center transition-colors ${canWrite ? 'cursor-pointer' : ''} ${m.is_done ? 'bg-accent border-accent' : 'border-border hover:border-accent'}`}
@@ -190,7 +190,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">KPIs</h3>
           <div className="grid grid-cols-4 gap-3">
             {[['CA Mensuel', country.kpi_ca, 'sage'], ['Clients', country.kpi_clients, 'sky'], ['NPS', country.kpi_nps, 'gold'], ['Rétention', country.kpi_retention, 'terracotta']].map(([label, value, color]) => (
-              <div key={label} className="bg-ivory rounded-lg p-4 text-center">
+              <div key={label} className="bg-muted rounded-lg p-4 text-center">
                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">{label}</div>
                 <div className={`font-display text-[22px] font-bold ${value === 'N/A' ? 'text-muted-foreground' : (colorMap[color as string] || 'text-sage')}`}>{value}</div>
               </div>
