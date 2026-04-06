@@ -50,6 +50,44 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_categories: {
+        Row: {
+          created_at: string
+          id: string
+          is_system: boolean
+          name: string
+          parent_id: string | null
+          sort_order: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          name: string
+          parent_id?: string | null
+          sort_order?: number
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+          parent_id?: string | null
+          sort_order?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_entries: {
         Row: {
           allocated_k: number
@@ -96,6 +134,136 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      budget_lines: {
+        Row: {
+          category_id: string
+          country_id: string | null
+          country_label: string | null
+          created_at: string
+          id: string
+          line_type: string
+          m1: number
+          m10: number
+          m11: number
+          m12: number
+          m2: number
+          m3: number
+          m4: number
+          m5: number
+          m6: number
+          m7: number
+          m8: number
+          m9: number
+          notes: string | null
+          scenario_id: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          country_id?: string | null
+          country_label?: string | null
+          created_at?: string
+          id?: string
+          line_type?: string
+          m1?: number
+          m10?: number
+          m11?: number
+          m12?: number
+          m2?: number
+          m3?: number
+          m4?: number
+          m5?: number
+          m6?: number
+          m7?: number
+          m8?: number
+          m9?: number
+          notes?: string | null
+          scenario_id: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          country_id?: string | null
+          country_label?: string | null
+          created_at?: string
+          id?: string
+          line_type?: string
+          m1?: number
+          m10?: number
+          m11?: number
+          m12?: number
+          m2?: number
+          m3?: number
+          m4?: number
+          m5?: number
+          m6?: number
+          m7?: number
+          m8?: number
+          m9?: number
+          notes?: string | null
+          scenario_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_lines_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_scenarios: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          fiscal_year: number
+          id: string
+          is_baseline: boolean
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fiscal_year?: number
+          id?: string
+          is_baseline?: boolean
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fiscal_year?: number
+          id?: string
+          is_baseline?: boolean
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       comments: {
         Row: {
