@@ -119,7 +119,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   };
 
   const handleExportCSV = () => {
-    const dataToExport = searched.map(r => ({
+    const dataToExport = searchedRisks.map(r => ({
       'Titre': r.title,
       'Niveau': levelConfig[r.level]?.label || r.level,
       'Catégorie': r.category || '',
