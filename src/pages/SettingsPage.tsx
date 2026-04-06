@@ -46,8 +46,8 @@ function DataExportSection() {
       })), 'taches');
     } else if (type === 'risks') {
       exportToCSV(risks.map(r => ({
-        'Titre': r.title, 'Niveau': r.level, 'Impact': r.impact,
-        'Probabilite': r.probability, 'Marche': r.country_label || '',
+        'Titre': r.title, 'Niveau': r.level, 'Categorie': r.category || '',
+        'Marche': r.country_label || '', 'Description': r.description || '',
         'Mitigation': r.mitigation || '',
       })), 'risques');
     } else {
