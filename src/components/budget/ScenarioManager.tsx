@@ -136,8 +136,13 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg">Nouveau scénario</DialogTitle>
+            <DialogTitle className="font-display text-lg">{duplicateSource ? '📋 Dupliquer le scénario' : 'Nouveau scénario'}</DialogTitle>
           </DialogHeader>
+          {duplicateSource && (
+            <p className="text-[11px] text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+              Toutes les lignes budgétaires du scénario source seront copiées dans le nouveau scénario.
+            </p>
+          )}
           <div className="space-y-4 pt-2">
             <div>
               <Label className="text-[12.5px]">Nom *</Label>
@@ -148,8 +153,10 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
               <Input value={description} onChange={e => setDescription(e.target.value)} maxLength={200} className="mt-1" placeholder="Scénario réaliste…" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Annuler</Button>
-              <Button size="sm" onClick={handleCreate} disabled={createScenario.isPending}>Créer</Button>
+              <Button variant="outline" size="sm" onClick={() => { setDialogOpen(false); setDuplicateSource(null); }}>Annuler</Button>
+              <Button size="sm" onClick={handleCreate} disabled={createScenario.isPending || duplicateScenario.isPending}>
+                {duplicateSource ? 'Dupliquer' : 'Créer'}
+              </Button>
             </div>
           </div>
         </DialogContent>
