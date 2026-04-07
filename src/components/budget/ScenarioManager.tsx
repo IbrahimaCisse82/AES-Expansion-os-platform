@@ -119,6 +119,17 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
                   <Copy size={10} className="text-primary" />
                 </button>
               )}
+              {canWrite && isActive && s.status !== 'locked' && (
+                <button onClick={(e) => {
+                  e.stopPropagation();
+                  setAdjustValue('');
+                  setAdjustLineType('budget');
+                  setAdjustCatType('all');
+                  setAdjustOpen(true);
+                }} className="p-0.5 hover:bg-[hsl(var(--gold))]/10 rounded" title="Ajuster en %">
+                  <Percent size={10} className="text-[hsl(var(--gold))]" />
+                </button>
+              )}
               {canWrite && isActive && (
                 <button onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} className="p-0.5 hover:bg-destructive/10 rounded">
                   <Trash2 size={10} className="text-destructive" />
