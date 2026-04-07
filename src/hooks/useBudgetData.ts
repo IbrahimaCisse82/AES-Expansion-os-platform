@@ -201,6 +201,45 @@ export function useDuplicateScenario() {
   });
 }
 
+export function useAdjustScenarioPercent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ scenarioId, percent, lineType, categoryType }: {
+      scenarioId: string;
+      percent: number; // e.g. 10 for +10%, -5 for -5%
+      lineType?: 'budget' | 'actual' | 'forecast';
+      categoryType?: 'revenue' | 'expense';
+    }) => {
+      // Fetch lines for this scenario
+      let query = supabase.from('budget_lines').select('*, budget_categories!budget_lines_category_id_fkey(type)').eq('scenario_id', scenarioId);
+      if (lineType) query = query.eq('line_type', lineType);
+      const { data: lines, error } = await query;
+      if (error) throw error;
+      if (!lines || lines.length === 0) return;
+
+      const factor = 1 + percent / 100;
+      const MKEYS = ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12'];
+
+      const updates = lines
+        .filter(l => !categoryType || (l.budget_categories as any)?.type === categoryType)
+        .map(l => {
+          const adjusted: Record<string, number> = {};
+          MKEYS.forEach(k => {
+            adjusted[k] = Math.round(Number((l as any)[k] || 0) * factor * 100) / 100;
+          });
+          return supabase.from('budget_lines').update(adjusted).eq('id', l.id);
+        });
+
+      const results = await Promise.all(updates);
+      const firstError = results.find(r => r.error);
+      if (firstError?.error) throw firstError.error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budget_lines'] });
+    },
+  });
+}
+
 export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
