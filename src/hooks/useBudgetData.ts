@@ -156,6 +156,51 @@ export function useDeleteBudgetLine() {
   });
 }
 
+export function useDuplicateScenario() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ sourceId, name, description, fiscalYear }: { sourceId: string; name: string; description?: string; fiscalYear: number }) => {
+      // 1. Create new scenario
+      const { data: newScenario, error: scErr } = await supabase
+        .from('budget_scenarios')
+        .insert({ name, description: description || '', fiscal_year: fiscalYear, is_baseline: false })
+        .select()
+        .single();
+      if (scErr) throw scErr;
+
+      // 2. Fetch source lines
+      const { data: sourceLines, error: lnErr } = await supabase
+        .from('budget_lines')
+        .select('*')
+        .eq('scenario_id', sourceId);
+      if (lnErr) throw lnErr;
+
+      // 3. Copy lines to new scenario
+      if (sourceLines && sourceLines.length > 0) {
+        const copies = sourceLines.map(l => ({
+          scenario_id: newScenario.id,
+          category_id: l.category_id,
+          country_id: l.country_id,
+          country_label: l.country_label,
+          line_type: l.line_type,
+          m1: l.m1, m2: l.m2, m3: l.m3, m4: l.m4,
+          m5: l.m5, m6: l.m6, m7: l.m7, m8: l.m8,
+          m9: l.m9, m10: l.m10, m11: l.m11, m12: l.m12,
+          notes: l.notes,
+        }));
+        const { error: cpErr } = await supabase.from('budget_lines').insert(copies);
+        if (cpErr) throw cpErr;
+      }
+
+      return newScenario;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budget_scenarios'] });
+      qc.invalidateQueries({ queryKey: ['budget_lines'] });
+    },
+  });
+}
+
 export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
