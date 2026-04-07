@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BudgetScenario, useCreateScenario, useUpdateScenario, useDeleteScenario, useDuplicateScenario } from '@/hooks/useBudgetData';
+import { BudgetScenario, useCreateScenario, useUpdateScenario, useDeleteScenario, useDuplicateScenario, useAdjustScenarioPercent } from '@/hooks/useBudgetData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Copy, Trash2, Lock, Unlock, Send, CheckCircle2 } from 'lucide-react';
+import { Plus, Copy, Trash2, Lock, Unlock, Send, CheckCircle2, Percent } from 'lucide-react';
 
 interface ScenarioManagerProps {
   scenarios: BudgetScenario[];
@@ -29,10 +29,15 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
   const updateScenario = useUpdateScenario();
   const deleteScenario = useDeleteScenario();
   const duplicateScenario = useDuplicateScenario();
+  const adjustPercent = useAdjustScenarioPercent();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [duplicateSource, setDuplicateSource] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [adjustValue, setAdjustValue] = useState('');
+  const [adjustLineType, setAdjustLineType] = useState<string>('budget');
+  const [adjustCatType, setAdjustCatType] = useState<string>('all');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
