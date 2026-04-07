@@ -28,21 +28,34 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
   const createScenario = useCreateScenario();
   const updateScenario = useUpdateScenario();
   const deleteScenario = useDeleteScenario();
+  const duplicateScenario = useDuplicateScenario();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [duplicateSource, setDuplicateSource] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const handleCreate = () => {
     if (!name.trim()) { toast.error('Le nom est requis'); return; }
-    createScenario.mutate(
-      { name: name.trim(), description, fiscal_year: fiscalYear, is_baseline: scenarios.length === 0 },
-      {
-        onSuccess: (data) => { toast.success('Scénario créé'); setDialogOpen(false); onSelect(data.id); },
-        onError: (err: Error) => toast.error(err.message),
-      }
-    );
+
+    if (duplicateSource) {
+      duplicateScenario.mutate(
+        { sourceId: duplicateSource, name: name.trim(), description, fiscalYear },
+        {
+          onSuccess: (data) => { toast.success('Scénario dupliqué avec toutes ses lignes'); setDialogOpen(false); setDuplicateSource(null); onSelect(data.id); },
+          onError: (err: Error) => toast.error(err.message),
+        }
+      );
+    } else {
+      createScenario.mutate(
+        { name: name.trim(), description, fiscal_year: fiscalYear, is_baseline: scenarios.length === 0 },
+        {
+          onSuccess: (data) => { toast.success('Scénario créé'); setDialogOpen(false); onSelect(data.id); },
+          onError: (err: Error) => toast.error(err.message),
+        }
+      );
+    }
   };
 
   const handleStatusChange = (id: string, status: string) => {
