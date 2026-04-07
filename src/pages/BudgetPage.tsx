@@ -247,6 +247,15 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
               compareLabel={scenarios.find(s => s.id === compareScenarioId)?.name}
             />
           )}
+
+          {viewMode === 'forecast' && (
+            <RollingForecast
+              budgetLines={budgetLines}
+              actualLines={actualLines}
+              categories={categories}
+              forecastHorizon={6}
+            />
+          )}
         </>
       )}
 
