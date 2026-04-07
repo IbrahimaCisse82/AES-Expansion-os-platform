@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BudgetScenario, useCreateScenario, useUpdateScenario, useDeleteScenario } from '@/hooks/useBudgetData';
+import { BudgetScenario, useCreateScenario, useUpdateScenario, useDeleteScenario, useDuplicateScenario } from '@/hooks/useBudgetData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -28,21 +28,34 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
   const createScenario = useCreateScenario();
   const updateScenario = useUpdateScenario();
   const deleteScenario = useDeleteScenario();
+  const duplicateScenario = useDuplicateScenario();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [duplicateSource, setDuplicateSource] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const handleCreate = () => {
     if (!name.trim()) { toast.error('Le nom est requis'); return; }
-    createScenario.mutate(
-      { name: name.trim(), description, fiscal_year: fiscalYear, is_baseline: scenarios.length === 0 },
-      {
-        onSuccess: (data) => { toast.success('Scénario créé'); setDialogOpen(false); onSelect(data.id); },
-        onError: (err: Error) => toast.error(err.message),
-      }
-    );
+
+    if (duplicateSource) {
+      duplicateScenario.mutate(
+        { sourceId: duplicateSource, name: name.trim(), description, fiscalYear },
+        {
+          onSuccess: (data) => { toast.success('Scénario dupliqué avec toutes ses lignes'); setDialogOpen(false); setDuplicateSource(null); onSelect(data.id); },
+          onError: (err: Error) => toast.error(err.message),
+        }
+      );
+    } else {
+      createScenario.mutate(
+        { name: name.trim(), description, fiscal_year: fiscalYear, is_baseline: scenarios.length === 0 },
+        {
+          onSuccess: (data) => { toast.success('Scénario créé'); setDialogOpen(false); onSelect(data.id); },
+          onError: (err: Error) => toast.error(err.message),
+        }
+      );
+    }
   };
 
   const handleStatusChange = (id: string, status: string) => {
@@ -91,6 +104,17 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
                 </Select>
               )}
               {canWrite && isActive && (
+                <button onClick={(e) => {
+                  e.stopPropagation();
+                  setDuplicateSource(s.id);
+                  setName(`${s.name} (copie)`);
+                  setDescription(s.description || '');
+                  setDialogOpen(true);
+                }} className="p-0.5 hover:bg-primary/10 rounded" title="Dupliquer">
+                  <Copy size={10} className="text-primary" />
+                </button>
+              )}
+              {canWrite && isActive && (
                 <button onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} className="p-0.5 hover:bg-destructive/10 rounded">
                   <Trash2 size={10} className="text-destructive" />
                 </button>
@@ -101,7 +125,7 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
 
         {canWrite && (
           <button
-            onClick={() => { setName(''); setDescription(''); setDialogOpen(true); }}
+            onClick={() => { setName(''); setDescription(''); setDuplicateSource(null); setDialogOpen(true); }}
             className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
           >
             <Plus size={14} /> Scénario
@@ -112,8 +136,13 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg">Nouveau scénario</DialogTitle>
+            <DialogTitle className="font-display text-lg">{duplicateSource ? '📋 Dupliquer le scénario' : 'Nouveau scénario'}</DialogTitle>
           </DialogHeader>
+          {duplicateSource && (
+            <p className="text-[11px] text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+              Toutes les lignes budgétaires du scénario source seront copiées dans le nouveau scénario.
+            </p>
+          )}
           <div className="space-y-4 pt-2">
             <div>
               <Label className="text-[12.5px]">Nom *</Label>
@@ -124,8 +153,10 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
               <Input value={description} onChange={e => setDescription(e.target.value)} maxLength={200} className="mt-1" placeholder="Scénario réaliste…" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Annuler</Button>
-              <Button size="sm" onClick={handleCreate} disabled={createScenario.isPending}>Créer</Button>
+              <Button variant="outline" size="sm" onClick={() => { setDialogOpen(false); setDuplicateSource(null); }}>Annuler</Button>
+              <Button size="sm" onClick={handleCreate} disabled={createScenario.isPending || duplicateScenario.isPending}>
+                {duplicateSource ? 'Dupliquer' : 'Créer'}
+              </Button>
             </div>
           </div>
         </DialogContent>

@@ -7,18 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Download, Table2, BarChart3, GitCompare } from 'lucide-react';
+import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
 import BudgetSpreadsheet from '@/components/budget/BudgetSpreadsheet';
 import ScenarioManager from '@/components/budget/ScenarioManager';
 import BudgetKPIs from '@/components/budget/BudgetKPIs';
 import BudgetPnL from '@/components/budget/BudgetPnL';
+import RollingForecast from '@/components/budget/RollingForecast';
 
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare';
+type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
@@ -154,6 +155,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
               {([
                 { key: 'spreadsheet' as ViewMode, icon: <Table2 size={14} />, label: 'Tableur' },
                 { key: 'pnl' as ViewMode, icon: <BarChart3 size={14} />, label: 'P&L' },
+                { key: 'forecast' as ViewMode, icon: <TrendingUp size={14} />, label: 'Forecast' },
                 { key: 'compare' as ViewMode, icon: <GitCompare size={14} />, label: 'Comparer' },
               ]).map(v => (
                 <button
@@ -243,6 +245,15 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
               lineType={lineType}
               compareLines={compareLines.filter(l => l.line_type === lineType)}
               compareLabel={scenarios.find(s => s.id === compareScenarioId)?.name}
+            />
+          )}
+
+          {viewMode === 'forecast' && (
+            <RollingForecast
+              budgetLines={budgetLines}
+              actualLines={actualLines}
+              categories={categories}
+              forecastHorizon={6}
             />
           )}
         </>
