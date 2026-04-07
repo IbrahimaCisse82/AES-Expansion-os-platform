@@ -104,6 +104,17 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
                 </Select>
               )}
               {canWrite && isActive && (
+                <button onClick={(e) => {
+                  e.stopPropagation();
+                  setDuplicateSource(s.id);
+                  setName(`${s.name} (copie)`);
+                  setDescription(s.description || '');
+                  setDialogOpen(true);
+                }} className="p-0.5 hover:bg-primary/10 rounded" title="Dupliquer">
+                  <Copy size={10} className="text-primary" />
+                </button>
+              )}
+              {canWrite && isActive && (
                 <button onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} className="p-0.5 hover:bg-destructive/10 rounded">
                   <Trash2 size={10} className="text-destructive" />
                 </button>
@@ -114,7 +125,7 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
 
         {canWrite && (
           <button
-            onClick={() => { setName(''); setDescription(''); setDialogOpen(true); }}
+            onClick={() => { setName(''); setDescription(''); setDuplicateSource(null); setDialogOpen(true); }}
             className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
           >
             <Plus size={14} /> Scénario
