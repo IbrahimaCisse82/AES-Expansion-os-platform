@@ -200,6 +200,84 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Adjust % dialog */}
+      <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
+        <DialogContent className="sm:max-w-[380px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg">📊 Ajustement en %</DialogTitle>
+          </DialogHeader>
+          <p className="text-[11px] text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+            Appliquer un pourcentage d'ajustement sur toutes les lignes du scénario actif. Ex: +10 pour augmenter de 10%, -5 pour réduire de 5%.
+          </p>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label className="text-[12.5px]">Pourcentage *</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  type="number"
+                  value={adjustValue}
+                  onChange={e => setAdjustValue(e.target.value)}
+                  placeholder="Ex: 10 ou -5"
+                  className="flex-1"
+                />
+                <span className="text-sm font-semibold text-muted-foreground">%</span>
+              </div>
+            </div>
+            <div>
+              <Label className="text-[12.5px]">Type de lignes</Label>
+              <Select value={adjustLineType} onValueChange={setAdjustLineType}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="budget">Budget</SelectItem>
+                  <SelectItem value="actual">Réel</SelectItem>
+                  <SelectItem value="forecast">Prévision</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[12.5px]">Appliquer sur</Label>
+              <Select value={adjustCatType} onValueChange={setAdjustCatType}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les catégories</SelectItem>
+                  <SelectItem value="revenue">Revenus uniquement</SelectItem>
+                  <SelectItem value="expense">Dépenses uniquement</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {adjustValue && Number(adjustValue) !== 0 && (
+              <div className={`text-[11px] px-3 py-2 rounded-md ${Number(adjustValue) > 0 ? 'bg-accent/10 text-accent' : 'bg-destructive/10 text-destructive'}`}>
+                {Number(adjustValue) > 0 ? '↑' : '↓'} Tous les montants seront {Number(adjustValue) > 0 ? 'augmentés' : 'réduits'} de {Math.abs(Number(adjustValue))}%
+              </div>
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setAdjustOpen(false)}>Annuler</Button>
+              <Button
+                size="sm"
+                disabled={!adjustValue || Number(adjustValue) === 0 || adjustPercent.isPending}
+                onClick={() => {
+                  if (!activeScenarioId) return;
+                  adjustPercent.mutate(
+                    {
+                      scenarioId: activeScenarioId,
+                      percent: Number(adjustValue),
+                      lineType: adjustLineType as 'budget' | 'actual' | 'forecast',
+                      categoryType: adjustCatType === 'all' ? undefined : adjustCatType as 'revenue' | 'expense',
+                    },
+                    {
+                      onSuccess: () => { toast.success(`Ajustement de ${adjustValue}% appliqué`); setAdjustOpen(false); },
+                      onError: (err: Error) => toast.error(err.message),
+                    }
+                  );
+                }}
+              >
+                Appliquer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
