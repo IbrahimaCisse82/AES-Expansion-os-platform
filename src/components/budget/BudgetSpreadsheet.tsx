@@ -190,19 +190,34 @@ export default function BudgetSpreadsheet({
                   <td className="px-3 py-1 text-right">
                     <span className="text-[12px] font-semibold text-foreground">{formatK(getLineTotal(line))}</span>
                   </td>
-                  <td className="px-2 py-1">
-                    {canWrite && !isLocked && (
+                  <td className="px-2 py-1 relative">
+                    <div className="flex items-center gap-0.5">
                       <button
-                        onClick={() => deleteLine.mutate({ id: line.id, scenario_id: scenarioId })}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-all"
+                        onClick={() => setCommentLineId(commentLineId === line.id ? null : line.id)}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-primary/10 transition-all"
+                        title="Commentaires & historique"
                       >
-                        <Trash2 size={12} className="text-destructive" />
+                        <MessageSquare size={12} className="text-primary" />
                       </button>
+                      {canWrite && !isLocked && (
+                        <button
+                          onClick={() => deleteLine.mutate({ id: line.id, scenario_id: scenarioId })}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-all"
+                        >
+                          <Trash2 size={12} className="text-destructive" />
+                        </button>
+                      )}
+                    </div>
+                    {commentLineId === line.id && (
+                      <div className="absolute right-0 top-full z-30 mt-1">
+                        <LineCommentPanel
+                          line={line}
+                          category={categories.find(c => c.id === line.category_id)}
+                          onClose={() => setCommentLineId(null)}
+                        />
+                      </div>
                     )}
                   </td>
-                </tr>
-              ))}
-            </tbody>
           );
         })}
       </>
