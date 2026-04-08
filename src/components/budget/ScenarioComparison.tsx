@@ -76,6 +76,7 @@ export default function ScenarioComparison({ scenarios, allLines, categories, li
   }
 
   return (
+    <div className="space-y-4">
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {summaryData.map((s, i) => (
