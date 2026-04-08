@@ -221,6 +221,9 @@ export default function BudgetSpreadsheet({
                 </tr>
               ))}
             </tbody>
+          );
+        })}
+      </>
     );
   };
 
