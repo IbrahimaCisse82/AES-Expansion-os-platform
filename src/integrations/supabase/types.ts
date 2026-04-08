@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_audit_log: {
+        Row: {
+          budget_line_id: string
+          created_at: string
+          field_name: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          budget_line_id: string
+          created_at?: string
+          field_name: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          budget_line_id?: string
+          created_at?: string
+          field_name?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       budget_categories: {
         Row: {
           created_at: string
@@ -134,6 +167,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      budget_line_comments: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          budget_line_id: string
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          budget_line_id: string
+          content: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          budget_line_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
       }
       budget_lines: {
         Row: {
@@ -228,6 +288,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      budget_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          scenario_id: string
+          scenario_name: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          scenario_id: string
+          scenario_name?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          scenario_id?: string
+          scenario_name?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       budget_scenarios: {
         Row: {
