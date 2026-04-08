@@ -51,16 +51,6 @@ export default function ScenarioComparison({ scenarios, allLines, categories, li
     });
   }, [scenarios, allLines, lineType, revenueCategories, expenseCategories]);
 
-  if (scenarios.length < 2) {
-    return (
-      <div className="bg-card border border-border rounded-lg p-12 text-center">
-        <div className="text-3xl mb-3">📊</div>
-        <h3 className="font-display text-lg font-semibold text-primary mb-2">Sélectionnez au moins 2 scénarios</h3>
-        <p className="text-sm text-muted-foreground">Utilisez les cases à cocher ci-dessus pour comparer les scénarios côte à côte.</p>
-      </div>
-    );
-  }
-
   // Category-level comparison
   const categoryComparison = useMemo(() => {
     const allCats = [...revenueCategories, ...expenseCategories];
