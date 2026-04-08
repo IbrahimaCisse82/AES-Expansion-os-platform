@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BudgetScenario, useCreateScenario, useUpdateScenario, useDeleteScenario, useDuplicateScenario, useAdjustScenarioPercent } from '@/hooks/useBudgetData';
+import { notifyBudgetStatusChange } from '@/hooks/useBudgetExtras';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -63,11 +64,23 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
     }
   };
 
-  const handleStatusChange = (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: string) => {
+    const scenario = scenarios.find(s => s.id === id);
     updateScenario.mutate(
       { id, status: status as BudgetScenario['status'] },
       {
-        onSuccess: () => toast.success('Statut mis à jour'),
+        onSuccess: async () => {
+          toast.success('Statut mis à jour');
+          if (scenario) {
+            const { data: { user } } = await (await import('@/integrations/supabase/client')).supabase.auth.getUser();
+            notifyBudgetStatusChange({
+              scenarioId: id,
+              scenarioName: scenario.name,
+              newStatus: status,
+              excludeUserId: user?.id,
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       }
     );

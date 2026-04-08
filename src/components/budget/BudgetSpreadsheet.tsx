@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { BudgetLine, BudgetCategory, MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
 import { useUpdateBudgetLine, useDeleteBudgetLine } from '@/hooks/useBudgetData';
+import { logBudgetChange } from '@/hooks/useBudgetExtras';
 import { Trash2, MessageSquare, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import LineCommentPanel from './LineCommentPanel';
 
 interface SpreadsheetProps {
   lines: BudgetLine[];
@@ -37,6 +39,7 @@ export default function BudgetSpreadsheet({
   const [editingCell, setEditingCell] = useState<{ lineId: string; month: string } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [commentLineId, setCommentLineId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,6 +59,13 @@ export default function BudgetSpreadsheet({
     if (!line) { setEditingCell(null); return; }
     const currentVal = Number(line[editingCell.month as keyof BudgetLine] || 0);
     if (val !== currentVal) {
+      // Log audit trail
+      logBudgetChange({
+        budgetLineId: editingCell.lineId,
+        fieldName: editingCell.month,
+        oldValue: String(currentVal),
+        newValue: String(val),
+      });
       updateLine.mutate({
         id: editingCell.lineId,
         scenario_id: scenarioId,
@@ -180,14 +190,32 @@ export default function BudgetSpreadsheet({
                   <td className="px-3 py-1 text-right">
                     <span className="text-[12px] font-semibold text-foreground">{formatK(getLineTotal(line))}</span>
                   </td>
-                  <td className="px-2 py-1">
-                    {canWrite && !isLocked && (
+                  <td className="px-2 py-1 relative">
+                    <div className="flex items-center gap-0.5">
                       <button
-                        onClick={() => deleteLine.mutate({ id: line.id, scenario_id: scenarioId })}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-all"
+                        onClick={() => setCommentLineId(commentLineId === line.id ? null : line.id)}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-primary/10 transition-all"
+                        title="Commentaires & historique"
                       >
-                        <Trash2 size={12} className="text-destructive" />
+                        <MessageSquare size={12} className="text-primary" />
                       </button>
+                      {canWrite && !isLocked && (
+                        <button
+                          onClick={() => deleteLine.mutate({ id: line.id, scenario_id: scenarioId })}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-all"
+                        >
+                          <Trash2 size={12} className="text-destructive" />
+                        </button>
+                      )}
+                    </div>
+                    {commentLineId === line.id && (
+                      <div className="absolute right-0 top-full z-30 mt-1">
+                        <LineCommentPanel
+                          line={line}
+                          category={categories.find(c => c.id === line.category_id)}
+                          onClose={() => setCommentLineId(null)}
+                        />
+                      </div>
                     )}
                   </td>
                 </tr>

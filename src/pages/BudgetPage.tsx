@@ -6,20 +6,26 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp } from 'lucide-react';
+import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
+import { exportBudgetXLSX, exportBudgetPDF } from '@/lib/budgetExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
 import BudgetSpreadsheet from '@/components/budget/BudgetSpreadsheet';
 import ScenarioManager from '@/components/budget/ScenarioManager';
 import BudgetKPIs from '@/components/budget/BudgetKPIs';
 import BudgetPnL from '@/components/budget/BudgetPnL';
 import RollingForecast from '@/components/budget/RollingForecast';
+import ScenarioComparison from '@/components/budget/ScenarioComparison';
+import BudgetDashboard from '@/components/budget/BudgetDashboard';
+import FinancialStatements from '@/components/budget/FinancialStatements';
+import BudgetNotifications from '@/components/budget/BudgetNotifications';
 
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast';
+type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
@@ -27,7 +33,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
 
   const [fiscalYear, setFiscalYear] = useState(currentYear);
   const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null);
-  const [compareScenarioId, setCompareScenarioId] = useState<string | null>(null);
+  const [compareScenarioIds, setCompareScenarioIds] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('spreadsheet');
   const [lineType, setLineType] = useState<'budget' | 'actual' | 'forecast'>('budget');
   const [addLineOpen, setAddLineOpen] = useState(false);
@@ -38,20 +44,25 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
   const { data: categories = [] } = useBudgetCategories();
   const { data: countries = [] } = useCountries();
   const { data: lines = [], isLoading: loadingLines } = useBudgetLines(activeScenarioId ?? undefined);
-  const { data: compareLines = [] } = useBudgetLines(compareScenarioId ?? undefined);
   const createLine = useCreateBudgetLine();
+
+  // Load lines for compare scenarios
+  const compareQueries = compareScenarioIds.map(id => useBudgetLines(id));
+  const allCompareLines: Record<string, any[]> = {};
+  compareScenarioIds.forEach((id, i) => {
+    allCompareLines[id] = compareQueries[i]?.data || [];
+  });
+  if (activeScenarioId) allCompareLines[activeScenarioId] = lines;
 
   const activeScenario = scenarios.find(s => s.id === activeScenarioId);
   const isLocked = activeScenario?.status === 'locked';
 
-  // Auto-select first scenario
   useEffect(() => {
     if (scenarios.length > 0 && !activeScenarioId) {
       setActiveScenarioId(scenarios[0].id);
     }
   }, [scenarios, activeScenarioId]);
 
-  // Add signal
   useEffect(() => {
     if (addSignal && addSignal > 0 && canWrite && activeScenarioId) {
       setAddLineOpen(true);
@@ -79,18 +90,19 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
   const handleExportCSV = () => {
     const data = lines.map(l => {
       const cat = categories.find(c => c.id === l.category_id);
-      const row: Record<string, string | number> = {
-        'Catégorie': cat?.name || '',
-        'Type': cat?.type || '',
-        'Marché': l.country_label || 'Global',
-        'Ligne': l.line_type,
-      };
+      const row: Record<string, string | number> = { 'Catégorie': cat?.name || '', 'Type': cat?.type || '', 'Marché': l.country_label || 'Global', 'Ligne': l.line_type };
       MONTHS.forEach((m, i) => { row[m] = Number(l[MONTH_KEYS[i] as keyof typeof l] || 0); });
       row['Total'] = getLineTotal(l);
       return row;
     });
     exportToCSV(data, `budget_${activeScenario?.name || 'export'}_${fiscalYear}`);
     toast.success('Budget exporté en CSV');
+  };
+
+  const toggleCompareScenario = (id: string) => {
+    setCompareScenarioIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
   if (loadingScenarios) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
@@ -110,6 +122,8 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <BudgetNotifications />
+
           <Select value={String(fiscalYear)} onValueChange={v => { setFiscalYear(Number(v)); setActiveScenarioId(null); }}>
             <SelectTrigger className="w-[100px] h-[34px] text-[12px]"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -119,9 +133,24 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
             </SelectContent>
           </Select>
 
-          <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
-            <Download className="w-3.5 h-3.5" /> CSV
-          </Button>
+          {/* Export dropdown */}
+          <div className="flex items-center gap-1">
+            <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
+              <Download className="w-3.5 h-3.5" /> CSV
+            </Button>
+            <Button
+              onClick={() => activeScenario && exportBudgetXLSX({ lines, categories, scenarioName: activeScenario.name, fiscalYear })}
+              variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" /> XLSX
+            </Button>
+            <Button
+              onClick={() => activeScenario && exportBudgetPDF({ lines, categories, scenarioName: activeScenario.name, fiscalYear })}
+              variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}
+            >
+              <FileText className="w-3.5 h-3.5" /> PDF
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -141,20 +170,21 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           <div className="text-4xl mb-4">📊</div>
           <h3 className="font-display text-lg font-semibold text-primary mb-2">Créez votre premier scénario</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Commencez par créer un scénario budgétaire (ex: "Budget Base 2025") pour saisir vos prévisions de revenus et dépenses mois par mois.
+            Commencez par créer un scénario budgétaire pour saisir vos prévisions de revenus et dépenses mois par mois.
           </p>
         </div>
       ) : (
         <>
-          {/* KPIs */}
           <BudgetKPIs lines={lines} categories={categories} scenarioName={activeScenario?.name || ''} />
 
-          {/* View mode + line type toggles */}
+          {/* View mode toggles */}
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5 flex-wrap">
               {([
                 { key: 'spreadsheet' as ViewMode, icon: <Table2 size={14} />, label: 'Tableur' },
                 { key: 'pnl' as ViewMode, icon: <BarChart3 size={14} />, label: 'P&L' },
+                { key: 'statements' as ViewMode, icon: <BookOpen size={14} />, label: 'États financiers' },
+                { key: 'dashboard' as ViewMode, icon: <LayoutDashboard size={14} />, label: 'Dashboard' },
                 { key: 'forecast' as ViewMode, icon: <TrendingUp size={14} />, label: 'Forecast' },
                 { key: 'compare' as ViewMode, icon: <GitCompare size={14} />, label: 'Comparer' },
               ]).map(v => (
@@ -171,21 +201,17 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
             </div>
 
             <div className="flex items-center gap-2">
-              {viewMode !== 'pnl' && (
+              {viewMode !== 'pnl' && viewMode !== 'dashboard' && viewMode !== 'statements' && (
                 <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-                  {([
-                    { key: 'budget' as const, label: 'Budget', color: 'text-accent' },
-                    { key: 'actual' as const, label: 'Réel', color: 'text-[hsl(var(--gold))]' },
-                    { key: 'forecast' as const, label: 'Prévision', color: 'text-[hsl(var(--sky))]' },
-                  ]).map(t => (
+                  {(['budget', 'actual', 'forecast'] as const).map(t => (
                     <button
-                      key={t.key}
-                      onClick={() => setLineType(t.key)}
+                      key={t}
+                      onClick={() => setLineType(t)}
                       className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
-                        lineType === t.key ? `bg-card ${t.color} shadow-sm` : 'text-muted-foreground hover:text-foreground'
+                        lineType === t ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      {t.label}
+                      {t === 'budget' ? 'Budget' : t === 'actual' ? 'Réel' : 'Prévision'}
                     </button>
                   ))}
                 </div>
@@ -201,60 +227,54 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
 
           {/* Compare scenario selector */}
           {viewMode === 'compare' && (
-            <div className="flex items-center gap-3 mb-4 px-4 py-2.5 bg-muted/50 border border-border rounded-lg">
-              <span className="text-[12px] font-medium text-muted-foreground">Comparer avec :</span>
-              <Select value={compareScenarioId || '_none'} onValueChange={v => setCompareScenarioId(v === '_none' ? null : v)}>
-                <SelectTrigger className="w-[200px] h-[30px] text-[12px]"><SelectValue placeholder="Choisir un scénario" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">Aucun</SelectItem>
-                  {scenarios.filter(s => s.id !== activeScenarioId).map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-3 mb-4 px-4 py-2.5 bg-muted/50 border border-border rounded-lg flex-wrap">
+              <span className="text-[12px] font-medium text-muted-foreground">Sélectionner les scénarios :</span>
+              {scenarios.map(s => (
+                <label key={s.id} className="flex items-center gap-1.5 text-[11px]">
+                  <Checkbox
+                    checked={s.id === activeScenarioId || compareScenarioIds.includes(s.id)}
+                    onCheckedChange={() => {
+                      if (s.id !== activeScenarioId) toggleCompareScenario(s.id);
+                    }}
+                    disabled={s.id === activeScenarioId}
+                  />
+                  <span className={s.id === activeScenarioId ? 'font-bold text-primary' : ''}>{s.name}</span>
+                </label>
+              ))}
             </div>
           )}
 
           {/* Views */}
           {viewMode === 'spreadsheet' && (
-            <BudgetSpreadsheet
-              lines={filteredLines}
-              categories={categories}
-              scenarioId={activeScenarioId}
-              canWrite={canWrite}
-              isLocked={isLocked}
-              lineType={lineType}
-            />
+            <BudgetSpreadsheet lines={filteredLines} categories={categories} scenarioId={activeScenarioId} canWrite={canWrite} isLocked={isLocked} lineType={lineType} />
           )}
 
           {viewMode === 'pnl' && (
-            <BudgetPnL
-              budgetLines={budgetLines}
-              actualLines={actualLines}
-              categories={categories}
-            />
+            <BudgetPnL budgetLines={budgetLines} actualLines={actualLines} categories={categories} />
+          )}
+
+          {viewMode === 'statements' && (
+            <FinancialStatements budgetLines={budgetLines} actualLines={actualLines} categories={categories} />
+          )}
+
+          {viewMode === 'dashboard' && (
+            <BudgetDashboard budgetLines={budgetLines} actualLines={actualLines} categories={categories} />
           )}
 
           {viewMode === 'compare' && (
-            <BudgetSpreadsheet
-              lines={filteredLines}
+            <ScenarioComparison
+              scenarios={[
+                activeScenario!,
+                ...scenarios.filter(s => compareScenarioIds.includes(s.id)),
+              ]}
+              allLines={allCompareLines}
               categories={categories}
-              scenarioId={activeScenarioId}
-              canWrite={false}
-              isLocked={true}
               lineType={lineType}
-              compareLines={compareLines.filter(l => l.line_type === lineType)}
-              compareLabel={scenarios.find(s => s.id === compareScenarioId)?.name}
             />
           )}
 
           {viewMode === 'forecast' && (
-            <RollingForecast
-              budgetLines={budgetLines}
-              actualLines={actualLines}
-              categories={categories}
-              forecastHorizon={6}
-            />
+            <RollingForecast budgetLines={budgetLines} actualLines={actualLines} categories={categories} forecastHorizon={6} />
           )}
         </>
       )}
