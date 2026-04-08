@@ -64,11 +64,23 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
     }
   };
 
-  const handleStatusChange = (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: string) => {
+    const scenario = scenarios.find(s => s.id === id);
     updateScenario.mutate(
       { id, status: status as BudgetScenario['status'] },
       {
-        onSuccess: () => toast.success('Statut mis à jour'),
+        onSuccess: async () => {
+          toast.success('Statut mis à jour');
+          if (scenario) {
+            const { data: { user } } = await (await import('@/integrations/supabase/client')).supabase.auth.getUser();
+            notifyBudgetStatusChange({
+              scenarioId: id,
+              scenarioName: scenario.name,
+              newStatus: status,
+              excludeUserId: user?.id,
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       }
     );
