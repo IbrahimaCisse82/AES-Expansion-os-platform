@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { BudgetLine, BudgetCategory, MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
 import { useUpdateBudgetLine, useDeleteBudgetLine } from '@/hooks/useBudgetData';
+import { logBudgetChange } from '@/hooks/useBudgetExtras';
 import { Trash2, MessageSquare, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import LineCommentPanel from './LineCommentPanel';
 
 interface SpreadsheetProps {
   lines: BudgetLine[];
@@ -37,6 +39,7 @@ export default function BudgetSpreadsheet({
   const [editingCell, setEditingCell] = useState<{ lineId: string; month: string } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [commentLineId, setCommentLineId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,6 +59,13 @@ export default function BudgetSpreadsheet({
     if (!line) { setEditingCell(null); return; }
     const currentVal = Number(line[editingCell.month as keyof BudgetLine] || 0);
     if (val !== currentVal) {
+      // Log audit trail
+      logBudgetChange({
+        budgetLineId: editingCell.lineId,
+        fieldName: editingCell.month,
+        oldValue: String(currentVal),
+        newValue: String(val),
+      });
       updateLine.mutate({
         id: editingCell.lineId,
         scenario_id: scenarioId,
