@@ -218,9 +218,9 @@ export default function BudgetSpreadsheet({
                       </div>
                     )}
                   </td>
-          );
-        })}
-      </>
+                </tr>
+              ))}
+            </tbody>
     );
   };
 
