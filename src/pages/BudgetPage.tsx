@@ -71,11 +71,11 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
   });
 
   const compareQueries = compareScenarioIds.map(id => useBudgetLines(id));
-  const allCompareLines: Record<string, BudgetCategory[]> = {};
+  const allCompareLines: Record<string, unknown[]> = {};
   compareScenarioIds.forEach((id, i) => {
     allCompareLines[id] = compareQueries[i]?.data || [];
   });
-  if (activeScenarioId) allCompareLines[activeScenarioId] = lines as unknown as BudgetCategory[];
+  if (activeScenarioId) allCompareLines[activeScenarioId] = lines;
 
   const activeScenario = scenarios.find(s => s.id === activeScenarioId);
   const isLocked = activeScenario?.status === 'locked';
