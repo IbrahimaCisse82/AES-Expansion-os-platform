@@ -83,6 +83,72 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_capex_items: {
+        Row: {
+          acquisition_cost: number
+          acquisition_date: string
+          category_id: string | null
+          country_id: string | null
+          country_label: string | null
+          created_at: string
+          depreciation_method: string
+          id: string
+          name: string
+          notes: string | null
+          salvage_value: number
+          scenario_id: string
+          updated_at: string
+          useful_life_months: number
+        }
+        Insert: {
+          acquisition_cost?: number
+          acquisition_date?: string
+          category_id?: string | null
+          country_id?: string | null
+          country_label?: string | null
+          created_at?: string
+          depreciation_method?: string
+          id?: string
+          name: string
+          notes?: string | null
+          salvage_value?: number
+          scenario_id: string
+          updated_at?: string
+          useful_life_months?: number
+        }
+        Update: {
+          acquisition_cost?: number
+          acquisition_date?: string
+          category_id?: string | null
+          country_id?: string | null
+          country_label?: string | null
+          created_at?: string
+          depreciation_method?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          salvage_value?: number
+          scenario_id?: string
+          updated_at?: string
+          useful_life_months?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_capex_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_capex_items_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_categories: {
         Row: {
           created_at: string
@@ -115,6 +181,60 @@ export type Database = {
           {
             foreignKeyName: "budget_categories_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_cost_allocations: {
+        Row: {
+          allocation_key: string
+          allocation_rules: Json
+          created_at: string
+          id: string
+          is_applied: boolean
+          name: string
+          scenario_id: string
+          source_category_id: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          allocation_key?: string
+          allocation_rules?: Json
+          created_at?: string
+          id?: string
+          is_applied?: boolean
+          name: string
+          scenario_id: string
+          source_category_id: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          allocation_key?: string
+          allocation_rules?: Json
+          created_at?: string
+          id?: string
+          is_applied?: boolean
+          name?: string
+          scenario_id?: string
+          source_category_id?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_cost_allocations_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_cost_allocations_source_category_id_fkey"
+            columns: ["source_category_id"]
             isOneToOne: false
             referencedRelation: "budget_categories"
             referencedColumns: ["id"]
@@ -164,6 +284,96 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_intercompany: {
+        Row: {
+          amount: number
+          category_id: string
+          created_at: string
+          description: string | null
+          elimination_type: string
+          id: string
+          m1: number
+          m10: number
+          m11: number
+          m12: number
+          m2: number
+          m3: number
+          m4: number
+          m5: number
+          m6: number
+          m7: number
+          m8: number
+          m9: number
+          scenario_id: string
+          source_country_id: string
+          target_country_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category_id: string
+          created_at?: string
+          description?: string | null
+          elimination_type?: string
+          id?: string
+          m1?: number
+          m10?: number
+          m11?: number
+          m12?: number
+          m2?: number
+          m3?: number
+          m4?: number
+          m5?: number
+          m6?: number
+          m7?: number
+          m8?: number
+          m9?: number
+          scenario_id: string
+          source_country_id: string
+          target_country_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          elimination_type?: string
+          id?: string
+          m1?: number
+          m10?: number
+          m11?: number
+          m12?: number
+          m2?: number
+          m3?: number
+          m4?: number
+          m5?: number
+          m6?: number
+          m7?: number
+          m8?: number
+          m9?: number
+          scenario_id?: string
+          source_country_id?: string
+          target_country_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_intercompany_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_intercompany_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
             referencedColumns: ["id"]
           },
         ]
@@ -322,8 +532,47 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_scenario_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          scenario_id: string
+          snapshot_data: Json
+          version_name: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scenario_id: string
+          snapshot_data?: Json
+          version_name: string
+          version_number?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scenario_id?: string
+          snapshot_data?: Json
+          version_name?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_scenario_versions_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_scenarios: {
         Row: {
+          country_scope: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -331,10 +580,14 @@ export type Database = {
           id: string
           is_baseline: boolean
           name: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          country_scope?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -342,10 +595,14 @@ export type Database = {
           id?: string
           is_baseline?: boolean
           name: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          country_scope?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -353,6 +610,9 @@ export type Database = {
           id?: string
           is_baseline?: boolean
           name?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -411,6 +671,7 @@ export type Database = {
           color: string
           created_at: string
           description: string | null
+          exchange_rate_to_fcfa: number
           flag: string
           gdp: string | null
           id: string
@@ -420,6 +681,7 @@ export type Database = {
           kpi_retention: string | null
           language: string | null
           local_contact: string | null
+          local_currency: string
           name: string
           pct: number
           phase: number
@@ -435,6 +697,7 @@ export type Database = {
           color?: string
           created_at?: string
           description?: string | null
+          exchange_rate_to_fcfa?: number
           flag?: string
           gdp?: string | null
           id: string
@@ -444,6 +707,7 @@ export type Database = {
           kpi_retention?: string | null
           language?: string | null
           local_contact?: string | null
+          local_currency?: string
           name: string
           pct?: number
           phase?: number
@@ -459,6 +723,7 @@ export type Database = {
           color?: string
           created_at?: string
           description?: string | null
+          exchange_rate_to_fcfa?: number
           flag?: string
           gdp?: string | null
           id?: string
@@ -468,6 +733,7 @@ export type Database = {
           kpi_retention?: string | null
           language?: string | null
           local_contact?: string | null
+          local_currency?: string
           name?: string
           pct?: number
           phase?: number
