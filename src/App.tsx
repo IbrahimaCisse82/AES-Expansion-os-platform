@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import UnsubscribePage from "./pages/UnsubscribePage";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useAuth } from "./hooks/useAuth";
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/unsubscribe" element={<UnsubscribePage />} />
         <Route path="*" element={<AuthPage />} />
       </Routes>
     );
@@ -40,6 +42,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/app" replace />} />
       <Route path="/app/*" element={<Index />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/unsubscribe" element={<UnsubscribePage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

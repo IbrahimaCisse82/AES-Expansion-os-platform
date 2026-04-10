@@ -97,6 +97,26 @@ Deno.serve(async (req: Request) => {
       });
       if (updateErr) throw updateErr;
 
+      // Send transactional email with new credentials
+      const fullName = targetUser.user_metadata?.full_name || targetUser.email;
+      try {
+        await admin.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'invitation-resend',
+            recipientEmail: targetUser.email,
+            idempotencyKey: `invite-resend-${user_id}-${Date.now()}`,
+            templateData: {
+              fullName,
+              email: targetUser.email,
+              temporaryPassword: tempPassword,
+            },
+          },
+        });
+      } catch (emailErr) {
+        console.error('Failed to send invitation resend email', emailErr);
+        // Don't fail the whole operation — password was already reset
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
