@@ -137,6 +137,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
   const VIEW_TABS: { key: ViewMode; icon: React.ReactNode; label: string }[] = [
     { key: 'spreadsheet', icon: <Table2 size={14} />, label: 'Tableur' },
     { key: 'consolidation', icon: <Globe size={14} />, label: 'Consolidation' },
+    { key: 'segments', icon: <Layers size={14} />, label: 'Segments' },
     { key: 'pnl', icon: <BarChart3 size={14} />, label: 'P&L' },
     { key: 'statements', icon: <BookOpen size={14} />, label: 'États fin.' },
     { key: 'dashboard', icon: <LayoutDashboard size={14} />, label: 'Dashboard' },
@@ -147,6 +148,12 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     { key: 'compare', icon: <GitCompare size={14} />, label: 'Comparer' },
     { key: 'versions', icon: <History size={14} />, label: 'Versions' },
     { key: 'approval', icon: <ClipboardCheck size={14} />, label: 'Workflow' },
+    { key: 'journal', icon: <BookOpen size={14} />, label: 'Écritures' },
+    { key: 'close', icon: <ClipboardList size={14} />, label: 'Clôture' },
+    { key: 'validation', icon: <ShieldCheck size={14} />, label: 'Validation' },
+    { key: 'investments', icon: <Building2 size={14} />, label: 'Particip.' },
+    { key: 'ai', icon: <Brain size={14} />, label: 'IA' },
+    { key: 'xbrl', icon: <FileCode size={14} />, label: 'XBRL' },
     { key: 'adhoc', icon: <PieChart size={14} />, label: 'Ad hoc' },
   ];
 
