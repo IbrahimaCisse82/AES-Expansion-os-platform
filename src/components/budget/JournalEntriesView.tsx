@@ -38,6 +38,7 @@ export default function JournalEntriesView({ scenarioId, categories, countries, 
     if (!desc) { toast.error('Description requise'); return; }
     createEntry.mutate({
       scenario_id: scenarioId, description: desc, entry_type: entryType,
+      entry_date: new Date().toISOString().split('T')[0],
       country_id: countryId || null, category_id: categoryId || null,
       debit_amount: Number(debit) || 0, credit_amount: Number(credit) || 0,
       status: 'draft', created_by: null, notes,
