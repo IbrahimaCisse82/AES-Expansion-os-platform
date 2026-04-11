@@ -279,6 +279,13 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'versions' && <VersionManager scenarioId={activeScenarioId} scenarioName={activeScenario?.name || ''} canWrite={canWrite} />}
           {viewMode === 'approval' && <ApprovalWorkflow scenario={activeScenario as Parameters<typeof ApprovalWorkflow>[0]['scenario']} profiles={profiles} canWrite={canWrite} isAdmin={isAdmin} />}
           {viewMode === 'adhoc' && <AdHocReporting lines={lines} categories={categories} countries={countries} />}
+          {viewMode === 'ai' && <AIPredictions lines={lines} categories={categories} scenarioId={activeScenarioId} />}
+          {viewMode === 'segments' && <SegmentConsolidation lines={lines} categories={categories} scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} lineType={lineType} />}
+          {viewMode === 'journal' && <JournalEntriesView scenarioId={activeScenarioId} categories={categories} countries={countries} canWrite={canWrite} isAdmin={isAdmin} />}
+          {viewMode === 'close' && <CloseManagementView scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
+          {viewMode === 'validation' && <DataValidation scenarioId={activeScenarioId} lines={lines} categories={categories} canWrite={canWrite} />}
+          {viewMode === 'investments' && <InvestmentRegister scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
+          {viewMode === 'xbrl' && <XBRLExport lines={lines} categories={categories} scenarioName={activeScenario?.name || ''} fiscalYear={fiscalYear} />}
         </>
       )}
 
