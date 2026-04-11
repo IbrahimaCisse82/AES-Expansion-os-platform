@@ -187,6 +187,68 @@ export type Database = {
           },
         ]
       }
+      budget_close_tasks: {
+        Row: {
+          assigned_name: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          completed_by: string | null
+          country_id: string | null
+          country_label: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          scenario_id: string
+          status: string
+          task_name: string
+          task_order: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_name?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          country_id?: string | null
+          country_label?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          scenario_id: string
+          status?: string
+          task_name: string
+          task_order?: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_name?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          country_id?: string | null
+          country_label?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          scenario_id?: string
+          status?: string
+          task_name?: string
+          task_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_close_tasks_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_cost_allocations: {
         Row: {
           allocation_key: string
@@ -371,6 +433,140 @@ export type Database = {
           },
           {
             foreignKeyName: "budget_intercompany_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_investments: {
+        Row: {
+          acquisition_cost: number
+          acquisition_date: string | null
+          book_value: number
+          consolidation_method: string
+          created_at: string
+          id: string
+          notes: string | null
+          ownership_pct: number
+          parent_entity_id: string
+          parent_entity_label: string | null
+          scenario_id: string
+          status: string
+          subsidiary_entity_id: string
+          subsidiary_entity_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          acquisition_cost?: number
+          acquisition_date?: string | null
+          book_value?: number
+          consolidation_method?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ownership_pct?: number
+          parent_entity_id: string
+          parent_entity_label?: string | null
+          scenario_id: string
+          status?: string
+          subsidiary_entity_id: string
+          subsidiary_entity_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acquisition_cost?: number
+          acquisition_date?: string | null
+          book_value?: number
+          consolidation_method?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          ownership_pct?: number
+          parent_entity_id?: string
+          parent_entity_label?: string | null
+          scenario_id?: string
+          status?: string
+          subsidiary_entity_id?: string
+          subsidiary_entity_label?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_investments_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_journal_entries: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category_id: string | null
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          credit_amount: number
+          debit_amount: number
+          description: string
+          entry_date: string
+          entry_type: string
+          id: string
+          notes: string | null
+          scenario_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_amount?: number
+          debit_amount?: number
+          description?: string
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          notes?: string | null
+          scenario_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_amount?: number
+          debit_amount?: number
+          description?: string
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          notes?: string | null
+          scenario_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_journal_entries_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_journal_entries_scenario_id_fkey"
             columns: ["scenario_id"]
             isOneToOne: false
             referencedRelation: "budget_scenarios"
@@ -617,6 +813,113 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      budget_segments: {
+        Row: {
+          color: string | null
+          country_ids: string[]
+          created_at: string
+          id: string
+          scenario_id: string
+          segment_name: string
+          segment_type: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          country_ids?: string[]
+          created_at?: string
+          id?: string
+          scenario_id: string
+          segment_name: string
+          segment_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          country_ids?: string[]
+          created_at?: string
+          id?: string
+          scenario_id?: string
+          segment_name?: string
+          segment_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_segments_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_validation_rules: {
+        Row: {
+          category_id: string | null
+          country_id: string | null
+          created_at: string
+          formula: string | null
+          id: string
+          is_active: boolean
+          max_value: number | null
+          min_value: number | null
+          rule_name: string
+          rule_type: string
+          scenario_id: string
+          severity: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          formula?: string | null
+          id?: string
+          is_active?: boolean
+          max_value?: number | null
+          min_value?: number | null
+          rule_name: string
+          rule_type?: string
+          scenario_id: string
+          severity?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          country_id?: string | null
+          created_at?: string
+          formula?: string | null
+          id?: string
+          is_active?: boolean
+          max_value?: number | null
+          min_value?: number | null
+          rule_name?: string
+          rule_type?: string
+          scenario_id?: string
+          severity?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_validation_rules_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_validation_rules_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
