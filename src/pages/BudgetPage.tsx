@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart } from 'lucide-react';
+import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { exportBudgetXLSX, exportBudgetPDF } from '@/lib/budgetExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
@@ -33,11 +33,17 @@ import VersionManager from '@/components/budget/VersionManager';
 import ApprovalWorkflow from '@/components/budget/ApprovalWorkflow';
 import BudgetImport from '@/components/budget/BudgetImport';
 import AdHocReporting from '@/components/budget/AdHocReporting';
-
+import AIPredictions from '@/components/budget/AIPredictions';
+import SegmentConsolidation from '@/components/budget/SegmentConsolidation';
+import JournalEntriesView from '@/components/budget/JournalEntriesView';
+import CloseManagementView from '@/components/budget/CloseManagement';
+import DataValidation from '@/components/budget/DataValidation';
+import InvestmentRegister from '@/components/budget/InvestmentRegister';
+import XBRLExport from '@/components/budget/XBRLExport';
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc';
+type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
@@ -131,6 +137,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
   const VIEW_TABS: { key: ViewMode; icon: React.ReactNode; label: string }[] = [
     { key: 'spreadsheet', icon: <Table2 size={14} />, label: 'Tableur' },
     { key: 'consolidation', icon: <Globe size={14} />, label: 'Consolidation' },
+    { key: 'segments', icon: <Layers size={14} />, label: 'Segments' },
     { key: 'pnl', icon: <BarChart3 size={14} />, label: 'P&L' },
     { key: 'statements', icon: <BookOpen size={14} />, label: 'États fin.' },
     { key: 'dashboard', icon: <LayoutDashboard size={14} />, label: 'Dashboard' },
@@ -141,6 +148,12 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     { key: 'compare', icon: <GitCompare size={14} />, label: 'Comparer' },
     { key: 'versions', icon: <History size={14} />, label: 'Versions' },
     { key: 'approval', icon: <ClipboardCheck size={14} />, label: 'Workflow' },
+    { key: 'journal', icon: <BookOpen size={14} />, label: 'Écritures' },
+    { key: 'close', icon: <ClipboardList size={14} />, label: 'Clôture' },
+    { key: 'validation', icon: <ShieldCheck size={14} />, label: 'Validation' },
+    { key: 'investments', icon: <Building2 size={14} />, label: 'Particip.' },
+    { key: 'ai', icon: <Brain size={14} />, label: 'IA' },
+    { key: 'xbrl', icon: <FileCode size={14} />, label: 'XBRL' },
     { key: 'adhoc', icon: <PieChart size={14} />, label: 'Ad hoc' },
   ];
 
@@ -266,6 +279,13 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'versions' && <VersionManager scenarioId={activeScenarioId} scenarioName={activeScenario?.name || ''} canWrite={canWrite} />}
           {viewMode === 'approval' && <ApprovalWorkflow scenario={activeScenario as Parameters<typeof ApprovalWorkflow>[0]['scenario']} profiles={profiles} canWrite={canWrite} isAdmin={isAdmin} />}
           {viewMode === 'adhoc' && <AdHocReporting lines={lines} categories={categories} countries={countries} />}
+          {viewMode === 'ai' && <AIPredictions lines={lines} categories={categories} scenarioId={activeScenarioId} />}
+          {viewMode === 'segments' && <SegmentConsolidation lines={lines} categories={categories} scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} lineType={lineType} />}
+          {viewMode === 'journal' && <JournalEntriesView scenarioId={activeScenarioId} categories={categories} countries={countries} canWrite={canWrite} isAdmin={isAdmin} />}
+          {viewMode === 'close' && <CloseManagementView scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
+          {viewMode === 'validation' && <DataValidation scenarioId={activeScenarioId} lines={lines} categories={categories} canWrite={canWrite} />}
+          {viewMode === 'investments' && <InvestmentRegister scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
+          {viewMode === 'xbrl' && <XBRLExport lines={lines} categories={categories} scenarioName={activeScenario?.name || ''} fiscalYear={fiscalYear} />}
         </>
       )}
 
