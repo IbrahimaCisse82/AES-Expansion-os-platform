@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart } from 'lucide-react';
+import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { exportBudgetXLSX, exportBudgetPDF } from '@/lib/budgetExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
@@ -33,7 +33,13 @@ import VersionManager from '@/components/budget/VersionManager';
 import ApprovalWorkflow from '@/components/budget/ApprovalWorkflow';
 import BudgetImport from '@/components/budget/BudgetImport';
 import AdHocReporting from '@/components/budget/AdHocReporting';
-
+import AIPredictions from '@/components/budget/AIPredictions';
+import SegmentConsolidation from '@/components/budget/SegmentConsolidation';
+import JournalEntriesView from '@/components/budget/JournalEntriesView';
+import CloseManagementView from '@/components/budget/CloseManagement';
+import DataValidation from '@/components/budget/DataValidation';
+import InvestmentRegister from '@/components/budget/InvestmentRegister';
+import XBRLExport from '@/components/budget/XBRLExport';
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
