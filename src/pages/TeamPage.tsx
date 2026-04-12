@@ -112,6 +112,25 @@ export default function TeamPage() {
     }
   };
 
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer définitivement ${userName} ? Cette action est irréversible.`)) return;
+    setLoadingAction(userId + '-delete');
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: 'delete', user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`${userName} a été supprimé`);
+      refetch();
+      fetchStatuses();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const handleInvite = async () => {
     if (!inviteEmail) return;
     setInviting(true);
