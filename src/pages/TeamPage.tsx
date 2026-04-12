@@ -356,6 +356,15 @@ export default function TeamPage() {
                               {isBanned ? <ShieldCheck size={12} /> : <Ban size={12} />}
                               {isBanned ? 'Débloquer' : 'Bloquer'}
                             </button>
+                            <button
+                              onClick={() => handleDelete(u.user_id, u.full_name)}
+                              disabled={loadingAction === u.user_id + '-delete'}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                              title="Supprimer définitivement"
+                            >
+                              <Trash2 size={12} />
+                              Supprimer
+                            </button>
                           </div>
                         )}
                       </td>
