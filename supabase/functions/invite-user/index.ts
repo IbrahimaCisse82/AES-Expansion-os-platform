@@ -1,6 +1,15 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrateur',
+  director: 'Directeur',
+  country_manager: 'Country Manager',
+  analyst: 'Analyste',
+  observer: 'Observateur',
+  partner: 'Partenaire',
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -9,10 +18,7 @@ const corsHeaders = {
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   try {
@@ -23,8 +29,7 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Non autorisé" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -35,8 +40,7 @@ Deno.serve(async (req: Request) => {
     const { data: { user: caller } } = await callerClient.auth.getUser();
     if (!caller) {
       return new Response(JSON.stringify({ error: "Non autorisé" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -52,16 +56,14 @@ Deno.serve(async (req: Request) => {
 
     if (!roleData) {
       return new Response(JSON.stringify({ error: "Accès réservé aux administrateurs" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { email, full_name, role } = await req.json();
     if (!email) {
       return new Response(JSON.stringify({ error: "Email requis" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -84,8 +86,27 @@ Deno.serve(async (req: Request) => {
         target_user_id: createData.user.id,
         new_role: role,
       });
-
       if (roleErr) throw roleErr;
+    }
+
+    // Send invitation email with credentials
+    const roleName = ROLE_LABELS[role] || role || 'Observateur';
+    try {
+      await admin.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'invitation',
+          recipientEmail: email,
+          idempotencyKey: `invite-${createData.user.id}-${Date.now()}`,
+          templateData: {
+            fullName: full_name || email,
+            email,
+            temporaryPassword: tempPassword,
+            roleName,
+          },
+        },
+      });
+    } catch (emailErr) {
+      console.error('Failed to send invitation email', emailErr);
     }
 
     return new Response(
@@ -100,8 +121,7 @@ Deno.serve(async (req: Request) => {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Une erreur est survenue";
     return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
