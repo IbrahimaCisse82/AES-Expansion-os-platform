@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useComments, useCountries } from '@/hooks/useExpansionData';
 import { useCreateComment, useUpdateComment, useDeleteComment } from '@/hooks/useCommentMutations';
-import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useCurrentUserRole, useAllUsersWithRoles } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Trash2, Pencil, X, Check } from 'lucide-react';
+import MentionInput, { extractMentions, renderMentionedText } from '@/components/MentionInput';
 
 export default function CommentsPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { user } = useAuth();
   const { data: myRole } = useCurrentUserRole();
   const { data: comments = [], isLoading } = useComments();
   const { data: countries = [] } = useCountries();
+  const { data: allUsers = [] } = useAllUsersWithRoles();
   const createComment = useCreateComment();
   const updateComment = useUpdateComment();
   const deleteComment = useDeleteComment();
@@ -25,10 +29,13 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [profileUser, setProfileUser] = useState<any>(null);
 
   const profile = user?.user_metadata;
   const fullName = profile?.full_name || user?.email || 'Utilisateur';
   const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+
+  const knownNames = allUsers.map((u: any) => u.full_name);
 
   const marketFiltered = filterMarket === 'all' ? comments : comments.filter(c => c.market_id === filterMarket);
   const filtered = searchQuery ? marketFiltered.filter(c => c.content.toLowerCase().includes(searchQuery.toLowerCase()) || c.author_name.toLowerCase().includes(searchQuery.toLowerCase())) : marketFiltered;
@@ -40,7 +47,12 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     }
   }, [addSignal]);
 
-  const handlePublish = () => {
+  const handleMentionClick = (name: string) => {
+    const found = allUsers.find((u: any) => u.full_name === name);
+    if (found) setProfileUser(found);
+  };
+
+  const handlePublish = async () => {
     const trimmed = content.trim();
     if (!trimmed) { toast.error('Le commentaire ne peut pas être vide'); return; }
     if (trimmed.length > 1000) { toast.error('Le commentaire est trop long (max 1000 caractères)'); return; }
@@ -58,7 +70,21 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     };
 
     createComment.mutate(payload, {
-      onSuccess: () => { toast.success('Commentaire publié'); setContent(''); setMarketId(''); },
+      onSuccess: async (data) => {
+        toast.success('Commentaire publié');
+        // Store structured mentions
+        const mentions = extractMentions(trimmed, allUsers.map((u: any) => ({ user_id: u.user_id, full_name: u.full_name })));
+        if (mentions.length > 0 && data?.id) {
+          const mentionRows = mentions.map(m => ({
+            comment_id: data.id,
+            mentioned_user_id: m.user_id,
+            mentioned_name: m.full_name,
+          }));
+          await supabase.from('comment_mentions').insert(mentionRows);
+        }
+        setContent('');
+        setMarketId('');
+      },
       onError: (err: Error) => toast.error(err.message),
     });
   };
@@ -86,13 +112,22 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     });
   };
 
+  const ROLE_LABELS: Record<string, string> = {
+    admin: 'Administrateur',
+    director: 'Directeur',
+    country_manager: 'Country Manager',
+    analyst: 'Analyste',
+    observer: 'Observateur',
+    partner: 'Partenaire',
+  };
+
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
   return (
     <div className="animate-page-enter">
       <div className="mb-6">
         <h2 className="font-display text-[23px] font-bold text-primary mb-1">Commentaires & Discussions</h2>
-        <p className="text-[12.5px] text-muted-foreground">Échanges de l'équipe sur les marchés et tâches</p>
+        <p className="text-[12.5px] text-muted-foreground">Échanges de l'équipe sur les marchés et tâches · Utilisez <span className="font-semibold text-accent">@nom</span> pour mentionner un membre</p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
@@ -125,10 +160,10 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                   </div>
                   {isEditing ? (
                     <div>
-                      <textarea
+                      <MentionInput
                         value={editContent}
-                        onChange={e => setEditContent(e.target.value)}
-                      className="w-full p-2 border border-border rounded-lg text-[13px] bg-background outline-none focus:border-accent transition-colors resize-none font-sans"
+                        onChange={setEditContent}
+                        className="w-full p-2 border border-border rounded-lg text-[13px] bg-background outline-none focus:border-accent transition-colors resize-none font-sans"
                         rows={2}
                       />
                       <div className="flex gap-1 mt-1">
@@ -141,7 +176,9 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[13px] leading-relaxed">{c.content}</div>
+                    <div className="text-[13px] leading-relaxed">
+                      {renderMentionedText(c.content, knownNames, handleMentionClick)}
+                    </div>
                   )}
                   <div className="flex gap-1.5 mt-1.5">
                     {(c.tags || []).map(t => (
@@ -155,14 +192,14 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
 
           {user && (
             <div className="mt-4 pt-4 border-t border-border">
-              <textarea
+              <MentionInput
                 id="comment-input"
                 value={content}
-                onChange={e => setContent(e.target.value)}
+                onChange={setContent}
                 maxLength={1000}
                 className="w-full p-3 border-[1.5px] border-border rounded-lg text-[13.5px] bg-background outline-none focus:border-accent focus:bg-card transition-colors resize-none font-sans"
                 rows={3}
-                placeholder="Ajouter un commentaire…"
+                placeholder="Ajouter un commentaire… Tapez @ pour mentionner quelqu'un"
               />
               <div className="flex gap-2 mt-2 items-center">
                 <Select value={marketId || '_none'} onValueChange={v => setMarketId(v === '_none' ? '' : v)}>
@@ -206,6 +243,31 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           </div>
         </div>
       </div>
+
+      {/* User Profile Dialog */}
+      <Dialog open={!!profileUser} onOpenChange={open => !open && setProfileUser(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Profil utilisateur</DialogTitle>
+          </DialogHeader>
+          {profileUser && (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold"
+                style={{ background: profileUser.avatar_color }}
+              >
+                {profileUser.initials}
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-semibold text-primary">{profileUser.full_name}</p>
+                <span className="inline-block mt-1 px-3 py-1 rounded-full text-[12px] font-medium bg-accent/10 text-accent">
+                  {ROLE_LABELS[profileUser.role] || profileUser.role}
+                </span>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteId} onOpenChange={open => !open && setDeleteId(null)}>
         <AlertDialogContent>
