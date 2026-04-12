@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw } from 'lucide-react';
+import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw, Trash2 } from 'lucide-react';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -104,6 +104,25 @@ export default function TeamPage() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(currentlyBanned ? 'Accès restauré' : 'Utilisateur bloqué');
+      fetchStatuses();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Erreur');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer définitivement ${userName} ? Cette action est irréversible.`)) return;
+    setLoadingAction(userId + '-delete');
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: { action: 'delete', user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`${userName} a été supprimé`);
+      refetch();
       fetchStatuses();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Erreur');
@@ -336,6 +355,15 @@ export default function TeamPage() {
                             >
                               {isBanned ? <ShieldCheck size={12} /> : <Ban size={12} />}
                               {isBanned ? 'Débloquer' : 'Bloquer'}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(u.user_id, u.full_name)}
+                              disabled={loadingAction === u.user_id + '-delete'}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                              title="Supprimer définitivement"
+                            >
+                              <Trash2 size={12} />
+                              Supprimer
                             </button>
                           </div>
                         )}
