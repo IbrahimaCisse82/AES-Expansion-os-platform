@@ -98,6 +98,16 @@ export function useRealtimeNotifications() {
             break;
         }
       })
+      // Mentions — notify when YOU are mentioned
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comment_mentions' }, (payload) => {
+        const mention = payload.new as any;
+        if (mention?.mentioned_user_id === user.id) {
+          toast.info(`🔔 Vous avez été mentionné(e) par un collègue`, {
+            description: `@${mention.mentioned_name}`,
+            duration: 6000,
+          });
+        }
+      })
       .subscribe();
 
     return () => {
