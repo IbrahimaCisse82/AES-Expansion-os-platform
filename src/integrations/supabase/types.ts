@@ -953,6 +953,38 @@ export type Database = {
           },
         ]
       }
+      comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          emoji: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           author_color: string
@@ -964,6 +996,7 @@ export type Database = {
           id: string
           market_id: string | null
           market_label: string | null
+          parent_id: string | null
           tags: string[] | null
         }
         Insert: {
@@ -976,6 +1009,7 @@ export type Database = {
           id?: string
           market_id?: string | null
           market_label?: string | null
+          parent_id?: string | null
           tags?: string[] | null
         }
         Update: {
@@ -988,6 +1022,7 @@ export type Database = {
           id?: string
           market_id?: string | null
           market_label?: string | null
+          parent_id?: string | null
           tags?: string[] | null
         }
         Relationships: [
@@ -996,6 +1031,13 @@ export type Database = {
             columns: ["market_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
             referencedColumns: ["id"]
           },
         ]
