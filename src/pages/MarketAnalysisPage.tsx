@@ -1,287 +1,298 @@
 import { useState, useMemo } from 'react';
-import { useCountries, useBudgetEntries, useRisks } from '@/hooks/useExpansionData';
-import { TrendingUp, Users, AlertTriangle, DollarSign, Globe, BarChart3, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell, Legend } from 'recharts';
+import { Search, Filter, Globe, FileText, Building2, Briefcase, Users2, ScrollText, Sparkles, Calendar, MapPin, DollarSign, ExternalLink } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AGREEMENTS, PROGRAMS, PROJECTS, FUNDERS, TENDERS, STAKEHOLDERS, ALL_SECTORS, TARGET_COUNTRIES, type DealItem } from '@/data/marketIntelData';
+import { useCountries } from '@/hooks/useExpansionData';
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899'];
+const STATUS_COLORS: Record<string, string> = {
+  'Actif': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  'En cours': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'Terminé': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  'Planifié': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  'Ouvert': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  'Attribué': 'bg-muted text-muted-foreground',
+  'En évaluation': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+};
 
-export default function MarketAnalysisPage() {
-  const { data: countries = [], isLoading } = useCountries();
-  const { data: budgetEntries = [] } = useBudgetEntries();
-  const { data: risks = [] } = useRisks();
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+function DealCard({ item }: { item: DealItem }) {
+  return (
+    <div className="bg-card border border-border rounded-lg p-5 hover:shadow-md transition-shadow group">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h4 className="text-[14px] font-semibold text-foreground leading-tight flex-1">{item.title}</h4>
+        <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>
+          {item.status}
+        </span>
+      </div>
+      <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">{item.description}</p>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-muted-foreground mb-3">
+        {item.countries.length > 0 && (
+          <span className="flex items-center gap-1">
+            <MapPin size={11} className="text-accent" />
+            {item.countries.length <= 2 ? item.countries.join(', ') : `${item.countries.slice(0, 2).join(', ')} +${item.countries.length - 2}`}
+          </span>
+        )}
+        {item.date && (
+          <span className="flex items-center gap-1">
+            <Calendar size={11} />
+            {item.date}
+          </span>
+        )}
+        {(item.organization || item.partner) && (
+          <span className="flex items-center gap-1">
+            <Building2 size={11} />
+            {item.organization || item.partner}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-secondary text-muted-foreground">{item.sector}</span>
+        {item.amount && (
+          <span className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-accent/10 text-accent flex items-center gap-1">
+            <DollarSign size={9} /> {item.amount}
+          </span>
+        )}
+        {item.type && (
+          <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-primary/10 text-primary">{item.type}</span>
+        )}
+      </div>
+    </div>
+  );
+}
 
-  const country = countries.find(c => c.id === selectedCountry);
+function SectionView({ items, title, description }: { items: DealItem[]; title: string; description: string }) {
+  const [search, setSearch] = useState('');
+  const [sectorFilter, setSectorFilter] = useState('all');
+  const [countryFilter, setCountryFilter] = useState('all');
 
-  // Aggregate data
-  const marketData = useMemo(() => countries.map(c => {
-    const countryRisks = risks.filter(r => r.country_id === c.id);
-    const countryBudget = budgetEntries.filter(b => b.country_id === c.id);
-    const totalBudget = countryBudget.reduce((s, b) => s + (b.allocated_k || 0), 0);
-    const totalSpent = countryBudget.reduce((s, b) => s + (b.spent_k || 0), 0);
-    return {
-      ...c,
-      riskCount: countryRisks.length,
-      highRisks: countryRisks.filter(r => r.level === 'high').length,
-      totalBudget,
-      totalSpent,
-      budgetUsage: totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0,
-    };
-  }), [countries, risks, budgetEntries]);
+  const filtered = useMemo(() => {
+    let result = items;
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(i => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.countries.some(c => c.toLowerCase().includes(q)));
+    }
+    if (sectorFilter !== 'all') result = result.filter(i => i.sector === sectorFilter);
+    if (countryFilter !== 'all') result = result.filter(i => i.countries.includes(countryFilter));
+    return result;
+  }, [items, search, sectorFilter, countryFilter]);
 
-  const progressData = marketData.map(c => ({ name: c.flag + ' ' + c.name, progression: c.pct, budget: c.totalBudget }));
-
-  const statusDistribution = useMemo(() => {
-    const counts = { active: 0, planning: 0, done: 0, paused: 0 };
-    countries.forEach(c => { counts[c.status as keyof typeof counts]++; });
-    return [
-      { name: 'Actif', value: counts.active, color: '#10b981' },
-      { name: 'Planification', value: counts.planning, color: '#f59e0b' },
-      { name: 'Terminé', value: counts.done, color: 'hsl(var(--primary))' },
-      { name: 'En pause', value: counts.paused, color: '#94a3b8' },
-    ].filter(s => s.value > 0);
-  }, [countries]);
-
-  const radarData = useMemo(() => {
-    if (!country) return [];
-    const m = marketData.find(c => c.id === country.id);
-    if (!m) return [];
-    return [
-      { metric: 'Progression', value: m.pct, max: 100 },
-      { metric: 'Équipe', value: Math.min(m.team_size * 10, 100), max: 100 },
-      { metric: 'Budget', value: m.budgetUsage, max: 100 },
-      { metric: 'Risques', value: Math.max(100 - m.highRisks * 25, 0), max: 100 },
-      { metric: 'Phase', value: m.phase * 25, max: 100 },
-    ];
-  }, [country, marketData]);
-
-  const regionData = useMemo(() => {
-    const map = new Map<string, { count: number; avgPct: number; totalBudget: number }>();
-    marketData.forEach(c => {
-      const r = map.get(c.region) || { count: 0, avgPct: 0, totalBudget: 0 };
-      r.count++;
-      r.avgPct += c.pct;
-      r.totalBudget += c.totalBudget;
-      map.set(c.region, r);
-    });
-    return Array.from(map.entries()).map(([region, d]) => ({
-      region,
-      count: d.count,
-      avgPct: Math.round(d.avgPct / d.count),
-      totalBudget: d.totalBudget,
-    }));
-  }, [marketData]);
-
-  if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
-
-  const totalBudgetAll = marketData.reduce((s, c) => s + c.totalBudget, 0);
-  const avgProgress = countries.length ? Math.round(countries.reduce((s, c) => s + c.pct, 0) / countries.length) : 0;
-  const totalTeam = countries.reduce((s, c) => s + c.team_size, 0);
-  const highRiskTotal = risks.filter(r => r.level === 'high').length;
+  const sectors = useMemo(() => [...new Set(items.map(i => i.sector))].sort(), [items]);
 
   return (
-    <div className="animate-page-enter space-y-6">
-      <div>
-        <h2 className="font-display text-[23px] font-bold text-primary mb-1">Analyse Marché</h2>
-        <p className="text-[12.5px] text-muted-foreground">
-          {countries.length} marché{countries.length > 1 ? 's' : ''} · Vue consolidée et analyse détaillée
-        </p>
+    <div>
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-foreground">{title}</h3>
+        <p className="text-[12.5px] text-muted-foreground">{description}</p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: 'Marchés actifs', value: countries.filter(c => c.status === 'active').length, icon: Globe, color: 'text-accent' },
-          { label: 'Progression moy.', value: `${avgProgress}%`, icon: TrendingUp, color: 'text-primary' },
-          { label: 'Équipe totale', value: totalTeam, icon: Users, color: 'text-blue-500' },
-          { label: 'Risques élevés', value: highRiskTotal, icon: AlertTriangle, color: 'text-destructive' },
-        ].map(kpi => (
-          <div key={kpi.label} className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-muted-foreground font-medium">{kpi.label}</span>
-              <kpi.icon size={14} className={kpi.color} />
-            </div>
-            <div className="text-xl font-bold text-foreground">{kpi.value}</div>
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher par pays, titre ou description..."
+            className="pl-9 h-9 text-[13px]"
+          />
+        </div>
+        <Select value={countryFilter} onValueChange={setCountryFilter}>
+          <SelectTrigger className="w-[180px] h-9 text-[12px]"><SelectValue placeholder="Pays" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les pays</SelectItem>
+            {TARGET_COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={sectorFilter} onValueChange={setSectorFilter}>
+          <SelectTrigger className="w-[180px] h-9 text-[12px]"><SelectValue placeholder="Secteur" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les secteurs</SelectItem>
+            {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="text-[12px] text-muted-foreground mb-3">{filtered.length} résultat{filtered.length > 1 ? 's' : ''} trouvé{filtered.length > 1 ? 's' : ''}</div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        {filtered.map(item => <DealCard key={item.id} item={item} />)}
+      </div>
+      {filtered.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground text-sm">Aucun résultat pour cette recherche</div>
+      )}
+    </div>
+  );
+}
+
+function AnalyseIA() {
+  const { data: countries = [] } = useCountries();
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [description, setDescription] = useState('');
+  const [results, setResults] = useState<any>(null);
+
+  const handleAnalyze = () => {
+    const country = countries.find(c => c.name === selectedCountry);
+    const countryName = country?.name || selectedCountry || 'Afrique de l\'Ouest';
+
+    // Build matching results from static data
+    const matchingAccords = AGREEMENTS.filter(a => a.countries.includes(countryName));
+    const matchingProgs = PROGRAMS.filter(p => p.countries.includes(countryName));
+    const matchingProjects = PROJECTS.filter(p => p.countries.includes(countryName));
+    const matchingFunders = FUNDERS.filter(f => f.countries.includes(countryName));
+    const matchingTenders = TENDERS.filter(t => t.countries.includes(countryName));
+    const matchingStakeholders = STAKEHOLDERS.filter(s => s.countries.includes(countryName));
+
+    setResults({
+      country: countryName,
+      accords: matchingAccords,
+      programmes: matchingProgs,
+      projets: matchingProjects,
+      financeurs: matchingFunders,
+      appels: matchingTenders,
+      parties: matchingStakeholders,
+      total: matchingAccords.length + matchingProgs.length + matchingProjects.length + matchingFunders.length + matchingTenders.length + matchingStakeholders.length,
+    });
+  };
+
+  return (
+    <div>
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-foreground">Analyse IA</h3>
+        <p className="text-[12.5px] text-muted-foreground">Soumettez un projet pour découvrir les accords, programmes, financeurs et appels d'offres compatibles</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-4">
+        <div className="bg-card border border-border rounded-lg p-5 space-y-4">
+          <div className="flex items-center gap-2 text-[14px] font-semibold text-foreground">
+            <Sparkles size={16} className="text-accent" />
+            Soumettre un projet
           </div>
-        ))}
-      </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Progress bar chart */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-primary mb-4">Progression par marché</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={progressData} layout="vertical" margin={{ left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: number) => `${v}%`} />
-              <Bar dataKey="progression" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Status distribution */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-primary mb-4">Répartition par statut</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie data={statusDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
-                {statusDistribution.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Regional breakdown */}
-      <div className="bg-card border border-border rounded-lg p-5">
-        <h3 className="text-sm font-semibold text-primary mb-4">Analyse par région</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {regionData.map(r => (
-            <div key={r.region} className="bg-muted/40 border border-border rounded-lg p-4">
-              <div className="text-[12px] text-muted-foreground mb-1">{r.region}</div>
-              <div className="text-lg font-bold text-foreground">{r.count} marché{r.count > 1 ? 's' : ''}</div>
-              <div className="flex items-center gap-3 mt-2 text-[11px]">
-                <span className="text-muted-foreground">Prog. moy: <strong className="text-primary">{r.avgPct}%</strong></span>
-                <span className="text-muted-foreground">Budget: <strong className="text-foreground">{r.totalBudget}K</strong></span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Country selector + detail */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
-        <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-primary mb-3">Sélectionner un marché</h3>
-          <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
-            {marketData.map(c => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedCountry(c.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[12.5px] transition-colors border ${
-                  selectedCountry === c.id
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-card text-foreground border-border hover:bg-muted'
-                }`}
-              >
-                <span className="text-base">{c.flag}</span>
-                <span className="flex-1 text-left font-medium">{c.name}</span>
-                <span className={`text-[10px] font-bold ${selectedCountry === c.id ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>{c.pct}%</span>
-              </button>
-            ))}
+          <div>
+            <label className="text-[12px] text-muted-foreground mb-1 block">Sélectionner un pays cible</label>
+            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="-- Choisir un pays --" /></SelectTrigger>
+              <SelectContent>
+                {TARGET_COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
+
+          <div>
+            <label className="text-[12px] text-muted-foreground mb-1 block">Ou décrivez votre projet</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Décrivez le projet, son secteur, son pays, ses objectifs..."
+              className="w-full p-3 border border-border rounded-lg text-[13px] bg-background resize-none h-28 focus:outline-none focus:border-accent"
+            />
+          </div>
+
+          <button
+            onClick={handleAnalyze}
+            disabled={!selectedCountry && !description}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white text-[13px] font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
+          >
+            <Sparkles size={14} />
+            Lancer l'analyse
+          </button>
         </div>
 
-        {country ? (
-          <div className="bg-card border border-border rounded-lg p-5 space-y-5">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{country.flag}</span>
-              <div>
-                <h3 className="text-lg font-bold text-primary">{country.name}</h3>
-                <p className="text-[12px] text-muted-foreground">{country.region} · Phase {country.phase}</p>
-              </div>
-              <span className={`ml-auto px-3 py-1 rounded-full text-[11px] font-semibold ${
-                country.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                country.status === 'planning' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                'bg-muted text-muted-foreground'
-              }`}>
-                {country.status}
-              </span>
+        {results ? (
+          <div className="bg-card border border-border rounded-lg p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-[14px] font-bold text-primary">Résultats pour {results.country}</h4>
+              <span className="text-[12px] text-muted-foreground">{results.total} correspondance{results.total > 1 ? 's' : ''}</span>
             </div>
 
-            {/* Country KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: 'Population', value: country.population || 'N/A' },
-                { label: 'PIB', value: country.gdp || 'N/A' },
-                { label: 'Langue', value: country.language || 'N/A' },
-                { label: 'Équipe', value: `${country.team_size} pers.` },
-              ].map(k => (
-                <div key={k.label} className="bg-muted/40 rounded-lg p-3">
-                  <div className="text-[10px] text-muted-foreground">{k.label}</div>
-                  <div className="text-sm font-semibold text-foreground mt-0.5">{k.value}</div>
+            {[
+              { label: 'Accords', items: results.accords, icon: '📄' },
+              { label: 'Programmes', items: results.programmes, icon: '📋' },
+              { label: 'Projets', items: results.projets, icon: '🏗️' },
+              { label: 'Financeurs', items: results.financeurs, icon: '🏦' },
+              { label: 'Appels d\'offres', items: results.appels, icon: '📢' },
+              { label: 'Parties prenantes', items: results.parties, icon: '🤝' },
+            ].map(cat => (
+              <div key={cat.label}>
+                <div className="text-[12px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
+                  <span>{cat.icon}</span> {cat.label} ({cat.items.length})
                 </div>
-              ))}
-            </div>
-
-            {/* Performance KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: 'CA', value: country.kpi_ca || 'N/A', icon: DollarSign },
-                { label: 'Clients', value: country.kpi_clients || 'N/A', icon: Users },
-                { label: 'NPS', value: country.kpi_nps || 'N/A', icon: BarChart3 },
-                { label: 'Rétention', value: country.kpi_retention || 'N/A', icon: TrendingUp },
-              ].map(k => (
-                <div key={k.label} className="bg-muted/40 rounded-lg p-3 flex items-center gap-2">
-                  <k.icon size={14} className="text-accent" />
-                  <div>
-                    <div className="text-[10px] text-muted-foreground">{k.label}</div>
-                    <div className="text-sm font-semibold text-foreground">{k.value}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Radar chart */}
-            {radarData.length > 0 && (
-              <div>
-                <h4 className="text-[12px] font-semibold text-primary mb-2">Profil marché</h4>
-                <ResponsiveContainer width="100%" height={250}>
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="hsl(var(--border))" />
-                    <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11 }} />
-                    <PolarRadiusAxis domain={[0, 100]} tick={false} />
-                    <Radar name="Score" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.25} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Progression bar */}
-            <div>
-              <div className="flex justify-between text-[12px] mb-1.5">
-                <span className="text-muted-foreground">Progression</span>
-                <span className="font-bold text-primary">{country.pct}%</span>
-              </div>
-              <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all" style={{ width: `${country.pct}%` }} />
-              </div>
-            </div>
-
-            {/* Risks for this country */}
-            {(() => {
-              const countryRisks = risks.filter(r => r.country_id === country.id);
-              if (!countryRisks.length) return null;
-              return (
-                <div>
-                  <h4 className="text-[12px] font-semibold text-primary mb-2">Risques ({countryRisks.length})</h4>
+                {cat.items.length > 0 ? (
                   <div className="space-y-1.5">
-                    {countryRisks.slice(0, 5).map(r => (
-                      <div key={r.id} className="flex items-center gap-2 text-[12px] py-1.5 px-2.5 rounded-lg bg-muted/40">
-                        <span className={`w-2 h-2 rounded-full ${r.level === 'high' ? 'bg-destructive' : r.level === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`} />
-                        <span className="text-foreground">{r.title}</span>
-                        <span className="ml-auto text-muted-foreground capitalize">{r.level}</span>
+                    {cat.items.map((item: DealItem) => (
+                      <div key={item.id} className="flex items-center gap-2 text-[12px] py-1.5 px-3 rounded-lg bg-muted/50 border border-border/50">
+                        <span className="font-medium text-foreground flex-1">{item.title}</span>
+                        {item.amount && <span className="text-accent text-[10.5px] font-semibold">{item.amount}</span>}
+                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>{item.status}</span>
                       </div>
                     ))}
                   </div>
-                </div>
-              );
-            })()}
+                ) : (
+                  <p className="text-[11px] text-muted-foreground italic">Aucun résultat dans cette catégorie</p>
+                )}
+              </div>
+            ))}
           </div>
         ) : (
           <div className="bg-card border border-border rounded-lg p-8 flex items-center justify-center">
             <div className="text-center">
-              <Globe size={40} className="mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-sm text-muted-foreground">Sélectionnez un marché pour voir l'analyse détaillée</p>
+              <Sparkles size={40} className="mx-auto text-muted-foreground/20 mb-3" />
+              <p className="text-sm text-muted-foreground">Les résultats de l'analyse apparaîtront ici</p>
+              <p className="text-[11px] text-muted-foreground/70 mt-1">Soumettez un projet pour lancer le matching sur les 6 catégories</p>
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+const TAB_CONFIG = [
+  { id: 'accords', label: 'Accords', icon: FileText, data: AGREEMENTS, title: 'Accords Économiques', desc: 'Accords signés entre pays africains et partenaires internationaux' },
+  { id: 'programmes', label: 'Programmes', icon: ScrollText, data: PROGRAMS, title: 'Programmes Économiques', desc: 'Programmes et stratégies de développement mis en place par les pays cibles' },
+  { id: 'projets', label: 'Projets', icon: Briefcase, data: PROJECTS, title: 'Projets Structurants', desc: 'Projets en cours ou planifiés dans les pays cibles' },
+  { id: 'financeurs', label: 'Financeurs', icon: Building2, data: FUNDERS, title: 'Financeurs & Investisseurs', desc: 'Banques, fonds et agences actifs dans les pays cibles' },
+  { id: 'appels', label: 'Appels d\'offres', icon: Globe, data: TENDERS, title: 'Appels d\'Offres', desc: 'Marchés publics et appels à projets dans les pays cibles' },
+  { id: 'parties', label: 'Parties prenantes', icon: Users2, data: STAKEHOLDERS, title: 'Parties Prenantes', desc: 'Gouvernements, agences et organisations impliqués' },
+];
+
+export default function MarketAnalysisPage() {
+  return (
+    <div className="animate-page-enter">
+      <div className="mb-6">
+        <div className="flex items-center gap-2.5 mb-1">
+          <Globe size={22} className="text-accent" />
+          <h2 className="font-display text-[23px] font-bold text-primary">AfriDataHub</h2>
+        </div>
+        <p className="text-[12.5px] text-muted-foreground">
+          Analyse & collecte de données économiques · {TARGET_COUNTRIES.length} marchés cibles · Accords, programmes, projets et financeurs
+        </p>
+      </div>
+
+      <Tabs defaultValue="accords" className="space-y-4">
+        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
+          {TAB_CONFIG.map(tab => (
+            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1.5 text-[12px] px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <tab.icon size={13} />
+              {tab.label}
+            </TabsTrigger>
+          ))}
+          <TabsTrigger value="analyse-ia" className="flex items-center gap-1.5 text-[12px] px-3 py-2 data-[state=active]:bg-accent data-[state=active]:text-white">
+            <Sparkles size={13} />
+            Analyse IA
+          </TabsTrigger>
+        </TabsList>
+
+        {TAB_CONFIG.map(tab => (
+          <TabsContent key={tab.id} value={tab.id}>
+            <SectionView items={tab.data} title={tab.title} description={tab.desc} />
+          </TabsContent>
+        ))}
+
+        <TabsContent value="analyse-ia">
+          <AnalyseIA />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
