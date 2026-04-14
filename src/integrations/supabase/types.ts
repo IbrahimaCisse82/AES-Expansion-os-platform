@@ -1210,6 +1210,66 @@ export type Database = {
         }
         Relationships: []
       }
+      market_intel_items: {
+        Row: {
+          amount: string | null
+          category: string
+          countries: string[]
+          created_at: string
+          date: string | null
+          description: string
+          details: Json
+          id: string
+          image_url: string | null
+          organization: string | null
+          partner: string | null
+          sector: string
+          source_url: string | null
+          status: string
+          title: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: string | null
+          category?: string
+          countries?: string[]
+          created_at?: string
+          date?: string | null
+          description?: string
+          details?: Json
+          id?: string
+          image_url?: string | null
+          organization?: string | null
+          partner?: string | null
+          sector?: string
+          source_url?: string | null
+          status?: string
+          title: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: string | null
+          category?: string
+          countries?: string[]
+          created_at?: string
+          date?: string | null
+          description?: string
+          details?: Json
+          id?: string
+          image_url?: string | null
+          organization?: string | null
+          partner?: string | null
+          sector?: string
+          source_url?: string | null
+          status?: string
+          title?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       milestones: {
         Row: {
           country_id: string

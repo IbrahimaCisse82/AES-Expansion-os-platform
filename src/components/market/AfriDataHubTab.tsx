@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Search, Globe, FileText, Building2, Briefcase, Users2, ScrollText, Sparkles, Calendar, MapPin, DollarSign } from 'lucide-react';
+import { Search, Globe, FileText, Building2, Briefcase, Users2, ScrollText, Sparkles, Calendar, MapPin, DollarSign, ExternalLink, ChevronRight, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { AGREEMENTS, PROGRAMS, PROJECTS, FUNDERS, TENDERS, STAKEHOLDERS, TARGET_COUNTRIES, type DealItem } from '@/data/marketIntelData';
 import { useCountries } from '@/hooks/useExpansionData';
 
@@ -16,11 +18,148 @@ const STATUS_COLORS: Record<string, string> = {
   'En évaluation': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
-function DealCard({ item }: { item: DealItem }) {
+function DealDetailDialog({ item, open, onClose }: { item: DealItem | null; open: boolean; onClose: () => void }) {
+  if (!item) return null;
+  const d = item.details;
+
   return (
-    <div className="bg-card border border-border rounded-lg p-5 hover:shadow-md transition-shadow">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <DialogTitle className="text-[16px] leading-snug pr-4">{item.title}</DialogTitle>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>
+                  {item.status}
+                </span>
+                <Badge variant="secondary" className="text-[10.5px]">{item.sector}</Badge>
+                {item.type && <Badge variant="outline" className="text-[10.5px]">{item.type}</Badge>}
+              </div>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-4 mt-2">
+          {/* Description */}
+          <p className="text-[13px] text-muted-foreground leading-relaxed">{item.description}</p>
+
+          {/* Meta info */}
+          <div className="grid grid-cols-2 gap-3 text-[12.5px]">
+            {item.countries.length > 0 && (
+              <div className="flex items-start gap-2">
+                <MapPin size={13} className="text-accent mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-muted-foreground text-[11px]">Pays</div>
+                  <div className="font-medium text-foreground">{item.countries.join(', ')}</div>
+                </div>
+              </div>
+            )}
+            {item.date && (
+              <div className="flex items-start gap-2">
+                <Calendar size={13} className="text-accent mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-muted-foreground text-[11px]">Date</div>
+                  <div className="font-medium text-foreground">{item.date}</div>
+                </div>
+              </div>
+            )}
+            {item.amount && (
+              <div className="flex items-start gap-2">
+                <DollarSign size={13} className="text-accent mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-muted-foreground text-[11px]">Montant</div>
+                  <div className="font-semibold text-accent">{item.amount}</div>
+                </div>
+              </div>
+            )}
+            {(item.organization || item.partner) && (
+              <div className="flex items-start gap-2">
+                <Building2 size={13} className="text-accent mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-muted-foreground text-[11px]">{item.partner ? 'Partenaire' : 'Organisation'}</div>
+                  <div className="font-medium text-foreground">{item.organization || item.partner}</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Objectives */}
+          {d?.objectives && d.objectives.length > 0 && (
+            <div className="bg-muted/30 rounded-lg p-4">
+              <h4 className="text-[13px] font-semibold text-foreground mb-2 flex items-center gap-1.5">🎯 Objectifs</h4>
+              <ul className="space-y-1.5">
+                {d.objectives.map((obj, i) => (
+                  <li key={i} className="flex items-start gap-2 text-[12.5px] text-muted-foreground">
+                    <ChevronRight size={12} className="text-accent mt-0.5 shrink-0" />
+                    <span>{obj}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Key Facts */}
+          {d?.key_facts && d.key_facts.length > 0 && (
+            <div className="bg-accent/5 rounded-lg p-4">
+              <h4 className="text-[13px] font-semibold text-foreground mb-2 flex items-center gap-1.5">📊 Faits clés</h4>
+              <ul className="space-y-1.5">
+                {d.key_facts.map((fact, i) => (
+                  <li key={i} className="flex items-start gap-2 text-[12.5px] text-muted-foreground">
+                    <span className="text-accent font-bold mt-0.5">•</span>
+                    <span>{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Timeline */}
+          {d?.timeline && (
+            <div className="bg-primary/5 rounded-lg p-4">
+              <h4 className="text-[13px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">📅 Calendrier</h4>
+              <p className="text-[12.5px] text-muted-foreground">{d.timeline}</p>
+            </div>
+          )}
+
+          {/* Eligibility */}
+          {d?.eligibility && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-lg p-4">
+              <h4 className="text-[13px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">✅ Éligibilité</h4>
+              <p className="text-[12.5px] text-muted-foreground">{d.eligibility}</p>
+            </div>
+          )}
+
+          {/* Contacts */}
+          {d?.contacts && d.contacts.length > 0 && (
+            <div>
+              <h4 className="text-[13px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">📞 Contacts</h4>
+              <ul className="space-y-1">
+                {d.contacts.map((c, i) => (
+                  <li key={i} className="text-[12px] text-muted-foreground">{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Source URL */}
+          {item.source_url && (
+            <a href={item.source_url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[12px] text-accent hover:underline font-medium">
+              <ExternalLink size={12} />Voir la source officielle
+            </a>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DealCard({ item, onClick }: { item: DealItem; onClick: () => void }) {
+  return (
+    <div onClick={onClick} className="bg-card border border-border rounded-lg p-5 hover:shadow-md hover:border-accent/30 transition-all cursor-pointer group">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h4 className="text-[14px] font-semibold text-foreground leading-tight flex-1">{item.title}</h4>
+        <h4 className="text-[14px] font-semibold text-foreground leading-tight flex-1 group-hover:text-accent transition-colors">{item.title}</h4>
         <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>
           {item.status}
         </span>
@@ -51,6 +190,11 @@ function DealCard({ item }: { item: DealItem }) {
           <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-primary/10 text-primary">{item.type}</span>
         )}
       </div>
+      {item.details && (
+        <div className="mt-2 text-[10.5px] text-accent font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          Voir les détails <ChevronRight size={10} />
+        </div>
+      )}
     </div>
   );
 }
@@ -59,6 +203,7 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
   const [search, setSearch] = useState('');
   const [sectorFilter, setSectorFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<DealItem | null>(null);
 
   const filtered = useMemo(() => {
     let result = items;
@@ -101,11 +246,12 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
       </div>
       <div className="text-[12px] text-muted-foreground mb-3">{filtered.length} résultat{filtered.length > 1 ? 's' : ''}</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {filtered.map(item => <DealCard key={item.id} item={item} />)}
+        {filtered.map(item => <DealCard key={item.id} item={item} onClick={() => setSelectedItem(item)} />)}
       </div>
       {filtered.length === 0 && (
         <div className="text-center py-12 text-muted-foreground text-sm">Aucun résultat pour cette recherche</div>
       )}
+      <DealDetailDialog item={selectedItem} open={!!selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
   );
 }
@@ -115,6 +261,7 @@ function AnalyseIA() {
   const [selectedCountry, setSelectedCountry] = useState('');
   const [description, setDescription] = useState('');
   const [results, setResults] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<DealItem | null>(null);
 
   const handleAnalyze = () => {
     const country = countries.find(c => c.name === selectedCountry);
@@ -183,10 +330,12 @@ function AnalyseIA() {
                 {cat.items.length > 0 ? (
                   <div className="space-y-1.5">
                     {cat.items.map((item: DealItem) => (
-                      <div key={item.id} className="flex items-center gap-2 text-[12px] py-1.5 px-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div key={item.id} onClick={() => setSelectedItem(item)}
+                        className="flex items-center gap-2 text-[12px] py-1.5 px-3 rounded-lg bg-muted/50 border border-border/50 cursor-pointer hover:bg-muted hover:border-accent/30 transition-colors">
                         <span className="font-medium text-foreground flex-1">{item.title}</span>
                         {item.amount && <span className="text-accent text-[10.5px] font-semibold">{item.amount}</span>}
                         <span className={`shrink-0 px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>{item.status}</span>
+                        <ChevronRight size={12} className="text-muted-foreground" />
                       </div>
                     ))}
                   </div>
@@ -205,6 +354,7 @@ function AnalyseIA() {
           </div>
         )}
       </div>
+      <DealDetailDialog item={selectedItem} open={!!selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
   );
 }
