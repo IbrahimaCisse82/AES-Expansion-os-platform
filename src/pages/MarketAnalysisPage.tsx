@@ -1,260 +1,7 @@
-import { useState, useMemo } from 'react';
-import { Search, Filter, Globe, FileText, Building2, Briefcase, Users2, ScrollText, Sparkles, Calendar, MapPin, DollarSign, ExternalLink } from 'lucide-react';
+import { Globe, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AGREEMENTS, PROGRAMS, PROJECTS, FUNDERS, TENDERS, STAKEHOLDERS, ALL_SECTORS, TARGET_COUNTRIES, type DealItem } from '@/data/marketIntelData';
-import { useCountries } from '@/hooks/useExpansionData';
-
-const STATUS_COLORS: Record<string, string> = {
-  'Actif': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'En cours': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  'Terminé': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  'Planifié': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  'Ouvert': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'Attribué': 'bg-muted text-muted-foreground',
-  'En évaluation': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-};
-
-function DealCard({ item }: { item: DealItem }) {
-  return (
-    <div className="bg-card border border-border rounded-lg p-5 hover:shadow-md transition-shadow group">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <h4 className="text-[14px] font-semibold text-foreground leading-tight flex-1">{item.title}</h4>
-        <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>
-          {item.status}
-        </span>
-      </div>
-      <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">{item.description}</p>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-muted-foreground mb-3">
-        {item.countries.length > 0 && (
-          <span className="flex items-center gap-1">
-            <MapPin size={11} className="text-accent" />
-            {item.countries.length <= 2 ? item.countries.join(', ') : `${item.countries.slice(0, 2).join(', ')} +${item.countries.length - 2}`}
-          </span>
-        )}
-        {item.date && (
-          <span className="flex items-center gap-1">
-            <Calendar size={11} />
-            {item.date}
-          </span>
-        )}
-        {(item.organization || item.partner) && (
-          <span className="flex items-center gap-1">
-            <Building2 size={11} />
-            {item.organization || item.partner}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-secondary text-muted-foreground">{item.sector}</span>
-        {item.amount && (
-          <span className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-accent/10 text-accent flex items-center gap-1">
-            <DollarSign size={9} /> {item.amount}
-          </span>
-        )}
-        {item.type && (
-          <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-primary/10 text-primary">{item.type}</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SectionView({ items, title, description }: { items: DealItem[]; title: string; description: string }) {
-  const [search, setSearch] = useState('');
-  const [sectorFilter, setSectorFilter] = useState('all');
-  const [countryFilter, setCountryFilter] = useState('all');
-
-  const filtered = useMemo(() => {
-    let result = items;
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(i => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.countries.some(c => c.toLowerCase().includes(q)));
-    }
-    if (sectorFilter !== 'all') result = result.filter(i => i.sector === sectorFilter);
-    if (countryFilter !== 'all') result = result.filter(i => i.countries.includes(countryFilter));
-    return result;
-  }, [items, search, sectorFilter, countryFilter]);
-
-  const sectors = useMemo(() => [...new Set(items.map(i => i.sector))].sort(), [items]);
-
-  return (
-    <div>
-      <div className="mb-4">
-        <h3 className="text-lg font-bold text-foreground">{title}</h3>
-        <p className="text-[12.5px] text-muted-foreground">{description}</p>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Rechercher par pays, titre ou description..."
-            className="pl-9 h-9 text-[13px]"
-          />
-        </div>
-        <Select value={countryFilter} onValueChange={setCountryFilter}>
-          <SelectTrigger className="w-[180px] h-9 text-[12px]"><SelectValue placeholder="Pays" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les pays</SelectItem>
-            {TARGET_COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={sectorFilter} onValueChange={setSectorFilter}>
-          <SelectTrigger className="w-[180px] h-9 text-[12px]"><SelectValue placeholder="Secteur" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les secteurs</SelectItem>
-            {sectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="text-[12px] text-muted-foreground mb-3">{filtered.length} résultat{filtered.length > 1 ? 's' : ''} trouvé{filtered.length > 1 ? 's' : ''}</div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {filtered.map(item => <DealCard key={item.id} item={item} />)}
-      </div>
-      {filtered.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground text-sm">Aucun résultat pour cette recherche</div>
-      )}
-    </div>
-  );
-}
-
-function AnalyseIA() {
-  const { data: countries = [] } = useCountries();
-  const [selectedCountry, setSelectedCountry] = useState('');
-  const [description, setDescription] = useState('');
-  const [results, setResults] = useState<any>(null);
-
-  const handleAnalyze = () => {
-    const country = countries.find(c => c.name === selectedCountry);
-    const countryName = country?.name || selectedCountry || 'Afrique de l\'Ouest';
-
-    // Build matching results from static data
-    const matchingAccords = AGREEMENTS.filter(a => a.countries.includes(countryName));
-    const matchingProgs = PROGRAMS.filter(p => p.countries.includes(countryName));
-    const matchingProjects = PROJECTS.filter(p => p.countries.includes(countryName));
-    const matchingFunders = FUNDERS.filter(f => f.countries.includes(countryName));
-    const matchingTenders = TENDERS.filter(t => t.countries.includes(countryName));
-    const matchingStakeholders = STAKEHOLDERS.filter(s => s.countries.includes(countryName));
-
-    setResults({
-      country: countryName,
-      accords: matchingAccords,
-      programmes: matchingProgs,
-      projets: matchingProjects,
-      financeurs: matchingFunders,
-      appels: matchingTenders,
-      parties: matchingStakeholders,
-      total: matchingAccords.length + matchingProgs.length + matchingProjects.length + matchingFunders.length + matchingTenders.length + matchingStakeholders.length,
-    });
-  };
-
-  return (
-    <div>
-      <div className="mb-4">
-        <h3 className="text-lg font-bold text-foreground">Analyse IA</h3>
-        <p className="text-[12.5px] text-muted-foreground">Soumettez un projet pour découvrir les accords, programmes, financeurs et appels d'offres compatibles</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-4">
-        <div className="bg-card border border-border rounded-lg p-5 space-y-4">
-          <div className="flex items-center gap-2 text-[14px] font-semibold text-foreground">
-            <Sparkles size={16} className="text-accent" />
-            Soumettre un projet
-          </div>
-
-          <div>
-            <label className="text-[12px] text-muted-foreground mb-1 block">Sélectionner un pays cible</label>
-            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-              <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="-- Choisir un pays --" /></SelectTrigger>
-              <SelectContent>
-                {TARGET_COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-[12px] text-muted-foreground mb-1 block">Ou décrivez votre projet</label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Décrivez le projet, son secteur, son pays, ses objectifs..."
-              className="w-full p-3 border border-border rounded-lg text-[13px] bg-background resize-none h-28 focus:outline-none focus:border-accent"
-            />
-          </div>
-
-          <button
-            onClick={handleAnalyze}
-            disabled={!selectedCountry && !description}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white text-[13px] font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
-          >
-            <Sparkles size={14} />
-            Lancer l'analyse
-          </button>
-        </div>
-
-        {results ? (
-          <div className="bg-card border border-border rounded-lg p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-[14px] font-bold text-primary">Résultats pour {results.country}</h4>
-              <span className="text-[12px] text-muted-foreground">{results.total} correspondance{results.total > 1 ? 's' : ''}</span>
-            </div>
-
-            {[
-              { label: 'Accords', items: results.accords, icon: '📄' },
-              { label: 'Programmes', items: results.programmes, icon: '📋' },
-              { label: 'Projets', items: results.projets, icon: '🏗️' },
-              { label: 'Financeurs', items: results.financeurs, icon: '🏦' },
-              { label: 'Appels d\'offres', items: results.appels, icon: '📢' },
-              { label: 'Parties prenantes', items: results.parties, icon: '🤝' },
-            ].map(cat => (
-              <div key={cat.label}>
-                <div className="text-[12px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-                  <span>{cat.icon}</span> {cat.label} ({cat.items.length})
-                </div>
-                {cat.items.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {cat.items.map((item: DealItem) => (
-                      <div key={item.id} className="flex items-center gap-2 text-[12px] py-1.5 px-3 rounded-lg bg-muted/50 border border-border/50">
-                        <span className="font-medium text-foreground flex-1">{item.title}</span>
-                        {item.amount && <span className="text-accent text-[10.5px] font-semibold">{item.amount}</span>}
-                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>{item.status}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground italic">Aucun résultat dans cette catégorie</p>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-card border border-border rounded-lg p-8 flex items-center justify-center">
-            <div className="text-center">
-              <Sparkles size={40} className="mx-auto text-muted-foreground/20 mb-3" />
-              <p className="text-sm text-muted-foreground">Les résultats de l'analyse apparaîtront ici</p>
-              <p className="text-[11px] text-muted-foreground/70 mt-1">Soumettez un projet pour lancer le matching sur les 6 catégories</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-const TAB_CONFIG = [
-  { id: 'accords', label: 'Accords', icon: FileText, data: AGREEMENTS, title: 'Accords Économiques', desc: 'Accords signés entre pays africains et partenaires internationaux' },
-  { id: 'programmes', label: 'Programmes', icon: ScrollText, data: PROGRAMS, title: 'Programmes Économiques', desc: 'Programmes et stratégies de développement mis en place par les pays cibles' },
-  { id: 'projets', label: 'Projets', icon: Briefcase, data: PROJECTS, title: 'Projets Structurants', desc: 'Projets en cours ou planifiés dans les pays cibles' },
-  { id: 'financeurs', label: 'Financeurs', icon: Building2, data: FUNDERS, title: 'Financeurs & Investisseurs', desc: 'Banques, fonds et agences actifs dans les pays cibles' },
-  { id: 'appels', label: 'Appels d\'offres', icon: Globe, data: TENDERS, title: 'Appels d\'Offres', desc: 'Marchés publics et appels à projets dans les pays cibles' },
-  { id: 'parties', label: 'Parties prenantes', icon: Users2, data: STAKEHOLDERS, title: 'Parties Prenantes', desc: 'Gouvernements, agences et organisations impliqués' },
-];
+import CountryAnalysisTab from '@/components/market/CountryAnalysisTab';
+import AfriDataHubTab from '@/components/market/AfriDataHubTab';
 
 export default function MarketAnalysisPage() {
   return (
@@ -262,35 +9,31 @@ export default function MarketAnalysisPage() {
       <div className="mb-6">
         <div className="flex items-center gap-2.5 mb-1">
           <Globe size={22} className="text-accent" />
-          <h2 className="font-display text-[23px] font-bold text-primary">AfriDataHub</h2>
+          <h2 className="font-display text-[23px] font-bold text-primary">Analyse de Marché</h2>
         </div>
         <p className="text-[12.5px] text-muted-foreground">
-          Analyse & collecte de données économiques · {TARGET_COUNTRIES.length} marchés cibles · Accords, programmes, projets et financeurs
+          Données en temps réel par pays cible · KPIs, tâches, risques, budget · Intelligence économique
         </p>
       </div>
 
-      <Tabs defaultValue="accords" className="space-y-4">
-        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
-          {TAB_CONFIG.map(tab => (
-            <TabsTrigger key={tab.id} value={tab.id} className="flex items-center gap-1.5 text-[12px] px-3 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <tab.icon size={13} />
-              {tab.label}
-            </TabsTrigger>
-          ))}
-          <TabsTrigger value="analyse-ia" className="flex items-center gap-1.5 text-[12px] px-3 py-2 data-[state=active]:bg-accent data-[state=active]:text-white">
-            <Sparkles size={13} />
-            Analyse IA
+      <Tabs defaultValue="analyse-pays" className="space-y-4">
+        <TabsList className="h-auto gap-1 bg-muted/50 p-1 rounded-lg">
+          <TabsTrigger value="analyse-pays" className="flex items-center gap-1.5 text-[13px] px-4 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <BarChart3 size={14} />
+            Analyse Pays
+          </TabsTrigger>
+          <TabsTrigger value="afridatahub" className="flex items-center gap-1.5 text-[13px] px-4 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Globe size={14} />
+            AfriDataHub
           </TabsTrigger>
         </TabsList>
 
-        {TAB_CONFIG.map(tab => (
-          <TabsContent key={tab.id} value={tab.id}>
-            <SectionView items={tab.data} title={tab.title} description={tab.desc} />
-          </TabsContent>
-        ))}
+        <TabsContent value="analyse-pays">
+          <CountryAnalysisTab />
+        </TabsContent>
 
-        <TabsContent value="analyse-ia">
-          <AnalyseIA />
+        <TabsContent value="afridatahub">
+          <AfriDataHubTab />
         </TabsContent>
       </Tabs>
     </div>
