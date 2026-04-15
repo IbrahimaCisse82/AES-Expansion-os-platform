@@ -27,7 +27,7 @@ export default function KpisPage() {
   const { data: history = [], isLoading: loadingHistory } = useKpiHistory(countryId);
   const upsert = useUpsertKpiHistory();
   const deleteMut = useDeleteKpiHistory();
-  const { logActivity } = useActivityLogger();
+  
 
   // Inline edit state
   const [editRow, setEditRow] = useState<Partial<KpiHistoryEntry> & { isNew?: boolean } | null>(null);
