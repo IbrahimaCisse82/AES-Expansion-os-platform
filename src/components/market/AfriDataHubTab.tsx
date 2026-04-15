@@ -240,13 +240,41 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
     return result;
   }, [items, search, sectorFilter, countryFilter]);
 
+  const specificCount = useMemo(() => {
+    if (countryFilter === 'all') return 0;
+    return filtered.filter(i => i.countries.length === 1 && i.countries[0] === countryFilter).length;
+  }, [filtered, countryFilter]);
+
+  const multiCount = useMemo(() => {
+    if (countryFilter === 'all') return 0;
+    return filtered.filter(i => i.countries.length > 1).length;
+  }, [filtered, countryFilter]);
+
   const sectors = useMemo(() => [...new Set(items.map(i => i.sector))].sort(), [items]);
 
   return (
     <div>
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-foreground">{title}</h3>
-        <p className="text-[12.5px] text-muted-foreground">{description}</p>
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h3 className="text-lg font-bold text-foreground">{title}</h3>
+            <p className="text-[12.5px] text-muted-foreground">{description}</p>
+          </div>
+          {countryFilter !== 'all' && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/30">
+                <MapPin size={14} className="text-accent" />
+                <span className="text-[12px] font-semibold text-accent">{specificCount}</span>
+                <span className="text-[11px] text-muted-foreground">Spécifique{specificCount > 1 ? 's' : ''}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted border border-border">
+                <Globe size={14} className="text-muted-foreground" />
+                <span className="text-[12px] font-semibold text-foreground">{multiCount}</span>
+                <span className="text-[11px] text-muted-foreground">Multi-pays</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <div className="relative flex-1">
