@@ -24,7 +24,9 @@ export interface DealItem {
   };
 }
 
+// ==================== ACCORDS ====================
 export const AGREEMENTS: DealItem[] = [
+  // --- MULTI-PAYS ---
   {
     id: 'acc-1',
     title: 'Zone de Libre-Échange Continentale Africaine (ZLECAf)',
@@ -37,19 +39,8 @@ export const AGREEMENTS: DealItem[] = [
     partner: 'Union Africaine',
     source_url: 'https://au-afcfta.org/',
     details: {
-      objectives: [
-        'Créer un marché unique pour les biens et services',
-        'Faciliter la libre circulation des personnes et des investissements',
-        'Éliminer 90% des tarifs douaniers entre pays membres',
-        'Booster le commerce intra-africain de 52% d\'ici 2025',
-      ],
-      key_facts: [
-        '54 pays signataires sur 55 membres de l\'UA',
-        'PIB combiné de 3 400 milliards USD',
-        '1.3 milliard de consommateurs potentiels',
-        'Entrée en vigueur : 30 mai 2019',
-        'Phase 2 couvre investissements et concurrence',
-      ],
+      objectives: ['Créer un marché unique pour les biens et services', 'Faciliter la libre circulation des personnes et des investissements', 'Éliminer 90% des tarifs douaniers entre pays membres', 'Booster le commerce intra-africain de 52% d\'ici 2025'],
+      key_facts: ['54 pays signataires sur 55 membres de l\'UA', 'PIB combiné de 3 400 milliards USD', '1.3 milliard de consommateurs potentiels', 'Entrée en vigueur : 30 mai 2019', 'Phase 2 couvre investissements et concurrence'],
       timeline: 'Phase 1 (2021-2024) : Libéralisation tarifaire. Phase 2 (2025-2030) : Investissements, concurrence, propriété intellectuelle.',
     },
   },
@@ -65,18 +56,8 @@ export const AGREEMENTS: DealItem[] = [
     partner: 'Union Européenne',
     source_url: 'https://ec.europa.eu/trade/policy/countries-and-regions/regions/west-africa/',
     details: {
-      objectives: [
-        'Accès au marché européen sans droits de douane ni quotas',
-        'Accompagnement financier pour renforcer les capacités productives',
-        'Protection des industries naissantes africaines',
-        'Harmonisation des normes commerciales',
-      ],
-      key_facts: [
-        'La Côte d\'Ivoire applique un APE intérimaire depuis 2019',
-        'Le Ghana a signé un APE intérimaire en 2016',
-        'Fonds d\'accompagnement UE de 6.5 milliards EUR',
-        'Période de transition de 20 ans pour la libéralisation complète',
-      ],
+      objectives: ['Accès au marché européen sans droits de douane ni quotas', 'Accompagnement financier pour renforcer les capacités productives', 'Protection des industries naissantes africaines', 'Harmonisation des normes commerciales'],
+      key_facts: ['La Côte d\'Ivoire applique un APE intérimaire depuis 2019', 'Fonds d\'accompagnement UE de 6.5 milliards EUR', 'Période de transition de 20 ans pour la libéralisation complète'],
       eligibility: 'Entreprises exportatrices des 16 pays d\'Afrique de l\'Ouest vers l\'UE',
     },
   },
@@ -92,19 +73,8 @@ export const AGREEMENTS: DealItem[] = [
     partner: 'Chine',
     source_url: 'https://www.focac.org/',
     details: {
-      objectives: [
-        'Modernisation de l\'agriculture et sécurité alimentaire',
-        'Industrialisation et transfert de technologie',
-        'Infrastructure verte et transition énergétique',
-        'Formation de 500 000 professionnels africains',
-      ],
-      key_facts: [
-        'Sommet de Pékin, septembre 2024',
-        '50.7 milliards USD d\'engagements financiers',
-        '30 milliards de lignes de crédit',
-        '10 milliards d\'investissements directs',
-        'Exportations zero-tarif pour les PMA africains',
-      ],
+      objectives: ['Modernisation de l\'agriculture et sécurité alimentaire', 'Industrialisation et transfert de technologie', 'Infrastructure verte et transition énergétique', 'Formation de 500 000 professionnels africains'],
+      key_facts: ['Sommet de Pékin, septembre 2024', '50.7 milliards USD d\'engagements financiers', '30 milliards de lignes de crédit', '10 milliards d\'investissements directs'],
       timeline: '2025-2027 : Mise en œuvre des 10 actions de partenariat',
     },
   },
@@ -120,18 +90,8 @@ export const AGREEMENTS: DealItem[] = [
     partner: 'Japon',
     source_url: 'https://www.mofa.go.jp/region/africa/ticad/',
     details: {
-      objectives: [
-        'Infrastructure de qualité et développement durable',
-        'Transformation numérique et innovation',
-        'Santé universelle et lutte contre les pandémies',
-        'Paix et stabilité en Afrique',
-      ],
-      key_facts: [
-        '30 milliards USD sur 3 ans',
-        'TICAD existe depuis 1993',
-        'Focus sur le secteur privé japonais en Afrique',
-        'Programme de bourses JICA pour étudiants africains',
-      ],
+      objectives: ['Infrastructure de qualité et développement durable', 'Transformation numérique et innovation', 'Santé universelle et lutte contre les pandémies', 'Paix et stabilité en Afrique'],
+      key_facts: ['30 milliards USD sur 3 ans', 'TICAD existe depuis 1993', 'Focus sur le secteur privé japonais en Afrique', 'Programme de bourses JICA pour étudiants africains'],
     },
   },
   {
@@ -146,18 +106,8 @@ export const AGREEMENTS: DealItem[] = [
     partner: 'Union Européenne',
     source_url: 'https://commission.europa.eu/strategy-and-policy/priorities-2019-2024/stronger-europe-world/global-gateway_en',
     details: {
-      objectives: [
-        'Réseaux numériques haut débit (câbles sous-marins, fibre optique)',
-        'Corridors de transport durables',
-        'Énergie propre et accès universel à l\'électricité',
-        'Systèmes de santé résilients',
-      ],
-      key_facts: [
-        '150 milliards EUR mobilisés d\'ici 2027',
-        'Alternative européenne à la Belt and Road Initiative',
-        'Accent sur les partenariats public-privé',
-        '40% des investissements ciblés vers l\'Afrique',
-      ],
+      objectives: ['Réseaux numériques haut débit (câbles sous-marins, fibre optique)', 'Corridors de transport durables', 'Énergie propre et accès universel à l\'électricité', 'Systèmes de santé résilients'],
+      key_facts: ['150 milliards EUR mobilisés d\'ici 2027', 'Alternative européenne à la Belt and Road Initiative', 'Accent sur les partenariats public-privé', '40% des investissements ciblés vers l\'Afrique'],
     },
   },
   {
@@ -172,24 +122,245 @@ export const AGREEMENTS: DealItem[] = [
     partner: 'Belgique / Enabel',
     source_url: 'https://www.enabel.be/',
     details: {
-      objectives: [
-        'Renforcement de la gouvernance locale',
-        'Agriculture durable et sécurité alimentaire',
-        'Formation professionnelle et emploi des jeunes',
-        'Santé et droits sexuels et reproductifs',
-      ],
-      key_facts: [
-        'Enabel est l\'agence belge de développement',
-        'Présence dans 20 pays partenaires',
-        'Budget annuel de ~350 millions EUR',
-        'Focus sur la digitalisation de l\'administration',
-      ],
+      objectives: ['Renforcement de la gouvernance locale', 'Agriculture durable et sécurité alimentaire', 'Formation professionnelle et emploi des jeunes', 'Santé et droits sexuels et reproductifs'],
+      key_facts: ['Enabel est l\'agence belge de développement', 'Présence dans 20 pays partenaires', 'Budget annuel de ~350 millions EUR', 'Focus sur la digitalisation de l\'administration'],
       contacts: ['Enabel Belgique : info@enabel.be', 'DGD (Direction générale Coopération au développement)'],
+    },
+  },
+  // --- SPÉCIFIQUES PAR PAYS ---
+  // OUGANDA
+  {
+    id: 'acc-ug-1',
+    title: 'Accord de libre-échange Ouganda – Kenya (suppression des barrières commerciales)',
+    description: 'Accord historique signé en août 2025 pour éliminer toutes les barrières commerciales entre l\'Ouganda et le Kenya, renforçant l\'intégration est-africaine.',
+    countries: ['Ouganda'],
+    date: '2025-08-30',
+    status: 'Actif',
+    sector: 'Commerce',
+    partner: 'Kenya',
+    source_url: 'https://www.kenyans.co.ke/news/115786-kenya-uganda-sign-agreement-formally-remove-trade-barriers',
+    details: {
+      objectives: ['Éliminer toutes les barrières tarifaires et non-tarifaires', 'Faciliter le commerce transfrontalier', 'Harmoniser les normes et standards commerciaux'],
+      key_facts: ['Signé par les présidents Museveni et Ruto', 'Commerce bilatéral actuel : ~1.5 milliards USD/an', 'Modèle pour l\'intégration de la Communauté d\'Afrique de l\'Est'],
+    },
+  },
+  {
+    id: 'acc-ug-2',
+    title: 'Partenariat commercial Ouganda – EAU (6.3 milliards USD)',
+    description: 'Renforcement des liens d\'investissement et de commerce entre l\'Ouganda et les Émirats Arabes Unis dans l\'énergie, l\'infrastructure, l\'agribusiness et la finance.',
+    countries: ['Ouganda'],
+    date: '2025-03-15',
+    status: 'Actif',
+    sector: 'Commerce',
+    amount: '6.3 milliards USD',
+    partner: 'Émirats Arabes Unis',
+    source_url: 'https://mofa.go.ug/article/uganda-uae-strengthen-63-billion-trade-and-investment-ties-kampala-business-forum',
+    details: {
+      objectives: ['Développer les investissements dans le secteur pétrolier', 'Renforcer l\'agribusiness et les chaînes de valeur', 'Coopération dans les infrastructures numériques'],
+      key_facts: ['4e Forum économique Ouganda-EAU à Munyonyo', '6.3 milliards USD d\'échanges commerciaux', 'Focus sur énergie, infrastructure et agribusiness', 'Hub logistique Dubaï-Kampala en projet'],
+    },
+  },
+  {
+    id: 'acc-ug-3',
+    title: 'Traité de la Communauté d\'Afrique de l\'Est (EAC)',
+    description: 'L\'Ouganda est membre fondateur de l\'EAC. Marché commun de 300 millions de personnes avec libre circulation des biens, services et personnes.',
+    countries: ['Ouganda'],
+    date: '2000-07-07',
+    status: 'Actif',
+    sector: 'Commerce',
+    amount: '250 milliards USD (PIB combiné)',
+    organization: 'East African Community',
+    source_url: 'https://www.eac.int/',
+    details: {
+      objectives: ['Union douanière et marché commun est-africain', 'Libre circulation des travailleurs', 'Monnaie commune est-africaine (en projet)'],
+      key_facts: ['8 pays membres : Ouganda, Kenya, Tanzanie, Rwanda, Burundi, RDC, Soudan du Sud, Somalie', '300 millions de consommateurs', 'PIB combiné de ~250 milliards USD', 'Siège à Arusha, Tanzanie'],
+    },
+  },
+  // SÉNÉGAL
+  {
+    id: 'acc-sn-1',
+    title: 'Accords stratégiques Sénégal – Émirats Arabes Unis (10 accords)',
+    description: '10 accords signés en décembre 2025 couvrant l\'énergie, les infrastructures, le numérique, l\'agriculture et les mines.',
+    countries: ['Sénégal'],
+    date: '2025-12-10',
+    status: 'Actif',
+    sector: 'Multisectoriel',
+    amount: 'Plusieurs milliards USD',
+    partner: 'Émirats Arabes Unis',
+    source_url: 'https://www.rts.sn/',
+    details: {
+      objectives: ['Investissements dans l\'énergie renouvelable', 'Développement des infrastructures portuaires', 'Coopération numérique et technologique', 'Partenariat agricole et agroalimentaire'],
+      key_facts: ['10 accords signés lors d\'une mission de haut niveau', '5 secteurs clés : énergie, infrastructure, numérique, agriculture, mines', 'Mission présidentielle à Abou Dhabi'],
+    },
+  },
+  {
+    id: 'acc-sn-2',
+    title: 'Accord Sénégal – Belgique : Programme de développement (41 millions USD)',
+    description: 'Accord bilatéral entre le Sénégal et la Belgique pour un programme de coopération au développement axé sur l\'agriculture et la formation.',
+    countries: ['Sénégal'],
+    date: '2025-02-11',
+    status: 'Actif',
+    sector: 'Développement',
+    amount: '41 millions USD',
+    partner: 'Belgique / Enabel',
+    source_url: 'https://www.agenceecofin.com/',
+    details: {
+      objectives: ['Agriculture durable et chaînes de valeur', 'Formation professionnelle pour la jeunesse', 'Digitalisation de l\'administration publique'],
+      key_facts: ['Financé par la coopération belge via Enabel', 'Durée : 4 ans (2025-2029)', 'Focus sur les zones rurales'],
+    },
+  },
+  {
+    id: 'acc-sn-3',
+    title: 'New Deal Technologique du Sénégal (1 105 milliards FCFA)',
+    description: 'Stratégie numérique ambitieuse du Sénégal visant à devenir un leader de l\'innovation numérique en Afrique.',
+    countries: ['Sénégal'],
+    date: '2025-02-25',
+    status: 'Actif',
+    sector: 'Numérique',
+    amount: '1 105 milliards FCFA',
+    organization: 'Gouvernement du Sénégal',
+    source_url: 'https://www.rts.sn/',
+    details: {
+      objectives: ['Faire du Sénégal un hub numérique africain', 'Former 100 000 jeunes aux compétences digitales', 'Déployer la 5G et la couverture internet universelle', 'Développer l\'intelligence artificielle et les data centers'],
+      key_facts: ['Budget global : 1 105 milliards FCFA', 'Dévoilé par le Président Bassirou Diomaye Faye', 'Comprend des partenariats avec des géants tech'],
+    },
+  },
+  // CÔTE D'IVOIRE
+  {
+    id: 'acc-ci-1',
+    title: 'Accords énergie et mines Côte d\'Ivoire – États-Unis (7 milliards USD)',
+    description: 'Protocoles d\'accords avec des entreprises américaines pour des investissements dans l\'énergie et les mines, incluant une deuxième raffinerie.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2025-05-14',
+    status: 'Actif',
+    sector: 'Énergie',
+    amount: '7 milliards USD',
+    partner: 'États-Unis',
+    source_url: 'https://www.connaissancedesenergies.org/',
+    details: {
+      objectives: ['Construction d\'une deuxième raffinerie', 'Développement du secteur minier', 'Transition énergétique et renouvelables'],
+      key_facts: ['3 mémorandums d\'entente signés à Abidjan', 'Partenariat avec des majors américaines', 'Construction prévue dans la zone industrielle de San Pedro'],
+    },
+  },
+  {
+    id: 'acc-ci-2',
+    title: 'Global Gateway – UE investit 300 millions EUR en Côte d\'Ivoire',
+    description: 'L\'Union européenne et la BEI renforcent leur soutien à la Côte d\'Ivoire avec 300 millions EUR pour le climat, la durabilité et l\'industrie.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2025-01-15',
+    status: 'Actif',
+    sector: 'Développement',
+    amount: '300 millions EUR',
+    partner: 'Union Européenne / BEI',
+    source_url: 'https://www.eib.org/',
+    details: {
+      objectives: ['Action climatique et durabilité', 'Renforcement du tissu industriel', 'Infrastructure de transport durable'],
+      key_facts: ['Signé avec l\'UE et la Banque européenne d\'investissement', 'Fait partie du programme Global Gateway', 'Ciblé sur le secteur privé ivoirien'],
+    },
+  },
+  {
+    id: 'acc-ci-3',
+    title: 'Compact MCC Côte d\'Ivoire – États-Unis (322 millions USD)',
+    description: 'Partenariat énergétique avec le Millennium Challenge Corporation pour moderniser le réseau électrique et améliorer l\'accès à l\'énergie.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2025-04-10',
+    status: 'Actif',
+    sector: 'Énergie',
+    amount: '322 millions USD',
+    partner: 'États-Unis / MCC',
+    source_url: 'https://finances.gouv.ci/',
+    details: {
+      objectives: ['Modernisation du réseau de distribution électrique', 'Accès à l\'énergie pour les zones rurales', 'Renforcement de la gouvernance du secteur énergétique'],
+      key_facts: ['Compact signé avec le Millennium Challenge Corporation', 'Durée : 5 ans', 'Focus sur Abidjan et le nord du pays'],
+    },
+  },
+  // BURKINA FASO
+  {
+    id: 'acc-bf-1',
+    title: 'Accord Burkina Faso – ONU : 3 programmes transformateurs 2025-2030',
+    description: 'Accord-cadre avec le système des Nations Unies pour le lancement de trois programmes prioritaires axés sur la résilience, le développement et la paix.',
+    countries: ['Burkina Faso'],
+    date: '2025-01-20',
+    status: 'Actif',
+    sector: 'Développement',
+    amount: '850 milliards FCFA',
+    partner: 'Nations Unies',
+    source_url: 'https://www.finances.gov.bf/',
+    details: {
+      objectives: ['Consolidation de la paix et cohésion sociale', 'Développement du capital humain', 'Résilience économique et sécurité alimentaire'],
+      key_facts: ['850 milliards FCFA mobilisés sur 5 ans', 'Signé avec le Coordonnateur du SNU', '3 programmes transformateurs identifiés', 'Couvre l\'ensemble du territoire national'],
+    },
+  },
+  {
+    id: 'acc-bf-2',
+    title: 'Facilité de Crédit Élargie FMI – Burkina Faso',
+    description: 'Accord avec le FMI au titre de la Facilité élargie de crédit et de la Facilité pour la résilience et la durabilité.',
+    countries: ['Burkina Faso'],
+    date: '2026-02-19',
+    status: 'Actif',
+    sector: 'Finance',
+    partner: 'FMI',
+    source_url: 'https://www.imf.org/',
+    details: {
+      objectives: ['Soutenir les réformes macroéconomiques', 'Renforcer la résilience climatique', 'Améliorer la gestion des finances publiques'],
+      key_facts: ['4e revue du programme FEC achevée', 'Nouvel accord au titre de la Facilité pour la résilience et la durabilité', 'Appui aux réformes structurelles'],
+    },
+  },
+  // BÉNIN
+  {
+    id: 'acc-bn-1',
+    title: 'Financement Banque Mondiale – Bénin (635 millions EUR)',
+    description: 'Paquet de financement de la Banque Mondiale pour soutenir la croissance, la résilience climatique et sociale au Bénin.',
+    countries: ['Bénin'],
+    date: '2024-10-31',
+    status: 'Actif',
+    sector: 'Développement',
+    amount: '635.5 millions EUR',
+    partner: 'Banque Mondiale / IDA',
+    source_url: 'https://www.banquemondiale.org/',
+    details: {
+      objectives: ['Soutenir la croissance économique', 'Renforcer la résilience climatique', 'Développer les filets de protection sociale'],
+      key_facts: ['Approuvé le 31 octobre 2024', 'Financement IDA (Association internationale de développement)', 'Couvre : croissance, climat et protection sociale'],
+    },
+  },
+  {
+    id: 'acc-bn-2',
+    title: 'Modernisation du Port de Cotonou – BAD (98 millions EUR)',
+    description: 'Investissement de la BAD pour moderniser et étendre le Port autonome de Cotonou, plateforme logistique majeure d\'Afrique de l\'Ouest.',
+    countries: ['Bénin'],
+    date: '2025-03-15',
+    status: 'En cours',
+    sector: 'Infrastructure',
+    amount: '98.3 millions EUR',
+    partner: 'Banque Africaine de Développement',
+    source_url: 'https://www.afdb.org/',
+    details: {
+      objectives: ['Moderniser les infrastructures portuaires', 'Augmenter la capacité de traitement des conteneurs', 'Améliorer la connectivité avec l\'hinterland sahélien'],
+      key_facts: ['Port de Cotonou : 1er port du Bénin', 'Dessert le Burkina Faso, Niger et Nigeria', 'Capacité actuelle : 10 millions de tonnes/an'],
+    },
+  },
+  // BELGIQUE
+  {
+    id: 'acc-be-1',
+    title: 'Programme Enabel – Coopération digitale Belgique-Afrique',
+    description: 'Programme de digitalisation de la coopération belge ciblant l\'e-gouvernance, la formation numérique et l\'innovation dans les pays partenaires africains.',
+    countries: ['Belgique'],
+    date: '2024-06-01',
+    status: 'Actif',
+    sector: 'Numérique',
+    amount: '85 millions EUR',
+    organization: 'Enabel',
+    source_url: 'https://www.enabel.be/',
+    details: {
+      objectives: ['Digitalisation des services publics dans les pays partenaires', 'Création de hubs d\'innovation numérique', 'Formation de 50 000 jeunes aux compétences digitales'],
+      key_facts: ['Programme couvrant 14 pays partenaires', 'Focus sur l\'Afrique de l\'Ouest et de l\'Est', 'Partenariat avec les universités belges et africaines'],
     },
   },
 ];
 
+// ==================== PROGRAMMES ====================
 export const PROGRAMS: DealItem[] = [
+  // --- MULTI-PAYS ---
   {
     id: 'prog-1',
     title: 'Agenda 2063 – L\'Afrique que nous voulons',
@@ -201,18 +372,8 @@ export const PROGRAMS: DealItem[] = [
     organization: 'Commission de l\'Union Africaine',
     source_url: 'https://au.int/agenda2063',
     details: {
-      objectives: [
-        'Croissance inclusive et développement durable',
-        'Intégration continentale et panafricanisme',
-        'Gouvernance démocratique et droits de l\'homme',
-        'Paix et sécurité',
-      ],
-      key_facts: [
-        '7 aspirations pour le continent',
-        '14 projets phares dont la ZLECAf et le réseau de trains à grande vitesse',
-        'Plans décennaux de mise en œuvre (2024-2033 en cours)',
-        'Suivi par l\'AUDA-NEPAD',
-      ],
+      objectives: ['Croissance inclusive et développement durable', 'Intégration continentale et panafricanisme', 'Gouvernance démocratique et droits de l\'homme', 'Paix et sécurité'],
+      key_facts: ['7 aspirations pour le continent', '14 projets phares dont la ZLECAf', 'Plans décennaux de mise en œuvre (2024-2033 en cours)', 'Suivi par l\'AUDA-NEPAD'],
     },
   },
   {
@@ -227,20 +388,12 @@ export const PROGRAMS: DealItem[] = [
     organization: 'AUDA-NEPAD / BAD',
     source_url: 'https://www.au-pida.org/',
     details: {
-      objectives: [
-        'Connecter les économies africaines via des corridors de transport',
-        'Tripler la production énergétique du continent',
-        'Étendre la connectivité numérique à 80% de la population',
-        'Assurer l\'accès à l\'eau et à l\'assainissement',
-      ],
-      key_facts: [
-        '69 projets prioritaires identifiés',
-        'Investissement estimé : 360 milliards USD d\'ici 2040',
-        'Exemples : Pont Kinshasa-Brazzaville, Corridor Dakar-Abidjan',
-        'Phase 2 (PAP2) : 2021-2030',
-      ],
+      objectives: ['Connecter les économies africaines via des corridors de transport', 'Tripler la production énergétique du continent', 'Étendre la connectivité numérique à 80% de la population'],
+      key_facts: ['69 projets prioritaires identifiés', 'Investissement estimé : 360 milliards USD d\'ici 2040', 'Phase 2 (PAP2) : 2021-2030'],
     },
   },
+  // --- SPÉCIFIQUES PAR PAYS ---
+  // SÉNÉGAL
   {
     id: 'prog-3',
     title: 'Plan Sénégal Émergent (PSE)',
@@ -253,20 +406,26 @@ export const PROGRAMS: DealItem[] = [
     organization: 'Gouvernement du Sénégal',
     source_url: 'https://www.sentresor.org/pse/',
     details: {
-      objectives: [
-        'Croissance annuelle de 7-8% du PIB',
-        'Création de pôles industriels (Diamniadio, Sandiara)',
-        'Autosuffisance en riz d\'ici 2025',
-        'Tourisme : doubler les arrivées internationales',
-      ],
-      key_facts: [
-        'Lancé en 2014 par le Président Macky Sall',
-        'Phase 2 : Plan d\'Actions Prioritaires 2019-2023',
-        'Découverte de pétrole et gaz (champ GTA, Sangomar)',
-        'Nouveau port de Ndayane en construction',
-      ],
+      objectives: ['Croissance annuelle de 7-8% du PIB', 'Création de pôles industriels (Diamniadio, Sandiara)', 'Autosuffisance en riz d\'ici 2025', 'Tourisme : doubler les arrivées internationales'],
+      key_facts: ['Lancé en 2014 par le Président Macky Sall', 'Découverte de pétrole et gaz (champ GTA, Sangomar)', 'Nouveau port de Ndayane en construction'],
     },
   },
+  {
+    id: 'prog-sn-2',
+    title: 'Programme national de valorisation du pétrole et du gaz – Sénégal',
+    description: 'Stratégie de gestion des ressources pétrolières et gazières du Sénégal, incluant le champ GTA (Greater Tortue Ahmeyim) et Sangomar.',
+    countries: ['Sénégal'],
+    date: '2023-06-01',
+    status: 'En cours',
+    sector: 'Énergie',
+    amount: '4.8 milliards USD',
+    organization: 'Petrosen / BP / Kosmos Energy',
+    details: {
+      objectives: ['Première production de gaz du champ GTA', 'Production pétrolière de Sangomar (100 000 barils/jour)', 'Développement d\'une industrie pétrochimique locale'],
+      key_facts: ['GTA : partenariat BP / Kosmos Energy / Petrosen', 'Sangomar opéré par Woodside Energy', 'Première production : 2024', 'Revenus estimés : 1 milliard USD/an'],
+    },
+  },
+  // BURKINA FASO
   {
     id: 'prog-4',
     title: 'Plan National de Développement Économique et Social (PNDES II) – Burkina Faso',
@@ -277,20 +436,27 @@ export const PROGRAMS: DealItem[] = [
     sector: 'Développement',
     organization: 'Gouvernement du Burkina Faso',
     details: {
-      objectives: [
-        'Restaurer la sécurité et la résilience des populations',
-        'Développer le capital humain',
-        'Dynamiser les secteurs porteurs de l\'économie',
-        'Renforcer la gouvernance',
-      ],
-      key_facts: [
-        'Budget prévisionnel : 18 400 milliards FCFA',
-        'Focus sur la sécurité alimentaire',
-        'Programme d\'urgence Sahel',
-        'Partenariat avec le G5 Sahel',
-      ],
+      objectives: ['Restaurer la sécurité et la résilience des populations', 'Développer le capital humain', 'Dynamiser les secteurs porteurs de l\'économie', 'Renforcer la gouvernance'],
+      key_facts: ['Budget prévisionnel : 18 400 milliards FCFA', 'Focus sur la sécurité alimentaire', 'Programme d\'urgence Sahel'],
     },
   },
+  {
+    id: 'prog-bf-2',
+    title: 'Programme Initiative Présidentielle pour l\'Industrialisation – Burkina Faso',
+    description: 'Programme de transformation industrielle visant à développer les filières coton, karité, sésame et agroalimentaire.',
+    countries: ['Burkina Faso'],
+    date: '2024-03-01',
+    status: 'Actif',
+    sector: 'Industrie',
+    amount: '500 milliards FCFA',
+    organization: 'MICA (Ministère de l\'Industrie)',
+    source_url: 'https://www.commerce.gov.bf/',
+    details: {
+      objectives: ['Transformer localement 50% du coton produit', 'Créer 10 zones industrielles régionales', 'Soutenir 5 000 PME/PMI industrielles'],
+      key_facts: ['Premier exportateur africain de coton en 2024', 'Filière karité : 600 000 tonnes/an', '10 zones industrielles prévues', 'Partenariat avec la Turquie et l\'Inde'],
+    },
+  },
+  // OUGANDA
   {
     id: 'prog-5',
     title: 'Vision Uganda 2040',
@@ -302,20 +468,26 @@ export const PROGRAMS: DealItem[] = [
     organization: 'National Planning Authority Uganda',
     source_url: 'http://www.npa.go.ug/',
     details: {
-      objectives: [
-        'PIB par habitant de 9 500 USD d\'ici 2040',
-        'Industrialisation et valeur ajoutée agricole',
-        'Développement de l\'infrastructure énergétique',
-        'Transformation numérique et innovation',
-      ],
-      key_facts: [
-        'Population : 48 millions (croissance ~3%/an)',
-        'PIB actuel : ~50 milliards USD',
-        'Ressources pétrolières du lac Albert',
-        'Hub technologique est-africain en croissance',
-      ],
+      objectives: ['PIB par habitant de 9 500 USD d\'ici 2040', 'Industrialisation et valeur ajoutée agricole', 'Développement de l\'infrastructure énergétique', 'Transformation numérique et innovation'],
+      key_facts: ['Population : 48 millions (croissance ~3%/an)', 'PIB actuel : ~50 milliards USD', 'Ressources pétrolières du lac Albert', 'Hub technologique est-africain en croissance'],
     },
   },
+  {
+    id: 'prog-ug-2',
+    title: 'Programme pétrolier du Lac Albert – Pipeline EACOP',
+    description: 'Développement des champs pétroliers du lac Albert et construction du pipeline chauffé EACOP (1 443 km) vers le port de Tanga en Tanzanie.',
+    countries: ['Ouganda'],
+    date: '2022-02-01',
+    status: 'En cours',
+    sector: 'Énergie',
+    amount: '10 milliards USD',
+    organization: 'TotalEnergies / CNOOC / UNOC',
+    details: {
+      objectives: ['Produire 230 000 barils de pétrole par jour', 'Construire le plus long pipeline chauffé au monde (1 443 km)', 'Créer 160 000 emplois directs et indirects'],
+      key_facts: ['Réserves estimées : 6.5 milliards de barils', 'Pipeline EACOP : Ouganda → Tanzanie (Tanga)', 'TotalEnergies : 56.67% des parts', 'Première production prévue : 2025-2026'],
+    },
+  },
+  // BÉNIN
   {
     id: 'prog-6',
     title: 'Programme d\'Actions du Gouvernement (PAG) – Bénin',
@@ -327,20 +499,26 @@ export const PROGRAMS: DealItem[] = [
     amount: '17.2 milliards USD',
     organization: 'Gouvernement du Bénin',
     details: {
-      objectives: [
-        'Tourisme : valoriser la Route des Esclaves et le patrimoine vaudou',
-        'Agriculture : transformation locale du coton, anacarde, ananas',
-        'Numérique : couverture fibre optique nationale',
-        'Éducation : réforme du système éducatif',
-      ],
-      key_facts: [
-        'PIB en croissance de 6%+ par an',
-        'Premier exportateur africain de coton',
-        'Zone économique spéciale de Glo-Djigbé (GDIZ)',
-        'Partenariat avec la Banque Mondiale et la BAD',
-      ],
+      objectives: ['Tourisme : valoriser la Route des Esclaves et le patrimoine vaudou', 'Agriculture : transformation locale du coton, anacarde, ananas', 'Numérique : couverture fibre optique nationale', 'Éducation : réforme du système éducatif'],
+      key_facts: ['PIB en croissance de 6%+ par an', 'Premier exportateur africain de coton', 'Zone économique spéciale de Glo-Djigbé (GDIZ)', 'Partenariat avec la Banque Mondiale et la BAD'],
     },
   },
+  {
+    id: 'prog-bn-2',
+    title: 'Programme routier national – Bénin (55 milliards FCFA)',
+    description: 'Programme d\'infrastructures routières dans les départements du Mono, Couffo et Atlantique : bitumage, réhabilitation et aménagement.',
+    countries: ['Bénin'],
+    date: '2025-03-15',
+    status: 'En cours',
+    sector: 'Transport',
+    amount: '55 milliards FCFA',
+    organization: 'Gouvernement du Bénin',
+    details: {
+      objectives: ['Bitumer et réhabiliter les axes routiers stratégiques', 'Désenclaver les zones rurales du sud-ouest', 'Créer des emplois locaux dans le BTP'],
+      key_facts: ['Lancé le 15 mars 2025', 'Couvre 3 départements : Mono, Couffo, Atlantique', 'Budget : 55 milliards FCFA', 'Centaines de kilomètres de routes concernées'],
+    },
+  },
+  // CÔTE D'IVOIRE
   {
     id: 'prog-7',
     title: 'Plan National de Développement (PND 2021-2025) – Côte d\'Ivoire',
@@ -353,23 +531,47 @@ export const PROGRAMS: DealItem[] = [
     organization: 'Gouvernement de Côte d\'Ivoire',
     source_url: 'https://www.pnd.gouv.ci/',
     details: {
-      objectives: [
-        'Transformer localement 50% du cacao d\'ici 2025',
-        'Créer 8 millions d\'emplois',
-        'Atteindre 42% de taux d\'industrialisation',
-        'Accès universel à l\'électricité',
-      ],
-      key_facts: [
-        '1er producteur mondial de cacao (45% du marché)',
-        'Croissance du PIB de 7% en moyenne depuis 2012',
-        'Zone industrielle de PK24 et Bonoua',
-        'Métro d\'Abidjan en construction (ligne 1)',
-      ],
+      objectives: ['Transformer localement 50% du cacao d\'ici 2025', 'Créer 8 millions d\'emplois', 'Atteindre 42% de taux d\'industrialisation', 'Accès universel à l\'électricité'],
+      key_facts: ['1er producteur mondial de cacao (45% du marché)', 'Croissance du PIB de 7% en moyenne depuis 2012', 'Zone industrielle de PK24 et Bonoua', 'Métro d\'Abidjan en construction (ligne 1)'],
+    },
+  },
+  {
+    id: 'prog-ci-2',
+    title: 'Programme de transformation du cacao – Côte d\'Ivoire',
+    description: 'Stratégie pour transformer localement 100% du cacao ivoirien d\'ici 2030, créant de la valeur ajoutée et des emplois industriels.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2024-01-01',
+    status: 'En cours',
+    sector: 'Agriculture',
+    amount: '3.5 milliards USD',
+    organization: 'Conseil du Café-Cacao',
+    details: {
+      objectives: ['Passer de 35% à 100% de transformation locale', 'Créer 200 000 emplois dans la filière cacao', 'Développer une marque nationale de chocolat premium'],
+      key_facts: ['2.2 millions de tonnes de cacao par an', '1er producteur mondial (45% du marché)', 'Partenaires : Barry Callebaut, Cargill, Olam', 'Zones de transformation : San Pedro, Abidjan'],
+    },
+  },
+  // BELGIQUE
+  {
+    id: 'prog-be-1',
+    title: 'Stratégie belge de coopération au développement 2030',
+    description: 'Cadre stratégique de la Belgique pour sa coopération internationale, avec focus sur l\'Afrique, le changement climatique et l\'égalité des genres.',
+    countries: ['Belgique'],
+    date: '2023-01-01',
+    status: 'Actif',
+    sector: 'Développement',
+    amount: '2.3 milliards EUR/an',
+    organization: 'SPF Affaires étrangères / DGD',
+    source_url: 'https://diplomatie.belgium.be/',
+    details: {
+      objectives: ['Contribuer aux ODD en Afrique', 'Lutter contre le changement climatique', 'Promouvoir l\'égalité des genres', 'Soutenir les États fragiles'],
+      key_facts: ['14 pays partenaires dont Burkina Faso, Bénin, Sénégal, Ouganda', 'Budget : ~0.46% du RNB belge', 'Agences : Enabel, BIO, WBI'],
     },
   },
 ];
 
+// ==================== PROJETS ====================
 export const PROJECTS: DealItem[] = [
+  // SÉNÉGAL
   {
     id: 'proj-1',
     title: 'Train Express Régional (TER) Dakar',
@@ -382,117 +584,24 @@ export const PROJECTS: DealItem[] = [
     organization: 'APIX / SETER',
     source_url: 'https://www.seter.sn/',
     details: {
-      objectives: [
-        'Désengorger Dakar et réduire les temps de trajet de 50%',
-        'Connecter le centre-ville à l\'aéroport AIBD',
-        'Stimuler le développement de Diamniadio',
-      ],
-      key_facts: [
-        '55 km de voies ferrées',
-        '14 gares',
-        '115 000 passagers/jour (capacité)',
-        'Phase 1 inaugurée en décembre 2021',
-        'Financé par : BAD, BID, AFD, France',
-      ],
+      objectives: ['Désengorger Dakar et réduire les temps de trajet de 50%', 'Connecter le centre-ville à l\'aéroport AIBD', 'Stimuler le développement de Diamniadio'],
+      key_facts: ['55 km de voies ferrées', '14 gares', '115 000 passagers/jour (capacité)', 'Phase 1 inaugurée en décembre 2021'],
       timeline: 'Phase 1 : Dakar-Diamniadio (36 km) opérationnel. Phase 2 : Diamniadio-AIBD (19 km) en cours.',
     },
   },
   {
-    id: 'proj-2',
-    title: 'Autoroute Yamoussoukro – Bouaké',
-    description: 'Construction de l\'autoroute reliant la capitale politique à la deuxième ville de Côte d\'Ivoire. 196 km, 2x3 voies.',
-    countries: ['Côte d\'Ivoire'],
-    date: '2023-01-01',
-    status: 'En cours',
-    sector: 'Transport',
-    amount: '1.5 milliards EUR',
-    organization: 'Ministère des Infrastructures CI',
-    details: {
-      objectives: [
-        'Relier les deux principales villes du centre',
-        'Réduire le temps de trajet de 4h à 1h30',
-        'Développer le corridor nord (Burkina Faso)',
-      ],
-      key_facts: [
-        '196 km d\'autoroute 2x3 voies',
-        'Fait partie du corridor Abidjan-Ouagadougou',
-        'PPP avec des partenaires français et marocains',
-        'Livraison prévue : 2027',
-      ],
-    },
-  },
-  {
-    id: 'proj-3',
-    title: 'Barrage hydroélectrique de Karuma – Ouganda',
-    description: 'Centrale hydroélectrique de 600 MW sur le Nil. Plus grande infrastructure énergétique d\'Ouganda à ce jour.',
-    countries: ['Ouganda'],
-    date: '2013-01-01',
-    status: 'En cours',
-    sector: 'Énergie',
-    amount: '1.7 milliards USD',
-    organization: 'Uganda Electricity Generation Co.',
-    details: {
-      objectives: [
-        'Augmenter la capacité énergétique nationale de 60%',
-        'Réduire le coût de l\'électricité',
-        'Alimenter l\'industrialisation ougandaise',
-      ],
-      key_facts: [
-        '600 MW de capacité installée',
-        'Située sur le Nil Victoria, district de Kiryandongo',
-        'Financé par la China Exim Bank (85%)',
-        'Construit par Sinohydro Corporation',
-        'Mise en service progressive : 2024-2025',
-      ],
-    },
-  },
-  {
-    id: 'proj-4',
-    title: 'Port sec de Ouagadougou – Zone logistique',
-    description: 'Création d\'une plateforme logistique multimodale pour désengorger le corridor Abidjan-Ouagadougou. Terminal de conteneurs et entrepôts.',
-    countries: ['Burkina Faso'],
+    id: 'proj-sn-2',
+    title: 'Port en eaux profondes de Ndayane – Sénégal',
+    description: 'Nouveau port en eaux profondes à Ndayane, 50 km au sud de Dakar. Hub logistique majeur pour l\'Afrique de l\'Ouest.',
+    countries: ['Sénégal'],
     date: '2022-01-01',
-    status: 'Planifié',
-    sector: 'Infrastructure',
-    amount: '150 millions USD',
-    organization: 'Chambre de Commerce BF',
-    details: {
-      objectives: [
-        'Réduire les coûts logistiques de 30%',
-        'Créer un hub régional pour le commerce sahélien',
-        'Moderniser la chaîne d\'approvisionnement',
-      ],
-      key_facts: [
-        'Superficie prévue : 200 hectares',
-        'Terminal à conteneurs de 5 000 EVP/an',
-        'Zone franche industrielle associée',
-        'Corridor Abidjan-Ouagadougou : 1 200 km',
-      ],
-    },
-  },
-  {
-    id: 'proj-5',
-    title: 'Marina de Cotonou – Port de plaisance',
-    description: 'Projet d\'aménagement du front de mer de Cotonou incluant port de plaisance, centre commercial et complexe hôtelier.',
-    countries: ['Bénin'],
-    date: '2021-01-01',
     status: 'En cours',
-    sector: 'Tourisme',
-    amount: '300 millions USD',
-    organization: 'Gouvernement du Bénin',
+    sector: 'Infrastructure',
+    amount: '1.1 milliards USD',
+    organization: 'DP World / APIX',
     details: {
-      objectives: [
-        'Faire de Cotonou une destination touristique côtière',
-        'Créer 15 000 emplois directs et indirects',
-        'Valoriser le patrimoine maritime béninois',
-      ],
-      key_facts: [
-        'Front de mer de 5 km réaménagé',
-        'Port de plaisance de 200 places',
-        'Hôtels 4 et 5 étoiles',
-        'Centre de conférences international',
-        'Financement : PPP avec investisseurs privés',
-      ],
+      objectives: ['Créer le plus grand port d\'Afrique de l\'Ouest', 'Capacité de 1.5 million de conteneurs/an', 'Développer une zone économique spéciale adjacente'],
+      key_facts: ['Partenariat DP World (Dubaï) et État du Sénégal', 'Superficie : 1 200 hectares', 'Tirant d\'eau : 18 mètres', 'Phase 1 : 2025, Phase 2 : 2030'],
     },
   },
   {
@@ -507,22 +616,201 @@ export const PROJECTS: DealItem[] = [
     organization: 'ADIE Sénégal',
     source_url: 'https://www.adie.sn/',
     details: {
-      objectives: [
-        'Couverture fibre optique dans les 14 régions',
-        'Connecter 100% des administrations au haut débit',
-        'Réduire le coût de la bande passante de 40%',
-      ],
-      key_facts: [
-        '3 000 km de fibre optique terrestre',
-        'Câbles sous-marins ACE et SHARE',
-        'Data center Tier III à Diamniadio',
-        'Partenariat Huawei et China Telecom',
-      ],
+      objectives: ['Couverture fibre optique dans les 14 régions', 'Connecter 100% des administrations au haut débit', 'Réduire le coût de la bande passante de 40%'],
+      key_facts: ['3 000 km de fibre optique terrestre', 'Câbles sous-marins ACE et SHARE', 'Data center Tier III à Diamniadio'],
+    },
+  },
+  // CÔTE D'IVOIRE
+  {
+    id: 'proj-2',
+    title: 'Autoroute Yamoussoukro – Bouaké',
+    description: 'Construction de l\'autoroute reliant la capitale politique à la deuxième ville de Côte d\'Ivoire. 196 km, 2x3 voies.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2023-01-01',
+    status: 'En cours',
+    sector: 'Transport',
+    amount: '1.5 milliards EUR',
+    organization: 'Ministère des Infrastructures CI',
+    details: {
+      objectives: ['Relier les deux principales villes du centre', 'Réduire le temps de trajet de 4h à 1h30', 'Développer le corridor nord (Burkina Faso)'],
+      key_facts: ['196 km d\'autoroute 2x3 voies', 'Fait partie du corridor Abidjan-Ouagadougou', 'PPP avec des partenaires français et marocains', 'Livraison prévue : 2027'],
+    },
+  },
+  {
+    id: 'proj-ci-2',
+    title: 'Métro d\'Abidjan – Ligne 1',
+    description: 'Première ligne de métro d\'Abidjan reliant Anyama au nord à Port-Bouët au sud. 37 km, 18 stations.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2022-07-01',
+    status: 'En cours',
+    sector: 'Transport',
+    amount: '1.36 milliards EUR',
+    organization: 'SOTRA / Bouygues',
+    details: {
+      objectives: ['Transporter 500 000 passagers/jour', 'Réduire les embouteillages à Abidjan', 'Connecter les quartiers nord et sud de la ville'],
+      key_facts: ['37 km de ligne', '18 stations', 'Financé par la France, la BAD et l\'UE', 'Inauguration prévue : 2028'],
+    },
+  },
+  {
+    id: 'proj-ci-3',
+    title: 'Deuxième raffinerie de pétrole – San Pedro',
+    description: 'Construction d\'une raffinerie de pétrole à San Pedro dans le cadre des accords avec les entreprises américaines.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2025-05-14',
+    status: 'Planifié',
+    sector: 'Énergie',
+    amount: '3.5 milliards USD',
+    organization: 'Partenariat État CI / USA',
+    details: {
+      objectives: ['Doubler la capacité de raffinage nationale', 'Réduire les importations de produits pétroliers raffinés', 'Créer un pôle pétrochimique à San Pedro'],
+      key_facts: ['Capacité prévue : 200 000 barils/jour', 'Zone industrielle de San Pedro', 'Emplois directs estimés : 5 000'],
+    },
+  },
+  // OUGANDA
+  {
+    id: 'proj-3',
+    title: 'Barrage hydroélectrique de Karuma – Ouganda',
+    description: 'Centrale hydroélectrique de 600 MW sur le Nil. Plus grande infrastructure énergétique d\'Ouganda à ce jour.',
+    countries: ['Ouganda'],
+    date: '2013-01-01',
+    status: 'En cours',
+    sector: 'Énergie',
+    amount: '1.7 milliards USD',
+    organization: 'Uganda Electricity Generation Co.',
+    details: {
+      objectives: ['Augmenter la capacité énergétique nationale de 60%', 'Réduire le coût de l\'électricité', 'Alimenter l\'industrialisation ougandaise'],
+      key_facts: ['600 MW de capacité installée', 'Située sur le Nil Victoria, district de Kiryandongo', 'Financé par la China Exim Bank (85%)', 'Construit par Sinohydro Corporation'],
+    },
+  },
+  {
+    id: 'proj-ug-2',
+    title: 'Pipeline EACOP – Ouganda vers Tanzanie',
+    description: 'Construction du plus long pipeline chauffé au monde (1 443 km) pour transporter le pétrole brut du lac Albert au port de Tanga.',
+    countries: ['Ouganda'],
+    date: '2022-02-01',
+    status: 'En cours',
+    sector: 'Énergie',
+    amount: '5 milliards USD',
+    organization: 'TotalEnergies / UNOC',
+    details: {
+      objectives: ['Transporter 216 000 barils/jour vers l\'océan Indien', 'Créer un corridor économique Ouganda-Tanzanie', 'Générer des revenus pétroliers pour l\'Ouganda'],
+      key_facts: ['1 443 km de pipeline chauffé', 'Traverse l\'Ouganda et la Tanzanie', 'TotalEnergies opérateur principal', 'Créera 160 000 emplois pendant la construction'],
+    },
+  },
+  {
+    id: 'proj-ug-3',
+    title: 'Kampala-Jinja Expressway – Ouganda',
+    description: 'Autoroute express de 77 km reliant Kampala à Jinja, décongestionner l\'est du pays et connecter au corridor nord.',
+    countries: ['Ouganda'],
+    date: '2021-06-01',
+    status: 'En cours',
+    sector: 'Transport',
+    amount: '1.1 milliards USD',
+    organization: 'UNRA / China Communications Construction',
+    details: {
+      objectives: ['Réduire le temps de trajet Kampala-Jinja de 3h à 1h', 'Désengorger le trafic de Kampala-Est', 'Améliorer la connectivité avec le Kenya'],
+      key_facts: ['77 km d\'autoroute 2x3 voies', 'Financé par la China Exim Bank', 'Fait partie du corridor nord (Kampala-Mombasa)', '12 échangeurs et 18 ponts'],
+    },
+  },
+  // BURKINA FASO
+  {
+    id: 'proj-4',
+    title: 'Port sec de Ouagadougou – Zone logistique',
+    description: 'Création d\'une plateforme logistique multimodale pour désengorger le corridor Abidjan-Ouagadougou.',
+    countries: ['Burkina Faso'],
+    date: '2022-01-01',
+    status: 'Planifié',
+    sector: 'Infrastructure',
+    amount: '150 millions USD',
+    organization: 'Chambre de Commerce BF',
+    details: {
+      objectives: ['Réduire les coûts logistiques de 30%', 'Créer un hub régional pour le commerce sahélien', 'Moderniser la chaîne d\'approvisionnement'],
+      key_facts: ['Superficie prévue : 200 hectares', 'Terminal à conteneurs de 5 000 EVP/an', 'Zone franche industrielle associée'],
+    },
+  },
+  {
+    id: 'proj-bf-2',
+    title: 'Centrale solaire de Zagtouli II – Burkina Faso',
+    description: 'Extension de la plus grande centrale solaire d\'Afrique de l\'Ouest à Zagtouli (Ouagadougou). Capacité portée à 100 MW.',
+    countries: ['Burkina Faso'],
+    date: '2024-06-01',
+    status: 'En cours',
+    sector: 'Énergie',
+    amount: '75 millions EUR',
+    organization: 'SONABEL / UE',
+    details: {
+      objectives: ['Porter la capacité solaire à 100 MW', 'Réduire la dépendance aux importations d\'énergie', 'Alimenter 400 000 foyers en énergie propre'],
+      key_facts: ['Phase 1 (33 MW) inaugurée en 2017', 'Financé par l\'UE et la BAD', 'Taux d\'ensoleillement : 5.5 kWh/m²/jour'],
+    },
+  },
+  // BÉNIN
+  {
+    id: 'proj-5',
+    title: 'Marina de Cotonou – Port de plaisance',
+    description: 'Projet d\'aménagement du front de mer de Cotonou incluant port de plaisance, centre commercial et complexe hôtelier.',
+    countries: ['Bénin'],
+    date: '2021-01-01',
+    status: 'En cours',
+    sector: 'Tourisme',
+    amount: '300 millions USD',
+    organization: 'Gouvernement du Bénin',
+    details: {
+      objectives: ['Faire de Cotonou une destination touristique côtière', 'Créer 15 000 emplois directs et indirects', 'Valoriser le patrimoine maritime béninois'],
+      key_facts: ['Front de mer de 5 km réaménagé', 'Port de plaisance de 200 places', 'Hôtels 4 et 5 étoiles'],
+    },
+  },
+  {
+    id: 'proj-bn-2',
+    title: 'Zone Industrielle de Glo-Djigbé (GDIZ) – Bénin',
+    description: 'Zone économique spéciale de 1 640 hectares dédiée à la transformation du coton, du cajou et d\'autres produits agricoles.',
+    countries: ['Bénin'],
+    date: '2021-01-01',
+    status: 'En cours',
+    sector: 'Industrie',
+    amount: '1.5 milliards USD',
+    organization: 'SIPI-BENIN / ARISE IIP',
+    details: {
+      objectives: ['Transformer 100% du coton béninois localement', 'Attirer 150 entreprises industrielles', 'Créer 300 000 emplois directs'],
+      key_facts: ['1 640 hectares aménagés', 'Partenariat avec ARISE IIP (Singapour)', 'Premières usines opérationnelles depuis 2023', 'Exportations vers l\'UE et les USA sous AGOA'],
+    },
+  },
+  {
+    id: 'proj-bn-3',
+    title: 'Modernisation des routes Mono-Couffo-Atlantique – Bénin',
+    description: 'Vaste programme de bitumage et réhabilitation de routes dans 3 départements du sud-ouest du Bénin. Prêt BOAD de 30 milliards FCFA.',
+    countries: ['Bénin'],
+    date: '2025-03-29',
+    status: 'En cours',
+    sector: 'Transport',
+    amount: '30 milliards FCFA',
+    partner: 'BOAD',
+    source_url: 'https://www.banouto.bj/',
+    details: {
+      objectives: ['Bitumer les axes routiers stratégiques du sud-ouest', 'Améliorer l\'accès aux marchés agricoles', 'Réduire le temps de transport de 50%'],
+      key_facts: ['Prêt BOAD de 30 milliards FCFA', 'Lancé en mars 2025', 'Départements concernés : Mono, Couffo, Atlantique'],
+    },
+  },
+  // BELGIQUE
+  {
+    id: 'proj-be-1',
+    title: 'Hub technologique Brussels-Africa – Belgique',
+    description: 'Plateforme d\'accélération de startups africaines basée à Bruxelles, offrant mentorat, financement et accès au marché européen.',
+    countries: ['Belgique'],
+    date: '2024-01-01',
+    status: 'Actif',
+    sector: 'Numérique',
+    amount: '25 millions EUR',
+    organization: 'Digital Belgium / Enabel',
+    details: {
+      objectives: ['Accélérer 200 startups africaines d\'ici 2028', 'Créer des ponts entre écosystèmes tech belge et africain', 'Faciliter l\'accès aux marchés européens'],
+      key_facts: ['Basé à Bruxelles avec antennes à Dakar, Kampala et Cotonou', 'Partenariat universités KU Leuven, ULB, VUB', 'Focus : fintech, agritech, healthtech'],
     },
   },
 ];
 
+// ==================== FINANCEURS ====================
 export const FUNDERS: DealItem[] = [
+  // MULTI-PAYS
   {
     id: 'fund-1',
     title: 'Banque Africaine de Développement (BAD)',
@@ -535,22 +823,15 @@ export const FUNDERS: DealItem[] = [
     type: 'Banque',
     source_url: 'https://www.afdb.org/',
     details: {
-      objectives: [
-        'High 5 : Éclairer l\'Afrique, Nourrir l\'Afrique, Industrialiser l\'Afrique, Intégrer l\'Afrique, Améliorer la qualité de vie',
-      ],
-      key_facts: [
-        'Siège : Abidjan, Côte d\'Ivoire',
-        '81 pays actionnaires',
-        'Notation AAA par les principales agences',
-        'Guichet FAD pour les pays à faible revenu',
-      ],
+      objectives: ['High 5 : Éclairer l\'Afrique, Nourrir l\'Afrique, Industrialiser l\'Afrique, Intégrer l\'Afrique, Améliorer la qualité de vie'],
+      key_facts: ['Siège : Abidjan, Côte d\'Ivoire', '81 pays actionnaires', 'Notation AAA', 'Guichet FAD pour les pays à faible revenu'],
       contacts: ['Site web : www.afdb.org', 'Contact Abidjan : +225 20 26 39 00'],
     },
   },
   {
     id: 'fund-2',
     title: 'Banque Mondiale (IDA/BIRD)',
-    description: 'Plus grand bailleur multilatéral pour l\'Afrique via l\'IDA (pays à faible revenu) et la BIRD. Prêts concessionnels, dons et assistance technique.',
+    description: 'Plus grand bailleur multilatéral pour l\'Afrique via l\'IDA (pays à faible revenu) et la BIRD.',
     countries: ['Burkina Faso', 'Bénin', 'Côte d\'Ivoire', 'Sénégal', 'Ouganda'],
     date: '',
     status: 'Actif',
@@ -559,18 +840,13 @@ export const FUNDERS: DealItem[] = [
     type: 'Banque',
     source_url: 'https://www.worldbank.org/en/region/afr',
     details: {
-      key_facts: [
-        'IDA21 : reconstitution record de 93 milliards USD',
-        'Présence dans tous les pays cibles',
-        'Priorités : climat, capital humain, numérique',
-        'Programme IFC pour le secteur privé',
-      ],
+      key_facts: ['IDA21 : reconstitution record de 93 milliards USD', 'Présence dans tous les pays cibles', 'Priorités : climat, capital humain, numérique'],
     },
   },
   {
     id: 'fund-3',
     title: 'Agence Française de Développement (AFD)',
-    description: 'Finance et accompagne des projets de développement en Afrique de l\'Ouest. Expertise en climat, éducation, gouvernance et urbanisation.',
+    description: 'Finance et accompagne des projets de développement en Afrique de l\'Ouest.',
     countries: ['Burkina Faso', 'Bénin', 'Côte d\'Ivoire', 'Sénégal'],
     date: '',
     status: 'Actif',
@@ -579,12 +855,7 @@ export const FUNDERS: DealItem[] = [
     type: 'Agence',
     source_url: 'https://www.afd.fr/',
     details: {
-      key_facts: [
-        'Présence dans 150 pays',
-        'Filiale Proparco pour le secteur privé',
-        'Focus : ODD, Accord de Paris',
-        '50% des financements pour le climat',
-      ],
+      key_facts: ['Présence dans 150 pays', 'Filiale Proparco pour le secteur privé', '50% des financements pour le climat'],
     },
   },
   {
@@ -599,12 +870,7 @@ export const FUNDERS: DealItem[] = [
     type: 'Agence',
     source_url: 'https://www.enabel.be/',
     details: {
-      key_facts: [
-        'Agence belge de développement depuis 2018',
-        '2 000 collaborateurs dans 20 pays',
-        'Focus : digitalisation, agriculture, formation',
-        'Budget annuel ~350 millions EUR',
-      ],
+      key_facts: ['Agence belge de développement depuis 2018', '2 000 collaborateurs dans 20 pays', 'Focus : digitalisation, agriculture, formation'],
       contacts: ['Enabel Belgique : info@enabel.be'],
     },
   },
@@ -620,12 +886,7 @@ export const FUNDERS: DealItem[] = [
     type: 'Banque',
     source_url: 'https://www.boad.org/',
     details: {
-      key_facts: [
-        'Siège : Lomé, Togo',
-        'Institution de l\'UEMOA (8 pays)',
-        'Notation BBB par Standard & Poor\'s',
-        'Financement de projets PPP régionaux',
-      ],
+      key_facts: ['Siège : Lomé, Togo', 'Institution de l\'UEMOA (8 pays)', 'Notation BBB par Standard & Poor\'s'],
     },
   },
   {
@@ -640,16 +901,86 @@ export const FUNDERS: DealItem[] = [
     type: 'Fonds',
     source_url: 'https://www.bio-invest.be/',
     details: {
-      key_facts: [
-        'Portefeuille de 450 millions EUR',
-        'Investissements en capital et prêts',
-        'Focus : énergie renouvelable, agri-business, fintech',
-        'Filiale de la DGD belge',
-      ],
+      key_facts: ['Portefeuille de 450 millions EUR', 'Focus : énergie renouvelable, agri-business, fintech', 'Filiale de la DGD belge'],
+    },
+  },
+  // SPÉCIFIQUES PAR PAYS
+  {
+    id: 'fund-ug-1',
+    title: 'East African Development Bank (EADB) – Ouganda',
+    description: 'Banque régionale de développement pour l\'Afrique de l\'Est. Siège à Kampala. Finance PME, infrastructure et commerce régional.',
+    countries: ['Ouganda'],
+    date: '',
+    status: 'Actif',
+    sector: 'Finance',
+    amount: '500 millions USD (actifs)',
+    type: 'Banque',
+    source_url: 'https://www.eadb.org/',
+    details: {
+      key_facts: ['Siège social à Kampala, Ouganda', '4 pays actionnaires : Ouganda, Kenya, Tanzanie, Rwanda', 'Focus : PME, infrastructure, commerce régional', 'Créée en 1967'],
+    },
+  },
+  {
+    id: 'fund-sn-1',
+    title: 'Millennium Challenge Corporation (MCC) – Sénégal',
+    description: 'Compact MCC pour le Sénégal axé sur l\'accès à l\'énergie et la modernisation du réseau électrique. Financement non-remboursable.',
+    countries: ['Sénégal'],
+    date: '2024-01-01',
+    status: 'Actif',
+    sector: 'Énergie',
+    amount: '600 millions USD',
+    type: 'Agence',
+    source_url: 'https://www.mcc.gov/',
+    details: {
+      key_facts: ['Compact Sénégal de 600 millions USD', 'Financement 100% don (non-remboursable)', 'Durée : 5 ans', 'Focus : réseau électrique et énergie renouvelable'],
+    },
+  },
+  {
+    id: 'fund-ci-1',
+    title: 'IFC (Société Financière Internationale) – Côte d\'Ivoire',
+    description: 'Bras secteur privé de la Banque Mondiale. Investissements majeurs en Côte d\'Ivoire dans l\'agro-industrie, la finance et les infrastructures.',
+    countries: ['Côte d\'Ivoire'],
+    date: '',
+    status: 'Actif',
+    sector: 'Finance',
+    amount: '2.5 milliards USD (portefeuille CI)',
+    type: 'Institution',
+    source_url: 'https://www.ifc.org/',
+    details: {
+      key_facts: ['Plus grand portefeuille IFC en Afrique de l\'Ouest', 'Investissements dans Ecobank, NSIA, CIE', 'Focus : agro-industrie, énergie, digital', 'Bureau régional à Abidjan'],
+    },
+  },
+  {
+    id: 'fund-bn-1',
+    title: 'ARISE IIP – Investisseur industriel au Bénin',
+    description: 'Développeur et opérateur de zones industrielles. Partenaire clé de la GDIZ (Glo-Djigbé) au Bénin.',
+    countries: ['Bénin'],
+    date: '',
+    status: 'Actif',
+    sector: 'Industrie',
+    amount: '1.5 milliards USD (investissement GDIZ)',
+    type: 'Fonds',
+    details: {
+      key_facts: ['Basé à Singapour, actif en Afrique', 'Opérateur de la GDIZ au Bénin', 'Développe aussi des zones au Gabon et Togo', 'Partenariat avec le gouvernement béninois'],
+    },
+  },
+  {
+    id: 'fund-bf-1',
+    title: 'Fonds Sahelien pour le Développement – Burkina Faso',
+    description: 'Mécanisme de financement multilatéral dédié au développement des pays du Sahel, avec focus sur le Burkina Faso.',
+    countries: ['Burkina Faso'],
+    date: '',
+    status: 'Actif',
+    sector: 'Développement',
+    amount: '200 millions EUR',
+    type: 'Fonds',
+    details: {
+      key_facts: ['Couvre : Burkina Faso, Mali, Niger, Tchad, Mauritanie', 'Financé par l\'UE, la France et l\'Allemagne', 'Focus : emploi des jeunes, sécurité alimentaire', 'Programmes d\'urgence humanitaire'],
     },
   },
 ];
 
+// ==================== APPELS D'OFFRES ====================
 export const TENDERS: DealItem[] = [
   {
     id: 'tender-1',
@@ -662,14 +993,9 @@ export const TENDERS: DealItem[] = [
     amount: '85 millions USD',
     organization: 'SONABEL',
     details: {
-      objectives: [
-        'Électrifier 500 villages ruraux',
-        'Installer 50 000 systèmes solaires domestiques',
-        'Former 200 techniciens locaux',
-      ],
-      eligibility: 'Entreprises certifiées en énergie solaire avec expérience en Afrique sub-saharienne. Consortium international/local recommandé.',
-      timeline: 'Date limite de soumission : 30 juin 2025. Évaluation : juillet-août 2025. Attribution : septembre 2025.',
-      documents: ['Cahier des charges disponible sur le site SONABEL', 'Dossier technique obligatoire'],
+      objectives: ['Électrifier 500 villages ruraux', 'Installer 50 000 systèmes solaires domestiques', 'Former 200 techniciens locaux'],
+      eligibility: 'Entreprises certifiées en énergie solaire avec expérience en Afrique sub-saharienne.',
+      timeline: 'Date limite : 30 juin 2025. Attribution : septembre 2025.',
     },
   },
   {
@@ -683,13 +1009,8 @@ export const TENDERS: DealItem[] = [
     amount: '320 millions USD',
     organization: 'ANAC CI',
     details: {
-      objectives: [
-        'Aéroport international catégorie 4E OACI',
-        'Piste de 3 000 m',
-        'Terminal passagers de 50 000 m²',
-        'Zone de fret de 10 000 m²',
-      ],
-      eligibility: 'Entreprises de BTP avec expérience aéroportuaire. Lot unique ou lots séparés.',
+      objectives: ['Aéroport international catégorie 4E OACI', 'Piste de 3 000 m', 'Terminal passagers de 50 000 m²'],
+      eligibility: 'Entreprises de BTP avec expérience aéroportuaire.',
       timeline: 'Date limite : 15 août 2025. Construction : 2026-2029.',
     },
   },
@@ -704,12 +1025,8 @@ export const TENDERS: DealItem[] = [
     amount: '45 millions USD',
     organization: 'Ministère de la Santé SN',
     details: {
-      objectives: [
-        'Moderniser le plateau technique du CHU',
-        'Acquérir 200 équipements (IRM, scanners, échographes)',
-        'Former le personnel médical',
-      ],
-      eligibility: 'Fabricants et distributeurs d\'équipements médicaux agréés OMS. Certification CE ou FDA requise.',
+      objectives: ['Moderniser le plateau technique du CHU', 'Acquérir 200 équipements (IRM, scanners, échographes)'],
+      eligibility: 'Fabricants et distributeurs agréés OMS. Certification CE ou FDA requise.',
     },
   },
   {
@@ -723,16 +1040,8 @@ export const TENDERS: DealItem[] = [
     amount: '60 millions USD',
     organization: 'Mairie de Parakou',
     details: {
-      objectives: [
-        'Construire un marché moderne de 25 000 m²',
-        'Créer des zones de stockage frigorifique',
-        'Aménager des espaces de vente et restaurants',
-      ],
-      key_facts: [
-        'Parakou : hub commercial du nord du Bénin',
-        'Carrefour du corridor Cotonou-Niamey',
-        '3 000 commerçants attendus',
-      ],
+      objectives: ['Construire un marché moderne de 25 000 m²', 'Créer des zones de stockage frigorifique'],
+      key_facts: ['Parakou : hub commercial du nord du Bénin', 'Carrefour du corridor Cotonou-Niamey', '3 000 commerçants attendus'],
     },
   },
   {
@@ -746,21 +1055,76 @@ export const TENDERS: DealItem[] = [
     amount: '200 millions USD',
     organization: 'Uganda National Roads Authority',
     details: {
-      objectives: [
-        'Doubler la capacité du port à conteneurs',
-        'Créer une zone franche industrielle',
-        'Connecter le port au réseau ferroviaire SGR',
-      ],
-      key_facts: [
-        'Lac Victoria : plus grand lac d\'Afrique',
-        'Commerce lacustre : Ouganda, Kenya, Tanzanie',
-        'Volume actuel : 200 000 tonnes/an',
-      ],
-      timeline: 'Études de faisabilité : Q3 2025. Appel d\'offres : Q1 2026. Construction : 2026-2029.',
+      objectives: ['Doubler la capacité du port à conteneurs', 'Créer une zone franche industrielle', 'Connecter le port au réseau ferroviaire SGR'],
+      key_facts: ['Lac Victoria : plus grand lac d\'Afrique', 'Commerce lacustre : Ouganda, Kenya, Tanzanie'],
+      timeline: 'Études de faisabilité : Q3 2025. Appel d\'offres : Q1 2026.',
+    },
+  },
+  // SPÉCIFIQUES
+  {
+    id: 'tender-ug-2',
+    title: 'Appel à projets – Zones industrielles d\'Entebbe et Jinja – Ouganda',
+    description: 'Recherche de partenaires pour développer et opérer deux zones franches industrielles dans les villes d\'Entebbe et Jinja.',
+    countries: ['Ouganda'],
+    date: '2025-10-01',
+    status: 'Ouvert',
+    sector: 'Industrie',
+    amount: '500 millions USD',
+    organization: 'Uganda Investment Authority',
+    details: {
+      objectives: ['Attirer des investisseurs industriels internationaux', 'Développer l\'agro-transformation', 'Créer 50 000 emplois directs'],
+      eligibility: 'Développeurs et opérateurs de zones industrielles avec expérience en Afrique.',
+    },
+  },
+  {
+    id: 'tender-sn-2',
+    title: 'Appel d\'offres – Data Centers souverains – Sénégal',
+    description: 'Construction et exploitation de deux data centers Tier IV dans le cadre du New Deal Technologique du Sénégal.',
+    countries: ['Sénégal'],
+    date: '2025-11-15',
+    status: 'Ouvert',
+    sector: 'Numérique',
+    amount: '200 millions USD',
+    organization: 'Gouvernement du Sénégal',
+    details: {
+      objectives: ['Héberger les données souveraines du Sénégal', 'Offrir des services cloud aux entreprises ouest-africaines', 'Créer un hub numérique à Diamniadio'],
+      eligibility: 'Opérateurs de data centers avec certification Tier IV. Consortium international/local.',
+    },
+  },
+  {
+    id: 'tender-ci-2',
+    title: 'Appel d\'offres – Ligne 2 du Métro d\'Abidjan – Côte d\'Ivoire',
+    description: 'Études et conception de la deuxième ligne du métro d\'Abidjan (est-ouest), reliant Abobo à Plateau.',
+    countries: ['Côte d\'Ivoire'],
+    date: '2026-03-01',
+    status: 'Planifié',
+    sector: 'Transport',
+    amount: '2 milliards EUR',
+    organization: 'Ministère des Transports CI',
+    details: {
+      objectives: ['Étendre le réseau de métro à 80 km', 'Connecter les quartiers est et ouest', 'Transporter 300 000 passagers/jour supplémentaires'],
+      timeline: 'Études : 2026. Début construction : 2028. Mise en service : 2032.',
+    },
+  },
+  {
+    id: 'tender-be-1',
+    title: 'Appel à propositions – Programme Wehubit (Innovation sociale) – Belgique',
+    description: 'Financement de projets d\'innovation sociale et numérique dans les pays partenaires de la coopération belge.',
+    countries: ['Belgique'],
+    date: '2025-09-30',
+    status: 'Ouvert',
+    sector: 'Numérique',
+    amount: '15 millions EUR',
+    organization: 'Enabel / Wehubit',
+    source_url: 'https://www.wehubit.be/',
+    details: {
+      objectives: ['Financer des solutions numériques à impact social', 'Soutenir l\'entrepreneuriat social en Afrique', 'Scaler des innovations testées'],
+      eligibility: 'ONG, startups, entreprises sociales actives dans les pays partenaires belges.',
     },
   },
 ];
 
+// ==================== PARTIES PRENANTES ====================
 export const STAKEHOLDERS: DealItem[] = [
   {
     id: 'stake-1',
@@ -772,11 +1136,7 @@ export const STAKEHOLDERS: DealItem[] = [
     sector: 'Gouvernance',
     type: 'Gouvernement',
     details: {
-      key_facts: [
-        'Tutelle des marchés publics (DGCMEF)',
-        'Gestion du budget de l\'État',
-        'Coordination avec les partenaires techniques et financiers',
-      ],
+      key_facts: ['Tutelle des marchés publics (DGCMEF)', 'Gestion du budget de l\'État', 'Coordination avec les partenaires techniques et financiers'],
       contacts: ['Direction Générale de la Coopération : dgcoop@finances.gov.bf'],
     },
   },
@@ -791,12 +1151,7 @@ export const STAKEHOLDERS: DealItem[] = [
     type: 'Agence publique',
     source_url: 'https://www.cepici.gouv.ci/',
     details: {
-      key_facts: [
-        'Guichet unique : création d\'entreprise en 24h',
-        'Incitations fiscales : exonérations sur 5-15 ans',
-        'Code des investissements 2018',
-        'Zones économiques spéciales',
-      ],
+      key_facts: ['Guichet unique : création d\'entreprise en 24h', 'Incitations fiscales : exonérations sur 5-15 ans', 'Code des investissements 2018', 'Zones économiques spéciales'],
       contacts: ['Tél : +225 20 31 14 00', 'info@cepici.ci'],
     },
   },
@@ -811,12 +1166,7 @@ export const STAKEHOLDERS: DealItem[] = [
     type: 'Agence publique',
     source_url: 'https://investinsenegal.com/',
     details: {
-      key_facts: [
-        'Guichet unique pour les investisseurs',
-        'Zone économique spéciale de Diamniadio',
-        'Parc industriel de Sandiara',
-        'Code des investissements 2004 (révisé 2021)',
-      ],
+      key_facts: ['Guichet unique pour les investisseurs', 'Zone économique spéciale de Diamniadio', 'Parc industriel de Sandiara', 'Code des investissements 2004 (révisé 2021)'],
       contacts: ['contact@apix.sn', 'Tél : +221 33 849 05 55'],
     },
   },
@@ -830,12 +1180,7 @@ export const STAKEHOLDERS: DealItem[] = [
     sector: 'Investissement',
     type: 'Agence publique',
     details: {
-      key_facts: [
-        'Guichet unique de création d\'entreprise',
-        'Zone industrielle de Glo-Djigbé (GDIZ)',
-        'Incitations du Code des investissements 2020',
-        'Programme d\'appui aux PME exportatrices',
-      ],
+      key_facts: ['Guichet unique de création d\'entreprise', 'Zone industrielle de Glo-Djigbé (GDIZ)', 'Incitations du Code des investissements 2020', 'Programme d\'appui aux PME exportatrices'],
     },
   },
   {
@@ -849,12 +1194,7 @@ export const STAKEHOLDERS: DealItem[] = [
     type: 'Agence publique',
     source_url: 'https://www.ugandainvest.go.ug/',
     details: {
-      key_facts: [
-        'Free zones à Kampala, Entebbe, Jinja',
-        'Tax holidays de 10 ans pour les investisseurs',
-        'Programme One Stop Centre',
-        'Secteurs prioritaires : agro-industrie, tourisme, énergie',
-      ],
+      key_facts: ['Free zones à Kampala, Entebbe, Jinja', 'Tax holidays de 10 ans pour les investisseurs', 'Programme One Stop Centre', 'Secteurs prioritaires : agro-industrie, tourisme, énergie'],
     },
   },
   {
@@ -868,12 +1208,7 @@ export const STAKEHOLDERS: DealItem[] = [
     type: 'Agence publique',
     source_url: 'https://www.wbi.be/',
     details: {
-      key_facts: [
-        'Bourses d\'études et de recherche',
-        'Programmes de mobilité académique',
-        'Soutien aux projets culturels et artistiques',
-        'Partenariats avec les universités africaines',
-      ],
+      key_facts: ['Bourses d\'études et de recherche', 'Programmes de mobilité académique', 'Soutien aux projets culturels et artistiques'],
       contacts: ['info@wbi.be', 'Tél : +32 2 421 82 11'],
     },
   },
@@ -888,13 +1223,63 @@ export const STAKEHOLDERS: DealItem[] = [
     type: 'Organisation régionale',
     source_url: 'https://www.uemoa.int/',
     details: {
-      key_facts: [
-        '8 pays membres, monnaie commune (Franc CFA)',
-        'Tarif Extérieur Commun (TEC)',
-        'Marché commun de 130 millions de personnes',
-        'BCEAO : banque centrale commune',
-        'Convergence macroéconomique obligatoire',
-      ],
+      key_facts: ['8 pays membres, monnaie commune (Franc CFA)', 'Tarif Extérieur Commun (TEC)', 'Marché commun de 130 millions de personnes', 'BCEAO : banque centrale commune'],
+    },
+  },
+  // SPÉCIFIQUES
+  {
+    id: 'stake-ug-2',
+    title: 'East African Community (EAC) – Siège Arusha',
+    description: 'Communauté d\'Afrique de l\'Est dont l\'Ouganda est membre fondateur. Union douanière, marché commun et libre circulation.',
+    countries: ['Ouganda'],
+    date: '',
+    status: 'Actif',
+    sector: 'Commerce',
+    type: 'Organisation régionale',
+    source_url: 'https://www.eac.int/',
+    details: {
+      key_facts: ['8 pays membres', 'Union douanière depuis 2005', 'Marché commun depuis 2010', 'Protocole monétaire en discussion'],
+    },
+  },
+  {
+    id: 'stake-ci-2',
+    title: 'Conseil du Café-Cacao – Côte d\'Ivoire',
+    description: 'Organe de régulation de la filière café-cacao en Côte d\'Ivoire. Fixation des prix, contrôle qualité et développement durable.',
+    countries: ['Côte d\'Ivoire'],
+    date: '',
+    status: 'Actif',
+    sector: 'Agriculture',
+    type: 'Agence publique',
+    source_url: 'https://www.conseilcafecacao.ci/',
+    details: {
+      key_facts: ['Régule 45% de la production mondiale de cacao', 'Fixe le prix bord champ chaque campagne', 'Programme de traçabilité et durabilité', '1 million de producteurs encadrés'],
+    },
+  },
+  {
+    id: 'stake-sn-2',
+    title: 'Petrosen – Société des Pétroles du Sénégal',
+    description: 'Entreprise nationale pétrolière du Sénégal. Partenaire dans les champs GTA et Sangomar.',
+    countries: ['Sénégal'],
+    date: '',
+    status: 'Actif',
+    sector: 'Énergie',
+    type: 'Entreprise publique',
+    details: {
+      key_facts: ['Détient 10% du champ GTA (avec BP et Kosmos)', 'Participation dans Sangomar (avec Woodside)', 'Rôle stratégique dans la gestion des revenus pétroliers', 'Siège à Dakar'],
+    },
+  },
+  {
+    id: 'stake-be-2',
+    title: 'FIT (Flanders Investment & Trade) – Belgique',
+    description: 'Agence flamande pour le commerce extérieur et les investissements. Soutient les entreprises belges en Afrique.',
+    countries: ['Belgique'],
+    date: '',
+    status: 'Actif',
+    sector: 'Commerce',
+    type: 'Agence publique',
+    source_url: 'https://www.flandersinvestmentandtrade.com/',
+    details: {
+      key_facts: ['Réseau de 90 bureaux dans le monde', 'Missions commerciales en Afrique 2x/an', 'Soutien financier aux PME belges exportatrices', 'Bureaux en Côte d\'Ivoire et Sénégal'],
     },
   },
 ];
