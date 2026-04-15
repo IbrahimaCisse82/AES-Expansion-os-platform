@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
-import { useCreateTask } from '@/hooks/useTaskMutations';
+import { useCreateTask, useUpdateTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
