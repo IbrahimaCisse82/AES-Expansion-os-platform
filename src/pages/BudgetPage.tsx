@@ -155,6 +155,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     { key: 'investments', icon: <Building2 size={14} />, label: 'Particip.' },
     { key: 'ai', icon: <Brain size={14} />, label: 'IA' },
     { key: 'xbrl', icon: <FileCode size={14} />, label: 'XBRL' },
+    { key: 'cashflow', icon: <TrendingDown size={14} />, label: 'Cash-Flow' },
     { key: 'adhoc', icon: <PieChart size={14} />, label: 'Ad hoc' },
   ];
 
