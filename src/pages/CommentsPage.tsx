@@ -367,6 +367,63 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   };
 
   const handlePublish = () => publishComment(content);
+  const handlePublishWithAttachments = async () => {
+    if (!content.trim() && pendingFiles.length === 0) return;
+    // First publish the comment
+    const trimmed = content.trim() || '📎 Pièce(s) jointe(s)';
+    const country = countries.find(c => c.id === marketId);
+    const payload: any = {
+      content: trimmed,
+      author_id: user?.id ?? null,
+      author_name: fullName,
+      author_initials: initials,
+      author_color: '#1C2B3A',
+      market_id: marketId || null,
+      market_label: country ? `${country.flag} ${country.name}` : null,
+      tags: [],
+      parent_id: null,
+    };
+    createComment.mutate(payload, {
+      onSuccess: async (data) => {
+        // Upload attachments
+        if (pendingFiles.length > 0 && data?.id) {
+          setUploading(true);
+          try {
+            for (const file of pendingFiles) {
+              const filePath = `${data.id}/${Date.now()}_${file.name}`;
+              const { error: uploadErr } = await supabase.storage.from('comment-attachments').upload(filePath, file);
+              if (uploadErr) { toast.error(`Erreur upload: ${file.name}`); continue; }
+              await supabase.from('comment_attachments').insert({
+                comment_id: data.id,
+                file_name: file.name,
+                file_path: filePath,
+                file_size: file.size,
+                mime_type: file.type || 'application/octet-stream',
+                uploaded_by: user?.id ?? null,
+              });
+            }
+            qc.invalidateQueries({ queryKey: ['comment_attachments'] });
+            toast.success('Commentaire publié avec pièces jointes');
+          } catch (err) {
+            toast.error('Erreur lors de l\'upload');
+          } finally {
+            setUploading(false);
+          }
+        } else {
+          toast.success('Commentaire publié');
+        }
+        // Handle mentions
+        const mentions = extractMentions(trimmed, allUsers.map((u: any) => ({ user_id: u.user_id, full_name: u.full_name })));
+        if (mentions.length > 0 && data?.id) {
+          await supabase.from('comment_mentions').insert(mentions.map(m => ({ comment_id: data.id, mentioned_user_id: m.user_id, mentioned_name: m.full_name })));
+        }
+        setContent('');
+        setMarketId('');
+        setPendingFiles([]);
+      },
+      onError: (err: Error) => toast.error(err.message),
+    });
+  };
   const handleReply = () => { if (replyingTo) publishComment(replyContent, replyingTo); };
 
   const handleDelete = () => {
