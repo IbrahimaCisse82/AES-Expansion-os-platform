@@ -229,6 +229,14 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
     }
     if (sectorFilter !== 'all') result = result.filter(i => i.sector === sectorFilter);
     if (countryFilter !== 'all') result = result.filter(i => i.countries.includes(countryFilter));
+    // Sort: specific items first when a country is selected
+    if (countryFilter !== 'all') {
+      result = [...result].sort((a, b) => {
+        const aSpecific = a.countries.length === 1 && a.countries[0] === countryFilter ? 0 : 1;
+        const bSpecific = b.countries.length === 1 && b.countries[0] === countryFilter ? 0 : 1;
+        return aSpecific - bSpecific;
+      });
+    }
     return result;
   }, [items, search, sectorFilter, countryFilter]);
 
