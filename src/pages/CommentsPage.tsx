@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import { Trash2, Pencil, X, Check, MessageSquare, SmilePlus } from 'lucide-react';
 import MentionInput, { extractMentions, renderMentionedText } from '@/components/MentionInput';
+import { sendNotificationEmail } from '@/lib/notificationEmail';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '🎉', '😂', '🤔', '👏'];
 
