@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
-import { Search, Globe, FileText, Building2, Briefcase, Users2, ScrollText, Sparkles, Calendar, MapPin, DollarSign, ExternalLink, ChevronRight, X } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { Search, Globe, FileText, Building2, Briefcase, Users2, ScrollText, Sparkles, Calendar, MapPin, DollarSign, ExternalLink, ChevronRight, X, Loader2, AlertTriangle, Lightbulb, TrendingUp, Shield, ArrowRight, Brain } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
