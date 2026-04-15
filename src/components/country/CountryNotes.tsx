@@ -20,7 +20,8 @@ interface CountryNotesProps {
 }
 
 export default function CountryNotes({ countryId, canWrite }: CountryNotesProps) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const profileName = user?.user_metadata?.full_name || user?.email || '';
   const { data: notes = [], isLoading } = useCountryNotes(countryId);
   const createNote = useCreateCountryNote();
   const deleteNote = useDeleteCountryNote();
@@ -35,7 +36,7 @@ export default function CountryNotes({ countryId, canWrite }: CountryNotesProps)
       content: content.trim(),
       note_type: noteType,
       author_id: user?.id,
-      author_name: profile?.full_name || user?.email || '',
+      author_name: profileName,
     }, {
       onSuccess: () => { toast.success('Note ajoutée'); setContent(''); setShowForm(false); },
       onError: (err: Error) => toast.error(err.message),
