@@ -137,6 +137,9 @@ function CommentItem({
             </div>
           )}
 
+          {/* Attachments */}
+          <CommentAttachments commentId={c.id} />
+
           {/* Reactions display */}
           {grouped.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1.5">
