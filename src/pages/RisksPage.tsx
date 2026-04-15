@@ -96,12 +96,14 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const createRisk = useCreateRisk();
   const updateRisk = useUpdateRisk();
   const deleteRisk = useDeleteRisk();
+  const createTask = useCreateTask();
 
   const canWrite = CAN_WRITE.includes(myRole ?? '');
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [detailRiskId, setDetailRiskId] = useState<string | null>(null);
   const [form, setForm] = useState<RiskForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<string>('all');
