@@ -320,6 +320,9 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 })()}
                 {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
+                {(task as any).recurrence && (task as any).recurrence !== 'none' && (
+                  <><span>·</span><span className="text-accent">🔄 {RECURRENCE_OPTIONS.find(r => r.value === (task as any).recurrence)?.label || (task as any).recurrence}</span></>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -472,6 +475,20 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Recurrence */}
+            <div>
+              <Label className="text-[12.5px]">Récurrence</Label>
+              <Select value={form.recurrence || 'none'} onValueChange={v => setForm(p => ({ ...p, recurrence: v as TaskForm['recurrence'] }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {RECURRENCE_OPTIONS.map(r => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10.5px] text-muted-foreground mt-1">Les tâches récurrentes seront automatiquement recréées à la fréquence choisie</p>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
