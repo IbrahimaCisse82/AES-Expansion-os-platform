@@ -127,6 +127,36 @@ export default function KpisPage() {
     };
   }, [history, selectedCountry]);
 
+  // Compute alerts: KPIs below 80% of target
+  const alerts = useMemo<KpiAlert[]>(() => {
+    const result: KpiAlert[] = [];
+    history.forEach(h => {
+      const country = countries.find(c => c.id === h.country_id);
+      const pairs: Array<{ metric: string; value: number; target: number }> = [
+        { metric: 'ca', value: Number(h.ca), target: Number(h.target_ca) },
+        { metric: 'clients', value: Number(h.clients), target: Number(h.target_clients) },
+        { metric: 'nps', value: Number(h.nps), target: Number(h.target_nps) },
+        { metric: 'retention', value: Number(h.retention), target: Number(h.target_retention) },
+      ];
+      pairs.forEach(({ metric, value, target }) => {
+        if (target > 0 && value < target * ALERT_THRESHOLD) {
+          result.push({
+            country_id: h.country_id,
+            country_name: country?.name ?? h.country_id,
+            country_flag: country?.flag ?? '',
+            month: h.month,
+            metric,
+            value,
+            target,
+            pct: Math.round((value / target) * 100),
+          });
+        }
+      });
+    });
+    // Sort: most recent month first, then lowest pct first
+    return result.sort((a, b) => b.month.localeCompare(a.month) || a.pct - b.pct);
+  }, [history, countries]);
+
   const handleSave = async () => {
     if (!editRow || !editRow.country_id || !editRow.month) return;
     try {
@@ -146,6 +176,30 @@ export default function KpisPage() {
       const country = countries.find(c => c.id === editRow.country_id);
       logActivity({ action: `a ${editRow.isNew ? 'ajouté' : 'modifié'} les KPIs ${editRow.month} pour ${country?.name ?? editRow.country_id}`, entityType: 'kpi_history', entityId: editRow.country_id, marketFlag: country?.flag });
       toast.success(editRow.isNew ? 'KPI ajouté' : 'KPI mis à jour');
+
+      // Check for alerts on the saved entry
+      const checks = [
+        { label: 'CA', val: editRow.ca ?? 0, tgt: editRow.target_ca ?? 0 },
+        { label: 'Clients', val: editRow.clients ?? 0, tgt: editRow.target_clients ?? 0 },
+        { label: 'NPS', val: editRow.nps ?? 0, tgt: editRow.target_nps ?? 0 },
+        { label: 'Rétention', val: editRow.retention ?? 0, tgt: editRow.target_retention ?? 0 },
+      ];
+      const warnings = checks.filter(c => c.tgt > 0 && c.val < c.tgt * ALERT_THRESHOLD);
+      if (warnings.length > 0) {
+        const countryName = country?.name ?? editRow.country_id;
+        const details = warnings.map(w => `${w.label} (${Math.round((w.val / w.tgt) * 100)}%)`).join(', ');
+        toast.warning(`⚠️ Alerte KPI — ${countryName}`, {
+          description: `Sous 80% de l'objectif : ${details}`,
+          duration: 8000,
+        });
+        logActivity({
+          action: `⚠️ Alerte KPI : ${details} sous 80% de l'objectif pour ${countryName} (${editRow.month})`,
+          entityType: 'kpi_alert',
+          entityId: editRow.country_id,
+          marketFlag: country?.flag,
+        });
+      }
+
       setEditRow(null);
     } catch {
       toast.error('Erreur lors de la sauvegarde');
