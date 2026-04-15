@@ -12,6 +12,7 @@ export interface TemplateEntry {
 import { template as invitationResend } from './invitation-resend.tsx'
 import { template as invitation } from './invitation.tsx'
 import { template as kpiAlert } from './kpi-alert.tsx'
+import { template as kpiRecurringAlert } from './kpi-recurring-alert.tsx'
 import { template as taskAssigned } from './task-assigned.tsx'
 import { template as taskOverdue } from './task-overdue.tsx'
 import { template as riskAlert } from './risk-alert.tsx'
@@ -22,6 +23,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'invitation-resend': invitationResend,
   'invitation': invitation,
   'kpi-alert': kpiAlert,
+  'kpi-recurring-alert': kpiRecurringAlert,
   'task-assigned': taskAssigned,
   'task-overdue': taskOverdue,
   'risk-alert': riskAlert,
