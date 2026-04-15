@@ -453,6 +453,18 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 rows={3}
                 placeholder="Ajouter un commentaire… Tapez @ pour mentionner quelqu'un"
               />
+              {/* Pending attachments preview */}
+              {pendingFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {pendingFiles.map((f, i) => (
+                    <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border text-[11px]">
+                      {f.type.startsWith('image/') ? <ImageIcon className="w-3 h-3 text-accent" /> : <FileIcon className="w-3 h-3 text-muted-foreground" />}
+                      <span className="truncate max-w-[120px]">{f.name}</span>
+                      <button onClick={() => setPendingFiles(prev => prev.filter((_, j) => j !== i))} className="p-0.5 hover:bg-destructive/10 rounded"><X className="w-3 h-3 text-destructive" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2 mt-2 items-center">
                 <Select value={marketId || '_none'} onValueChange={v => setMarketId(v === '_none' ? '' : v)}>
                   <SelectTrigger className="w-[180px] h-8 text-[12px]"><SelectValue placeholder="Marché (optionnel)" /></SelectTrigger>
@@ -461,9 +473,30 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                     {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                  title="Joindre un fichier"
+                >
+                  <Paperclip className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                  className="hidden"
+                  onChange={e => {
+                    if (e.target.files) {
+                      setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                    }
+                    e.target.value = '';
+                  }}
+                />
                 <span className="text-[11px] text-muted-foreground ml-auto">{content.length}/1000</span>
-                <button onClick={handlePublish} disabled={createComment.isPending || !content.trim()} className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50">
-                  Publier →
+                <button onClick={handlePublishWithAttachments} disabled={createComment.isPending || uploading || (!content.trim() && pendingFiles.length === 0)} className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50">
+                  {uploading ? 'Envoi…' : 'Publier →'}
                 </button>
               </div>
             </div>
