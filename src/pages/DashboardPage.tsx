@@ -1,7 +1,9 @@
 import KpiCard from '@/components/KpiCard';
 import StatusPill from '@/components/StatusPill';
-import { useCountries, useTasks, useActivityLog, useRisks } from '@/hooks/useExpansionData';
+import { useCountries, useTasks, useActivityLog, useRisks, useMilestones } from '@/hooks/useExpansionData';
 import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard, KpiTrendChart, NvsN1Card } from '@/components/dashboard/DashboardCharts';
+import AfricaMap from '@/components/dashboard/AfricaMap';
+import BurndownChart from '@/components/dashboard/BurndownChart';
 import { computeMarketScore } from '@/lib/marketScoring';
 
 export default function DashboardPage() {
@@ -9,6 +11,7 @@ export default function DashboardPage() {
   const { data: tasks = [] } = useTasks();
   const { data: activity = [] } = useActivityLog();
   const { data: risks = [] } = useRisks();
+  const { data: milestones = [] } = useMilestones(null);
 
   const lateTasks = tasks.filter(t => t.status === 'late').length;
   const totalTeam = countries.reduce((s, c) => s + (c.team_size || 0), 0);
@@ -47,7 +50,13 @@ export default function DashboardPage() {
             <MarketScoreCard scores={scores} />
           </div>
 
-          {/* NEW: Trend + N vs N-1 */}
+          {/* Africa Map + Burn-down */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <AfricaMap countries={countries} />
+            <BurndownChart milestones={milestones} />
+          </div>
+
+          {/* Trend + N vs N-1 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <div className="lg:col-span-2">
               <KpiTrendChart />

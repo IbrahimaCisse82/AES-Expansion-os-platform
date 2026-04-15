@@ -1,9 +1,13 @@
-import { Globe, BarChart3 } from 'lucide-react';
+import { Globe, BarChart3, Shield } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CountryAnalysisTab from '@/components/market/CountryAnalysisTab';
 import AfriDataHubTab from '@/components/market/AfriDataHubTab';
+import SwotComparison from '@/components/market/SwotComparison';
+import { useCountries } from '@/hooks/useExpansionData';
 
 export default function MarketAnalysisPage() {
+  const { data: countries = [] } = useCountries();
+
   return (
     <div className="animate-page-enter">
       <div className="mb-6">
@@ -26,6 +30,10 @@ export default function MarketAnalysisPage() {
             <Globe size={14} />
             AfriDataHub
           </TabsTrigger>
+          <TabsTrigger value="swot" className="flex items-center gap-1.5 text-[13px] px-4 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Shield size={14} />
+            SWOT
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="analyse-pays">
@@ -34,6 +42,10 @@ export default function MarketAnalysisPage() {
 
         <TabsContent value="afridatahub">
           <AfriDataHubTab />
+        </TabsContent>
+
+        <TabsContent value="swot">
+          <SwotComparison countries={countries} />
         </TabsContent>
       </Tabs>
     </div>

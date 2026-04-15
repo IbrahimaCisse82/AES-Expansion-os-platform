@@ -40,10 +40,11 @@ import CloseManagementView from '@/components/budget/CloseManagement';
 import DataValidation from '@/components/budget/DataValidation';
 import InvestmentRegister from '@/components/budget/InvestmentRegister';
 import XBRLExport from '@/components/budget/XBRLExport';
+import CashFlowView from '@/components/budget/CashFlowView';
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl';
+type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
@@ -154,6 +155,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     { key: 'investments', icon: <Building2 size={14} />, label: 'Particip.' },
     { key: 'ai', icon: <Brain size={14} />, label: 'IA' },
     { key: 'xbrl', icon: <FileCode size={14} />, label: 'XBRL' },
+    { key: 'cashflow', icon: <TrendingDown size={14} />, label: 'Cash-Flow' },
     { key: 'adhoc', icon: <PieChart size={14} />, label: 'Ad hoc' },
   ];
 
@@ -286,6 +288,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'validation' && <DataValidation scenarioId={activeScenarioId} lines={lines} categories={categories} canWrite={canWrite} />}
           {viewMode === 'investments' && <InvestmentRegister scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
           {viewMode === 'xbrl' && <XBRLExport lines={lines} categories={categories} scenarioName={activeScenario?.name || ''} fiscalYear={fiscalYear} />}
+          {viewMode === 'cashflow' && <CashFlowView lines={lines} categories={categories} />}
         </>
       )}
 
