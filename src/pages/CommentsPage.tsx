@@ -1,15 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useComments, useCountries } from '@/hooks/useExpansionData';
 import { useCreateComment, useUpdateComment, useDeleteComment } from '@/hooks/useCommentMutations';
 import { useCurrentUserRole, useAllUsersWithRoles } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { useCommentReactions, useToggleReaction } from '@/hooks/useCommentReactions';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Trash2, Pencil, X, Check, MessageSquare, SmilePlus } from 'lucide-react';
+import { Trash2, Pencil, X, Check, MessageSquare, SmilePlus, Paperclip, FileIcon, Image as ImageIcon } from 'lucide-react';
 import MentionInput, { extractMentions, renderMentionedText } from '@/components/MentionInput';
 import { sendNotificationEmail } from '@/lib/notificationEmail';
 
