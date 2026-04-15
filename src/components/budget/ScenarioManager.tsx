@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Plus, Copy, Trash2, Lock, Unlock, Send, CheckCircle2, Percent } from 'lucide-react';
+import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
 interface ScenarioManagerProps {
   scenarios: BudgetScenario[];
@@ -78,6 +79,16 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
               scenarioName: scenario.name,
               newStatus: status,
               excludeUserId: user?.id,
+            });
+            // Send email notification for budget workflow changes
+            notifyAdminsViaEmail({
+              templateName: 'budget-workflow',
+              idempotencyKey: `budget-workflow-${id}-${status}-${Date.now()}`,
+              templateData: {
+                scenarioName: scenario.name,
+                newStatus: status,
+                changedBy: user?.user_metadata?.full_name || user?.email || '',
+              },
             });
           }
         },

@@ -108,7 +108,75 @@ Deno.serve(async (req) => {
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  let effectiveRecipient = template.to || recipientEmail
+
+  // Create Supabase client with service role (bypasses RLS) — needed for resolution
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Special recipient '__admins__': resolve all admin emails server-side and send to each
+  if (effectiveRecipient === '__admins__') {
+    const { data: adminRoles } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin')
+
+    if (!adminRoles?.length) {
+      return new Response(
+        JSON.stringify({ success: false, reason: 'no_admins_found' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const adminEmails: string[] = []
+    for (const ar of adminRoles) {
+      const { data: { user: adminUser } } = await supabase.auth.admin.getUserById(ar.user_id)
+      if (adminUser?.email) adminEmails.push(adminUser.email)
+    }
+
+    if (!adminEmails.length) {
+      return new Response(
+        JSON.stringify({ success: false, reason: 'no_admin_emails' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const results = []
+    for (const email of adminEmails) {
+      const innerResp = await fetch(req.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.get('Authorization') || '',
+          'apikey': req.headers.get('apikey') || '',
+        },
+        body: JSON.stringify({
+          templateName,
+          recipientEmail: email,
+          idempotencyKey: `${idempotencyKey}-${email}`,
+          templateData,
+        }),
+      })
+      results.push({ email, status: innerResp.status })
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, sent_to: results }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Special recipient '__user__:{userId}': resolve user email from auth
+  if (effectiveRecipient.startsWith('__user__:')) {
+    const userId = effectiveRecipient.replace('__user__:', '')
+    const { data: { user: resolvedUser } } = await supabase.auth.admin.getUserById(userId)
+    if (!resolvedUser?.email) {
+      return new Response(
+        JSON.stringify({ success: false, reason: 'user_email_not_found' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    effectiveRecipient = resolvedUser.email
+  }
 
   if (!effectiveRecipient) {
     return new Response(
@@ -122,8 +190,7 @@ Deno.serve(async (req) => {
     )
   }
 
-  // Create Supabase client with service role (bypasses RLS)
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  // supabase client already created above for recipient resolution
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase

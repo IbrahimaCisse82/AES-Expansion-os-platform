@@ -2,27 +2,14 @@ import { useState, useMemo } from 'react';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useKpiHistory, useUpsertKpiHistory, useDeleteKpiHistory, type KpiHistoryEntry } from '@/hooks/useKpiHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
-import { useAppSetting } from '@/hooks/useAppSettings';
 import { logActivity } from '@/hooks/useActivityLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, AlertTriangle, Download } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
+import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import { exportToCSV } from '@/lib/csvExport';
-const KPI_LABELS: Record<string, string> = { ca: 'CA', clients: 'Clients', nps: 'NPS', retention: 'Rétention' };
-
-interface KpiAlert {
-  country_id: string;
-  country_name: string;
-  country_flag: string;
-  month: string;
-  metric: string;
-  value: number;
-  target: number;
-  pct: number;
-}
+import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
 const EDITABLE_ROLES = ['admin', 'director', 'analyst'];
 
@@ -43,8 +30,6 @@ export default function KpisPage() {
   const { data: countries = [], isLoading: loadingCountries } = useCountries();
   const { data: role } = useCurrentUserRole();
   const canEdit = EDITABLE_ROLES.includes(role ?? '');
-  const { data: thresholdStr } = useAppSetting('kpi_alert_threshold');
-  const ALERT_THRESHOLD = (Number(thresholdStr) || 80) / 100;
 
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const countryId = selectedCountry === 'all' ? undefined : selectedCountry;
@@ -129,36 +114,6 @@ export default function KpisPage() {
     };
   }, [history, selectedCountry]);
 
-  // Compute alerts: KPIs below 80% of target
-  const alerts = useMemo<KpiAlert[]>(() => {
-    const result: KpiAlert[] = [];
-    history.forEach(h => {
-      const country = countries.find(c => c.id === h.country_id);
-      const pairs: Array<{ metric: string; value: number; target: number }> = [
-        { metric: 'ca', value: Number(h.ca), target: Number(h.target_ca) },
-        { metric: 'clients', value: Number(h.clients), target: Number(h.target_clients) },
-        { metric: 'nps', value: Number(h.nps), target: Number(h.target_nps) },
-        { metric: 'retention', value: Number(h.retention), target: Number(h.target_retention) },
-      ];
-      pairs.forEach(({ metric, value, target }) => {
-        if (target > 0 && value < target * ALERT_THRESHOLD) {
-          result.push({
-            country_id: h.country_id,
-            country_name: country?.name ?? h.country_id,
-            country_flag: country?.flag ?? '',
-            month: h.month,
-            metric,
-            value,
-            target,
-            pct: Math.round((value / target) * 100),
-          });
-        }
-      });
-    });
-    // Sort: most recent month first, then lowest pct first
-    return result.sort((a, b) => b.month.localeCompare(a.month) || a.pct - b.pct);
-  }, [history, countries]);
-
   const handleSave = async () => {
     if (!editRow || !editRow.country_id || !editRow.month) return;
     try {
@@ -179,27 +134,30 @@ export default function KpisPage() {
       logActivity({ action: `a ${editRow.isNew ? 'ajouté' : 'modifié'} les KPIs ${editRow.month} pour ${country?.name ?? editRow.country_id}`, entityType: 'kpi_history', entityId: editRow.country_id, marketFlag: country?.flag });
       toast.success(editRow.isNew ? 'KPI ajouté' : 'KPI mis à jour');
 
-      // Check for alerts on the saved entry
-      const checks = [
-        { label: 'CA', val: editRow.ca ?? 0, tgt: editRow.target_ca ?? 0 },
-        { label: 'Clients', val: editRow.clients ?? 0, tgt: editRow.target_clients ?? 0 },
-        { label: 'NPS', val: editRow.nps ?? 0, tgt: editRow.target_nps ?? 0 },
-        { label: 'Rétention', val: editRow.retention ?? 0, tgt: editRow.target_retention ?? 0 },
+      // Check KPI alerts and send email notifications
+      const ALERT_THRESHOLD = 0.8;
+      const metrics = [
+        { key: 'ca', label: 'CA Mensuel', actual: editRow.ca ?? 0, target: editRow.target_ca ?? 0 },
+        { key: 'clients', label: 'Clients Actifs', actual: editRow.clients ?? 0, target: editRow.target_clients ?? 0 },
+        { key: 'nps', label: 'NPS Score', actual: editRow.nps ?? 0, target: editRow.target_nps ?? 0 },
+        { key: 'retention', label: 'Rétention', actual: editRow.retention ?? 0, target: editRow.target_retention ?? 0 },
       ];
-      const warnings = checks.filter(c => c.tgt > 0 && c.val < c.tgt * ALERT_THRESHOLD);
-      if (warnings.length > 0) {
-        const countryName = country?.name ?? editRow.country_id;
-        const details = warnings.map(w => `${w.label} (${Math.round((w.val / w.tgt) * 100)}%)`).join(', ');
-        toast.warning(`⚠️ Alerte KPI — ${countryName}`, {
-          description: `Sous 80% de l'objectif : ${details}`,
-          duration: 8000,
-        });
-        logActivity({
-          action: `⚠️ Alerte KPI : ${details} sous 80% de l'objectif pour ${countryName} (${editRow.month})`,
-          entityType: 'kpi_alert',
-          entityId: editRow.country_id,
-          marketFlag: country?.flag,
-        });
+      for (const m of metrics) {
+        if (m.target > 0 && m.actual < m.target * ALERT_THRESHOLD) {
+          const pct = Math.round((m.actual / m.target) * 100);
+          notifyAdminsViaEmail({
+            templateName: 'kpi-alert',
+            idempotencyKey: `kpi-alert-${editRow.country_id}-${editRow.month}-${m.key}`,
+            templateData: {
+              countryName: country?.name ?? editRow.country_id,
+              month: editRow.month,
+              metric: m.label,
+              actual: m.key === 'ca' ? `${m.actual.toLocaleString('fr-FR')} FCFA` : String(m.actual),
+              target: m.key === 'ca' ? `${m.target.toLocaleString('fr-FR')} FCFA` : String(m.target),
+              percentage: String(pct),
+            },
+          });
+        }
       }
 
       setEditRow(null);
@@ -259,30 +217,6 @@ export default function KpisPage() {
               ))}
             </SelectContent>
           </Select>
-          {history.length > 0 && (
-            <Button size="sm" variant="outline" className="gap-1.5 h-9" onClick={() => {
-              const rows = history.map(h => {
-                const country = countries.find(c => c.id === h.country_id);
-                return {
-                  'Pays': country ? `${country.flag} ${country.name}` : h.country_id,
-                  'Mois': h.month,
-                  'CA': Number(h.ca),
-                  'Obj. CA': Number(h.target_ca),
-                  'Clients': Number(h.clients),
-                  'Obj. Clients': Number(h.target_clients),
-                  'NPS': Number(h.nps),
-                  'Obj. NPS': Number(h.target_nps),
-                  'Rétention (%)': Number(h.retention),
-                  'Obj. Rétention (%)': Number(h.target_retention),
-                  'Notes': h.notes ?? '',
-                };
-              });
-              exportToCSV(rows, 'kpi-historique');
-              toast.success('Export CSV terminé');
-            }}>
-              <Download size={14} /> Exporter
-            </Button>
-          )}
           {canEdit && (
             <Button size="sm" onClick={startNew} className="gap-1.5 h-9">
               <Plus size={14} /> Ajouter
@@ -290,37 +224,6 @@ export default function KpisPage() {
           )}
         </div>
       </div>
-
-      {/* Alerts banner */}
-      {alerts.length > 0 && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-5">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={16} className="text-destructive" />
-            <h3 className="text-[13px] font-semibold text-destructive">
-              {alerts.length} alerte{alerts.length > 1 ? 's' : ''} KPI — sous 80% de l'objectif
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {alerts.slice(0, 6).map((a, i) => (
-              <div key={i} className="flex items-center gap-2 bg-card/80 rounded-md px-3 py-2 text-[12px]">
-                <span>{a.country_flag}</span>
-                <span className="font-medium text-primary">{a.country_name}</span>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">{KPI_LABELS[a.metric]}</span>
-                <span className={`ml-auto font-bold ${a.pct < 50 ? 'text-destructive' : 'text-[hsl(var(--gold))]'}`}>
-                  {a.pct}%
-                </span>
-                <span className="text-[10px] text-muted-foreground">{formatMonth(a.month)}</span>
-              </div>
-            ))}
-          </div>
-          {alerts.length > 6 && (
-            <p className="text-[11px] text-muted-foreground mt-2">
-              + {alerts.length - 6} autre{alerts.length - 6 > 1 ? 's' : ''} alerte{alerts.length - 6 > 1 ? 's' : ''}
-            </p>
-          )}
-        </div>
-      )}
 
       {/* Summary KPI cards with target comparison */}
       {latestKpis && (

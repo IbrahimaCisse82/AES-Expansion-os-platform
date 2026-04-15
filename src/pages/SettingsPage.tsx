@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
-import { useAppSetting, useUpdateAppSetting } from '@/hooks/useAppSettings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Download, Info, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, Info } from 'lucide-react';
 import { useCountries, useTasks, useRisks, useBudgetEntries } from '@/hooks/useExpansionData';
 import { exportToCSV } from '@/lib/csvExport';
 
@@ -88,60 +87,6 @@ function DataExportSection() {
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-
-const THRESHOLD_OPTIONS = [
-  { value: '60', label: '60%' },
-  { value: '70', label: '70%' },
-  { value: '80', label: '80% (par défaut)' },
-  { value: '90', label: '90%' },
-];
-
-function AlertThresholdSection() {
-  const { data: currentValue, isLoading } = useAppSetting('kpi_alert_threshold');
-  const updateSetting = useUpdateAppSetting();
-  const selected = currentValue ?? '80';
-
-  const handleChange = (val: string) => {
-    updateSetting.mutate(
-      { key: 'kpi_alert_threshold', value: val },
-      { onSuccess: () => toast.success(`Seuil d'alerte mis à jour : ${val}%`) }
-    );
-  };
-
-  return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-500" />
-          <h3 className="font-display text-[16px] font-semibold text-primary">Seuil d'alerte KPI</h3>
-        </div>
-        <p className="text-[12px] text-muted-foreground mt-1">
-          Une alerte sera déclenchée lorsqu'un KPI tombe sous ce pourcentage de l'objectif cible
-        </p>
-      </div>
-      {isLoading ? (
-        <p className="text-muted-foreground text-sm">Chargement…</p>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {THRESHOLD_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => handleChange(opt.value)}
-              disabled={updateSetting.isPending}
-              className={`px-4 py-2.5 rounded-lg border text-[13px] font-medium transition-colors ${
-                selected === opt.value
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border text-foreground hover:bg-muted/50'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -250,8 +195,6 @@ export default function SettingsPage() {
       <p className="text-[12.5px] text-muted-foreground mb-8">Gerez les parametres de votre plateforme</p>
 
       <div className="space-y-6 max-w-xl">
-
-      <AlertThresholdSection />
 
       <DataExportSection />
 

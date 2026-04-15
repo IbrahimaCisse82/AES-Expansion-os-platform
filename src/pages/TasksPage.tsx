@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { z } from 'zod';
 import { exportToCSV } from '@/lib/csvExport';
+import { sendNotificationEmail, notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
@@ -153,12 +154,47 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
     if (editingId) {
       updateTask.mutate({ id: editingId, ...payload }, {
-        onSuccess: () => { toast.success('Tâche modifiée'); setDialogOpen(false); },
+        onSuccess: () => {
+          toast.success('Tâche modifiée');
+          setDialogOpen(false);
+          // Notify admins when task is marked as late
+          if (payload.status === 'late') {
+            notifyAdminsViaEmail({
+              templateName: 'task-overdue',
+              idempotencyKey: `task-overdue-${editingId}`,
+              templateData: {
+                taskTitle: payload.title,
+                countryName: payload.country_label || '',
+                dueDate: payload.due_date || '',
+                assigneeName: payload.owner_name || '',
+              },
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       });
     } else {
       createTask.mutate({ ...payload, created_by: user?.id ?? null }, {
-        onSuccess: () => { toast.success('Tâche créée'); setDialogOpen(false); },
+        onSuccess: (data) => {
+          toast.success('Tâche créée');
+          setDialogOpen(false);
+          // Send email to assigned user
+          if (payload.assigned_to) {
+            const priorityLabels: Record<string, string> = { high: 'Haute', med: 'Moyenne', low: 'Basse' };
+            sendNotificationEmail({
+              templateName: 'task-assigned',
+              recipientEmail: `__user__:${payload.assigned_to}`,
+              idempotencyKey: `task-assigned-${data?.id || crypto.randomUUID()}`,
+              templateData: {
+                taskTitle: payload.title,
+                countryName: payload.country_label || '',
+                priority: priorityLabels[payload.priority] || payload.priority,
+                dueDate: payload.due_date || '',
+                assignedBy: user?.user_metadata?.full_name || user?.email || '',
+              },
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       });
     }
