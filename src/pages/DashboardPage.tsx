@@ -4,6 +4,7 @@ import { useCountries, useTasks, useActivityLog, useRisks, useMilestones } from 
 import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard, KpiTrendChart, NvsN1Card } from '@/components/dashboard/DashboardCharts';
 import AfricaMap from '@/components/dashboard/AfricaMap';
 import BurndownChart from '@/components/dashboard/BurndownChart';
+import RadarComparison from '@/components/dashboard/RadarComparison';
 import { computeMarketScore } from '@/lib/marketScoring';
 
 export default function DashboardPage() {
@@ -54,6 +55,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <AfricaMap countries={countries} />
             <BurndownChart milestones={milestones} />
+          </div>
+
+          {/* Radar Comparison */}
+          <div className="mb-4">
+            <RadarComparison countries={countries} />
           </div>
 
           {/* Trend + N vs N-1 */}
