@@ -286,6 +286,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 <div className="flex flex-col items-end gap-1">
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${rStatus.bg} ${rStatus.text}`}>{rStatus.label}</span>
                   <span className="text-[10px] text-muted-foreground">P{String(rAny.probability)}×I{String(rAny.impact)} = <strong>{riskScore}</strong></span>
+                  <button onClick={() => setDetailRiskId(r.id)} className="text-[9.5px] text-accent hover:underline">Historique</button>
                 </div>
                 {canWrite && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
