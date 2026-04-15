@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, AlertTriangle } from 'lucide-react';
+import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, AlertTriangle, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportToCSV } from '@/lib/csvExport';
 const KPI_LABELS: Record<string, string> = { ca: 'CA', clients: 'Clients', nps: 'NPS', retention: 'Rétention' };
 
 interface KpiAlert {
@@ -258,6 +259,30 @@ export default function KpisPage() {
               ))}
             </SelectContent>
           </Select>
+          {history.length > 0 && (
+            <Button size="sm" variant="outline" className="gap-1.5 h-9" onClick={() => {
+              const rows = history.map(h => {
+                const country = countries.find(c => c.id === h.country_id);
+                return {
+                  'Pays': country ? `${country.flag} ${country.name}` : h.country_id,
+                  'Mois': h.month,
+                  'CA': Number(h.ca),
+                  'Obj. CA': Number(h.target_ca),
+                  'Clients': Number(h.clients),
+                  'Obj. Clients': Number(h.target_clients),
+                  'NPS': Number(h.nps),
+                  'Obj. NPS': Number(h.target_nps),
+                  'Rétention (%)': Number(h.retention),
+                  'Obj. Rétention (%)': Number(h.target_retention),
+                  'Notes': h.notes ?? '',
+                };
+              });
+              exportToCSV(rows, 'kpi-historique');
+              toast.success('Export CSV terminé');
+            }}>
+              <Download size={14} /> Exporter
+            </Button>
+          )}
           {canEdit && (
             <Button size="sm" onClick={startNew} className="gap-1.5 h-9">
               <Plus size={14} /> Ajouter
