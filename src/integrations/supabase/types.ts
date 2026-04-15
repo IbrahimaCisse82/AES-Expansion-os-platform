@@ -1141,6 +1141,66 @@ export type Database = {
         }
         Relationships: []
       }
+      country_documents: {
+        Row: {
+          country_id: string
+          created_at: string
+          file_path: string
+          file_size: number
+          id: string
+          mime_type: string
+          name: string
+          uploaded_by: string | null
+          uploaded_by_name: string | null
+        }
+        Insert: {
+          country_id: string
+          created_at?: string
+          file_path: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          name: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+        }
+        Update: {
+          country_id?: string
+          created_at?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          name?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+        }
+        Relationships: []
+      }
+      country_members: {
+        Row: {
+          country_id: string
+          created_at: string
+          id: string
+          role_in_country: string
+          user_id: string
+        }
+        Insert: {
+          country_id: string
+          created_at?: string
+          id?: string
+          role_in_country?: string
+          user_id: string
+        }
+        Update: {
+          country_id?: string
+          created_at?: string
+          id?: string
+          role_in_country?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -1386,6 +1446,36 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_enabled: boolean
+          id: string
+          in_app_enabled: boolean
+          notif_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_enabled?: boolean
+          id?: string
+          in_app_enabled?: boolean
+          notif_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_enabled?: boolean
+          id?: string
+          in_app_enabled?: boolean
+          notif_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       phase_checklist_items: {
         Row: {
           checked_at: string | null
@@ -1455,9 +1545,85 @@ export type Database = {
         }
         Relationships: []
       }
+      risk_categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      risk_history: {
+        Row: {
+          changed_by: string | null
+          changed_by_name: string | null
+          created_at: string
+          id: string
+          new_impact: number | null
+          new_level: string | null
+          new_probability: number | null
+          new_status: string | null
+          note: string | null
+          old_impact: number | null
+          old_level: string | null
+          old_probability: number | null
+          old_status: string | null
+          risk_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          id?: string
+          new_impact?: number | null
+          new_level?: string | null
+          new_probability?: number | null
+          new_status?: string | null
+          note?: string | null
+          old_impact?: number | null
+          old_level?: string | null
+          old_probability?: number | null
+          old_status?: string | null
+          risk_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          changed_by_name?: string | null
+          created_at?: string
+          id?: string
+          new_impact?: number | null
+          new_level?: string | null
+          new_probability?: number | null
+          new_status?: string | null
+          note?: string | null
+          old_impact?: number | null
+          old_level?: string | null
+          old_probability?: number | null
+          old_status?: string | null
+          risk_id?: string
+        }
+        Relationships: []
+      }
       risks: {
         Row: {
           category: string | null
+          category_id: string | null
           country_id: string | null
           country_label: string | null
           created_at: string
@@ -1477,6 +1643,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
           country_id?: string | null
           country_label?: string | null
           created_at?: string
@@ -1496,6 +1663,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_id?: string | null
           country_id?: string | null
           country_label?: string | null
           created_at?: string
@@ -1514,6 +1682,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "risks_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "risk_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "risks_country_id_fkey"
             columns: ["country_id"]
@@ -1585,6 +1760,36 @@ export type Database = {
           id?: string
           label?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      subtasks: {
+        Row: {
+          created_at: string
+          id: string
+          is_done: boolean
+          sort_order: number
+          task_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          sort_order?: number
+          task_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          sort_order?: number
+          task_id?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

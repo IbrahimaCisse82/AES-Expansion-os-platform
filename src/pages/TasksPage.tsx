@@ -13,8 +13,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, LayoutGrid, List } from 'lucide-react';
 import { z } from 'zod';
+import KanbanBoard from '@/components/tasks/KanbanBoard';
+import SubtaskList from '@/components/tasks/SubtaskList';
 import { exportToCSV } from '@/lib/csvExport';
 import { sendNotificationEmail, notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
@@ -67,6 +69,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const canWrite = CAN_WRITE_ROLES.includes(myRole ?? '');
 
   const [filter, setFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -239,6 +242,14 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
           <p className="text-[12.5px] text-muted-foreground">Suivi des tâches par marché et priorité</p>
         </div>
         <div className="flex gap-2">
+          <div className="flex bg-secondary rounded-lg p-0.5">
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-card shadow-card' : 'text-muted-foreground hover:text-foreground'}`}>
+              <List className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-card shadow-card' : 'text-muted-foreground hover:text-foreground'}`}>
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12.5px]">
             <Download className="w-4 h-4" /> Exporter
           </Button>
@@ -265,12 +276,16 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
         ))}
       </div>
 
+      {viewMode === 'kanban' ? (
+        <KanbanBoard searchQuery={searchQuery} />
+      ) : (
       <div className="bg-card border border-border rounded-lg p-5">
         {filtered.length === 0 && (
           <div className="text-center text-muted-foreground text-sm py-8">Aucune tâche dans cette catégorie</div>
         )}
         {filtered.map(task => (
-          <div key={task.id} className="flex items-start gap-3 py-3 border-b border-border last:border-b-0 group">
+          <div key={task.id} className="py-3 border-b border-border last:border-b-0 group">
+            <div className="flex items-start gap-3">
             <div
               onClick={() => toggleDone(task)}
               className={`w-[19px] h-[19px] border-2 rounded-[5px] flex-shrink-0 mt-0.5 transition-colors flex items-center justify-center ${canWrite ? 'cursor-pointer' : ''} ${task.status === 'done' ? 'bg-accent border-accent' : 'border-border hover:border-accent'}`}
@@ -318,9 +333,12 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 </div>
               )}
             </div>
+            </div>
+            <SubtaskList taskId={task.id} canWrite={canWrite} />
           </div>
         ))}
       </div>
+      )}
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
