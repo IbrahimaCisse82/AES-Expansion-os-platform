@@ -1,7 +1,7 @@
 import KpiCard from '@/components/KpiCard';
 import StatusPill from '@/components/StatusPill';
 import { useCountries, useTasks, useActivityLog, useRisks } from '@/hooks/useExpansionData';
-import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard } from '@/components/dashboard/DashboardCharts';
+import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard, KpiTrendChart, NvsN1Card } from '@/components/dashboard/DashboardCharts';
 import { computeMarketScore } from '@/lib/marketScoring';
 
 export default function DashboardPage() {
@@ -47,6 +47,14 @@ export default function DashboardPage() {
             <MarketScoreCard scores={scores} />
           </div>
 
+          {/* NEW: Trend + N vs N-1 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <div className="lg:col-span-2">
+              <KpiTrendChart />
+            </div>
+            <NvsN1Card />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <ProgressChart countries={countries} />
 
@@ -82,11 +90,11 @@ export default function DashboardPage() {
               </div>
               {activity.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">Aucune activité enregistrée</p>
-              ) : activity.map((item, i) => (
+              ) : activity.slice(0, 8).map((item, i) => (
                 <div key={item.id} className="flex gap-3 py-2.5">
                   <div className="flex flex-col items-center">
                     <div className={`w-2 h-2 rounded-full mt-1 flex-shrink-0 ${dotColors[item.color || 'navy'] || 'bg-muted'}`} />
-                    {i < activity.length - 1 && <div className="w-px flex-1 bg-border mt-1" />}
+                    {i < Math.min(activity.length, 8) - 1 && <div className="w-px flex-1 bg-border mt-1" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] leading-relaxed">{item.user_name} {item.action}</div>
