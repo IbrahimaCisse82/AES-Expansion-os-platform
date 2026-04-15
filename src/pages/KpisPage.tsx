@@ -6,9 +6,23 @@ import { logActivity } from '@/hooks/useActivityLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+
+const ALERT_THRESHOLD = 0.8; // 80%
+const KPI_LABELS: Record<string, string> = { ca: 'CA', clients: 'Clients', nps: 'NPS', retention: 'Rétention' };
+
+interface KpiAlert {
+  country_id: string;
+  country_name: string;
+  country_flag: string;
+  month: string;
+  metric: string;
+  value: number;
+  target: number;
+  pct: number;
+}
 
 const EDITABLE_ROLES = ['admin', 'director', 'analyst'];
 
