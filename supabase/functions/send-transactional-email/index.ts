@@ -110,6 +110,9 @@ Deno.serve(async (req) => {
   // to always send to a fixed address (e.g., site owner from env var).
   let effectiveRecipient = template.to || recipientEmail
 
+  // Create Supabase client with service role (bypasses RLS) — needed for resolution
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
   // Special recipient '__admins__': resolve all admin emails server-side and send to each
   if (effectiveRecipient === '__admins__') {
     const { data: adminRoles } = await supabase
@@ -124,7 +127,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Fetch admin emails from auth.users via admin API
     const adminEmails: string[] = []
     for (const ar of adminRoles) {
       const { data: { user: adminUser } } = await supabase.auth.admin.getUserById(ar.user_id)
@@ -138,7 +140,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Send to each admin by recursively invoking ourselves
     const results = []
     for (const email of adminEmails) {
       const innerResp = await fetch(req.url, {
@@ -162,6 +163,19 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: true, sent_to: results }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+  }
+
+  // Special recipient '__user__:{userId}': resolve user email from auth
+  if (effectiveRecipient.startsWith('__user__:')) {
+    const userId = effectiveRecipient.replace('__user__:', '')
+    const { data: { user: resolvedUser } } = await supabase.auth.admin.getUserById(userId)
+    if (!resolvedUser?.email) {
+      return new Response(
+        JSON.stringify({ success: false, reason: 'user_email_not_found' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    effectiveRecipient = resolvedUser.email
   }
 
   if (!effectiveRecipient) {
