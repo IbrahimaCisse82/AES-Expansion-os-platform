@@ -98,7 +98,7 @@ export default function KpisPage() {
         notes: editRow.notes ?? '',
       });
       const country = countries.find(c => c.id === editRow.country_id);
-      logActivity(`a ${editRow.isNew ? 'ajouté' : 'modifié'} les KPIs ${editRow.month} pour ${country?.name ?? editRow.country_id}`, 'kpi_history', editRow.country_id, country?.flag);
+      logActivity({ action: `a ${editRow.isNew ? 'ajouté' : 'modifié'} les KPIs ${editRow.month} pour ${country?.name ?? editRow.country_id}`, entityType: 'kpi_history', entityId: editRow.country_id, marketFlag: country?.flag });
       toast.success(editRow.isNew ? 'KPI ajouté' : 'KPI mis à jour');
       setEditRow(null);
     } catch {
@@ -110,7 +110,7 @@ export default function KpisPage() {
     try {
       await deleteMut.mutateAsync(entry.id);
       const country = countries.find(c => c.id === entry.country_id);
-      logActivity(`a supprimé les KPIs ${entry.month} pour ${country?.name ?? entry.country_id}`, 'kpi_history', entry.country_id, country?.flag);
+      logActivity({ action: `a supprimé les KPIs ${entry.month} pour ${country?.name ?? entry.country_id}`, entityType: 'kpi_history', entityId: entry.country_id, marketFlag: country?.flag });
       toast.success('Entrée supprimée');
     } catch {
       toast.error('Erreur lors de la suppression');
