@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRisks, useCountries } from '@/hooks/useExpansionData';
 import { useCreateRisk, useUpdateRisk, useDeleteRisk } from '@/hooks/useRiskMutations';
+import { useCreateTask } from '@/hooks/useTaskMutations';
+import { useRiskHistory } from '@/hooks/useRiskHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, History, ShieldPlus } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 import { z } from 'zod';
@@ -55,6 +57,30 @@ const EMPTY_FORM: RiskForm = {
 
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
+// Risk History Panel component
+function RiskHistoryPanel({ riskId, riskTitle }: { riskId: string; riskTitle: string }) {
+  const { data: history = [], isLoading } = useRiskHistory(riskId);
+  if (isLoading) return <p className="text-[11px] text-muted-foreground">Chargement…</p>;
+  if (history.length === 0) return <p className="text-[11px] text-muted-foreground text-center py-2">Aucun historique</p>;
+  return (
+    <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+      {history.map(h => (
+        <div key={h.id} className="flex gap-2 py-1.5 border-b border-border last:border-b-0">
+          <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px]">
+              {h.old_level && h.new_level && h.old_level !== h.new_level && <span>Niveau: {h.old_level} → <strong>{h.new_level}</strong> · </span>}
+              {h.old_status && h.new_status && h.old_status !== h.new_status && <span>Statut: {h.old_status} → <strong>{h.new_status}</strong> · </span>}
+              {h.note && <span>{h.note}</span>}
+            </div>
+            <div className="text-[10px] text-muted-foreground">{h.changed_by_name} · {new Date(h.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: risks = [], isLoading } = useRisks();
@@ -70,12 +96,14 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const createRisk = useCreateRisk();
   const updateRisk = useUpdateRisk();
   const deleteRisk = useDeleteRisk();
+  const createTask = useCreateTask();
 
   const canWrite = CAN_WRITE.includes(myRole ?? '');
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [detailRiskId, setDetailRiskId] = useState<string | null>(null);
   const [form, setForm] = useState<RiskForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -258,6 +286,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 <div className="flex flex-col items-end gap-1">
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${rStatus.bg} ${rStatus.text}`}>{rStatus.label}</span>
                   <span className="text-[10px] text-muted-foreground">P{String(rAny.probability)}×I{String(rAny.impact)} = <strong>{riskScore}</strong></span>
+                  <button onClick={() => setDetailRiskId(r.id)} className="text-[9.5px] text-accent hover:underline">Historique</button>
                 </div>
                 {canWrite && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -268,7 +297,53 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
               </div>
             );
           })}
-        </div>
+      </div>
+
+      {/* Risk Detail / History Panel */}
+      {detailRiskId && (() => {
+        const risk = searchedRisks.find(r => r.id === detailRiskId);
+        if (!risk) return null;
+        const rAny = risk as Record<string, unknown>;
+        return (
+          <div className="bg-card border border-border rounded-lg p-5 mt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-[15.5px] font-semibold text-primary flex items-center gap-2">
+                <History className="w-4 h-4" /> Historique — {risk.title}
+              </h3>
+              <div className="flex gap-2">
+                {canWrite && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-[11px]"
+                    onClick={() => {
+                      createTask.mutate({
+                        title: `Mitigation: ${risk.title}`,
+                        priority: risk.level === 'high' ? 'high' : 'med',
+                        status: 'open',
+                        country_id: risk.country_id || null,
+                        country_label: risk.country_label || null,
+                        milestone_id: null,
+                        due_date: (rAny.review_date as string) || null,
+                        owner_name: (rAny.owner_name as string) || null,
+                        assigned_to: null,
+                        created_by: null,
+                      }, {
+                        onSuccess: () => toast.success('Tâche de mitigation créée'),
+                        onError: (err: Error) => toast.error(err.message),
+                      });
+                    }}
+                  >
+                    <ShieldPlus className="w-3.5 h-3.5" /> Créer tâche de mitigation
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" className="text-[11px]" onClick={() => setDetailRiskId(null)}>Fermer</Button>
+              </div>
+            </div>
+            <RiskHistoryPanel riskId={detailRiskId} riskTitle={risk.title} />
+          </div>
+        );
+      })()}
 
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Matrice Probabilité × Impact</h3>

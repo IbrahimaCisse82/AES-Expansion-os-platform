@@ -6,6 +6,7 @@ import PhaseChecklist from '@/components/country/PhaseChecklist';
 import CountryDocuments from '@/components/country/CountryDocuments';
 import CountryMembers from '@/components/country/CountryMembers';
 import CountryKpiCharts from '@/components/country/CountryKpiCharts';
+import CountryNotes from '@/components/country/CountryNotes';
 import { computeMarketScore, getScoreColor, getScoreLabel } from '@/lib/marketScoring';
 import { useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/hooks/useMilestoneMutations';
@@ -212,6 +213,9 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
 
         {/* KPI Charts inline */}
         <CountryKpiCharts countryId={countryId} />
+
+        {/* Journal de Bord */}
+        <CountryNotes countryId={countryId} canWrite={canWrite} />
 
         {/* KPIs snapshot */}
         <div className="bg-card border border-border rounded-lg p-5 col-span-2">

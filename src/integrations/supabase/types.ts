@@ -1201,6 +1201,39 @@ export type Database = {
         }
         Relationships: []
       }
+      country_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          content: string
+          country_id: string
+          created_at: string
+          id: string
+          note_type: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          content: string
+          country_id: string
+          created_at?: string
+          id?: string
+          note_type?: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          content?: string
+          country_id?: string
+          created_at?: string
+          id?: string
+          note_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
