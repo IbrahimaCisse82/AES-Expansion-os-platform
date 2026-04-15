@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRisks, useCountries } from '@/hooks/useExpansionData';
 import { useCreateRisk, useUpdateRisk, useDeleteRisk } from '@/hooks/useRiskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +23,13 @@ const levelConfig: Record<string, { bg: string; text: string; bar: string; label
   low: { bg: 'bg-accent/10', text: 'text-accent', bar: 'bg-accent', label: 'Faible' },
 };
 
+const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
+  open: { label: 'Ouvert', bg: 'bg-destructive/10', text: 'text-destructive' },
+  mitigating: { label: 'En mitigation', bg: 'bg-[hsl(var(--gold))]/10', text: 'text-[hsl(var(--gold))]' },
+  mitigated: { label: 'Mitigé', bg: 'bg-[hsl(var(--sky))]/10', text: 'text-[hsl(var(--sky))]' },
+  closed: { label: 'Fermé', bg: 'bg-accent/10', text: 'text-accent' },
+};
+
 const riskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
   description: z.string().max(1000).optional(),
@@ -29,12 +38,19 @@ const riskSchema = z.object({
   category: z.string().max(100).optional(),
   country_id: z.string().optional(),
   country_label: z.string().optional(),
+  probability: z.number().min(1).max(5),
+  impact: z.number().min(1).max(5),
+  risk_status: z.string(),
+  owner_name: z.string().max(100).optional(),
+  review_date: z.string().optional(),
+  estimated_cost: z.number().min(0).optional(),
 });
 
 type RiskForm = z.infer<typeof riskSchema>;
 
 const EMPTY_FORM: RiskForm = {
   title: '', description: '', mitigation: '', level: 'medium', category: '', country_id: '', country_label: '',
+  probability: 3, impact: 3, risk_status: 'open', owner_name: '', review_date: '', estimated_cost: 0,
 };
 
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
@@ -43,6 +59,14 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const { data: myRole } = useCurrentUserRole();
   const { data: risks = [], isLoading } = useRisks();
   const { data: countries = [] } = useCountries();
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('profiles').select('user_id, full_name');
+      if (error) throw error;
+      return data;
+    },
+  });
   const createRisk = useCreateRisk();
   const updateRisk = useUpdateRisk();
   const deleteRisk = useDeleteRisk();
@@ -54,22 +78,28 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<RiskForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
   }, [addSignal]);
 
-  const searchedRisks = searchQuery ? risks.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) || r.category?.toLowerCase().includes(searchQuery.toLowerCase())) : risks;
-  const highCount = searchedRisks.filter(r => r.level === 'high').length;
-  const medCount = searchedRisks.filter(r => r.level === 'medium').length;
-  const lowCount = searchedRisks.filter(r => r.level === 'low').length;
+  const searchedRisks = (searchQuery ? risks.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.country_label?.toLowerCase().includes(searchQuery.toLowerCase()) || r.category?.toLowerCase().includes(searchQuery.toLowerCase())) : risks)
+    .filter(r => statusFilter === 'all' || (r as Record<string, unknown>).risk_status === statusFilter);
 
   const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
 
   const openEdit = (r: typeof risks[0]) => {
+    const rAny = r as Record<string, unknown>;
     setForm({
       title: r.title, description: r.description ?? '', mitigation: r.mitigation ?? '',
       level: r.level, category: r.category ?? '', country_id: r.country_id ?? '', country_label: r.country_label ?? '',
+      probability: (rAny.probability as number) ?? 3,
+      impact: (rAny.impact as number) ?? 3,
+      risk_status: (rAny.risk_status as string) ?? 'open',
+      owner_name: (rAny.owner_name as string) ?? '',
+      review_date: (rAny.review_date as string) ?? '',
+      estimated_cost: (rAny.estimated_cost as number) ?? 0,
     });
     setEditingId(r.id);
     setErrors({});
@@ -97,6 +127,12 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
       category: result.data.category || null,
       country_id: result.data.country_id || null,
       country_label: result.data.country_label || null,
+      probability: result.data.probability,
+      impact: result.data.impact,
+      risk_status: result.data.risk_status,
+      owner_name: result.data.owner_name || null,
+      review_date: result.data.review_date || null,
+      estimated_cost: result.data.estimated_cost || 0,
     };
     if (editingId) {
       updateRisk.mutate({ id: editingId, ...payload }, {
@@ -108,15 +144,13 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
         onSuccess: (data) => {
           toast.success('Risque créé');
           setDialogOpen(false);
-          // Email admins for high-level risks
           if (payload.level === 'high') {
-            const levelLabels: Record<string, string> = { high: 'Élevé', medium: 'Moyen', low: 'Faible' };
             notifyAdminsViaEmail({
               templateName: 'risk-alert',
               idempotencyKey: `risk-alert-${data?.id || crypto.randomUUID()}`,
               templateData: {
                 riskTitle: payload.title,
-                level: levelLabels[payload.level] || payload.level,
+                level: 'Élevé',
                 countryName: payload.country_label || '',
                 description: payload.description || '',
                 category: payload.category || '',
@@ -138,19 +172,39 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   };
 
   const handleExportCSV = () => {
-    const dataToExport = searchedRisks.map(r => ({
-      'Titre': r.title,
-      'Niveau': levelConfig[r.level]?.label || r.level,
-      'Catégorie': r.category || '',
-      'Marché': r.country_label || '',
-      'Description': r.description || '',
-      'Mitigation': r.mitigation || '',
-    }));
+    const dataToExport = searchedRisks.map(r => {
+      const rAny = r as Record<string, unknown>;
+      return {
+        'Titre': r.title,
+        'Niveau': levelConfig[r.level]?.label || r.level,
+        'Probabilité': String(rAny.probability ?? 3),
+        'Impact': String(rAny.impact ?? 3),
+        'Score': String(((rAny.probability as number) ?? 3) * ((rAny.impact as number) ?? 3)),
+        'Statut': statusConfig[(rAny.risk_status as string) ?? 'open']?.label || 'Ouvert',
+        'Responsable': (rAny.owner_name as string) || '',
+        'Catégorie': r.category || '',
+        'Marché': r.country_label || '',
+        'Description': r.description || '',
+        'Mitigation': r.mitigation || '',
+        'Coût estimé': String(rAny.estimated_cost ?? 0),
+        'Date revue': (rAny.review_date as string) || '',
+      };
+    });
     exportToCSV(dataToExport, 'risques');
     toast.success('Risques exportés en CSV');
   };
 
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
+
+  // Build real matrix data from probability × impact
+  const matrixData: Record<string, number> = {};
+  searchedRisks.forEach(r => {
+    const rAny = r as Record<string, unknown>;
+    const prob = (rAny.probability as number) ?? 3;
+    const imp = (rAny.impact as number) ?? 3;
+    const key = `${prob}-${imp}`;
+    matrixData[key] = (matrixData[key] || 0) + 1;
+  });
 
   return (
     <div className="animate-page-enter">
@@ -160,6 +214,16 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
           <p className="text-[12.5px] text-muted-foreground">Suivi et priorisation des risques par marché</p>
         </div>
         <div className="flex gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px] h-8 text-[12px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous statuts</SelectItem>
+              <SelectItem value="open">Ouvert</SelectItem>
+              <SelectItem value="mitigating">En mitigation</SelectItem>
+              <SelectItem value="mitigated">Mitigé</SelectItem>
+              <SelectItem value="closed">Fermé</SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12.5px]">
             <Download className="w-4 h-4" /> Exporter
           </Button>
@@ -177,15 +241,24 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
           {searchedRisks.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun risque enregistré</div>}
           {searchedRisks.map(r => {
             const cfg = levelConfig[r.level] || levelConfig.medium;
+            const rAny = r as Record<string, unknown>;
+            const rStatus = statusConfig[(rAny.risk_status as string) ?? 'open'] || statusConfig.open;
+            const riskScore = ((rAny.probability as number) ?? 3) * ((rAny.impact as number) ?? 3);
             return (
               <div key={r.id} className="flex items-center gap-3 py-3 border-b border-border last:border-b-0 group">
                 <div className={`w-[5px] h-[34px] rounded-sm flex-shrink-0 ${cfg.bar}`} />
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-medium">{r.title}</div>
-                  <div className="text-[11.5px] text-muted-foreground">{r.country_label} · {r.category}</div>
-                  {r.description && <div className="text-[11px] text-muted-foreground mt-0.5">{r.description}</div>}
+                  <div className="text-[11.5px] text-muted-foreground">
+                    {r.country_label}{r.category ? ` · ${r.category}` : ''}
+                    {(rAny.owner_name as string) ? ` · 👤 ${rAny.owner_name}` : ''}
+                  </div>
+                  {r.description && <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{r.description}</div>}
                 </div>
-                <span className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${rStatus.bg} ${rStatus.text}`}>{rStatus.label}</span>
+                  <span className="text-[10px] text-muted-foreground">P{rAny.probability}×I{rAny.impact} = <strong>{riskScore}</strong></span>
+                </div>
                 {canWrite && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(r)} className="p-1 rounded hover:bg-muted transition-colors"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>
@@ -198,25 +271,31 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
         </div>
 
         <div className="bg-card border border-border rounded-lg p-5">
-          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Matrice Impact / Probabilité</h3>
-          <div className="space-y-1.5">
-            {['ÉLEVÉ', 'MOYEN', 'FAIBLE'].map((level, row) => (
-              <div key={level} className="grid grid-cols-[44px_1fr_1fr_1fr] gap-1.5 items-center">
-                <div className="text-[9.5px] font-bold text-muted-foreground text-right pr-1.5">{level}</div>
-                {[0, 1, 2].map(col => {
-                  const bgColor = row === 0 ? 'bg-destructive/10' : row === 1 ? (col === 0 ? 'bg-accent/10' : 'bg-[hsl(var(--gold))]/10') : 'bg-accent/10';
-                  const showVal = (row === 0 && col === 0) ? highCount : (row === 1 && col === 1) ? medCount : (row === 2 && col === 0) ? lowCount : 0;
-                  const textCol = row === 0 ? 'text-destructive' : row === 1 ? 'text-[hsl(var(--gold))]' : 'text-accent';
+          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Matrice Probabilité × Impact</h3>
+          <div className="space-y-1">
+            {[5, 4, 3, 2, 1].map(prob => (
+              <div key={prob} className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr] gap-1 items-center">
+                <div className="text-[9.5px] font-bold text-muted-foreground text-right pr-1">{prob}</div>
+                {[1, 2, 3, 4, 5].map(imp => {
+                  const score = prob * imp;
+                  const count = matrixData[`${prob}-${imp}`] || 0;
+                  const bg = score >= 15 ? 'bg-destructive/15' : score >= 8 ? 'bg-[hsl(var(--gold))]/15' : 'bg-accent/10';
+                  const textCol = score >= 15 ? 'text-destructive' : score >= 8 ? 'text-[hsl(var(--gold))]' : 'text-accent';
                   return (
-                    <div key={col} className={`h-[60px] ${bgColor} rounded-md flex items-center justify-center`}>
-                      {showVal > 0 && <span className={`text-[11px] font-bold ${textCol}`}>{showVal}</span>}
+                    <div key={imp} className={`h-[44px] ${bg} rounded-md flex items-center justify-center`}>
+                      {count > 0 && <span className={`text-[11px] font-bold ${textCol}`}>{count}</span>}
                     </div>
                   );
                 })}
               </div>
             ))}
-            <div className="grid grid-cols-[44px_1fr_1fr_1fr] gap-1.5 mt-1">
-              <div />{['FAIBLE', 'MOYEN', 'ÉLEVÉ'].map(l => <div key={l} className="text-[9.5px] font-bold text-muted-foreground text-center">{l}</div>)}
+            <div className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr] gap-1 mt-1">
+              <div />
+              {[1, 2, 3, 4, 5].map(i => <div key={i} className="text-[9.5px] font-bold text-muted-foreground text-center">{i}</div>)}
+            </div>
+            <div className="flex justify-between text-[9px] text-muted-foreground mt-1 px-8">
+              <span>← Probabilité (vertical)</span>
+              <span>Impact (horizontal) →</span>
             </div>
           </div>
         </div>
@@ -224,7 +303,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-lg">{editingId ? 'Modifier le risque' : 'Nouveau risque'}</DialogTitle>
           </DialogHeader>
@@ -247,6 +326,40 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 </Select>
               </div>
               <div>
+                <Label className="text-[12.5px]">Statut</Label>
+                <Select value={form.risk_status} onValueChange={v => setForm(p => ({ ...p, risk_status: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">Ouvert</SelectItem>
+                    <SelectItem value="mitigating">En mitigation</SelectItem>
+                    <SelectItem value="mitigated">Mitigé</SelectItem>
+                    <SelectItem value="closed">Fermé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-[12.5px]">Probabilité (1-5)</Label>
+                <Select value={String(form.probability)} onValueChange={v => setForm(p => ({ ...p, probability: Number(v) }))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)}>{n} — {['Rare', 'Peu probable', 'Possible', 'Probable', 'Quasi certain'][n - 1]}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[12.5px]">Impact (1-5)</Label>
+                <Select value={String(form.impact)} onValueChange={v => setForm(p => ({ ...p, impact: Number(v) }))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)}>{n} — {['Négligeable', 'Mineur', 'Modéré', 'Majeur', 'Critique'][n - 1]}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
                 <Label className="text-[12.5px]">Marché</Label>
                 <Select value={form.country_id || '_none'} onValueChange={v => handleCountryChange(v === '_none' ? '' : v)}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
@@ -256,10 +369,30 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label className="text-[12.5px]">Responsable</Label>
+                <Select value={form.owner_name || '_none'} onValueChange={v => setForm(p => ({ ...p, owner_name: v === '_none' ? '' : v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">Aucun</SelectItem>
+                    {profiles.map(p => <SelectItem key={p.user_id} value={p.full_name}>{p.full_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-[12.5px]">Catégorie</Label>
+                <Input value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} maxLength={100} placeholder="Réglementaire…" className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-[12.5px]">Date de revue</Label>
+                <Input type="date" value={form.review_date} onChange={e => setForm(p => ({ ...p, review_date: e.target.value }))} className="mt-1" />
+              </div>
             </div>
             <div>
-              <Label className="text-[12.5px]">Catégorie</Label>
-              <Input value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} maxLength={100} placeholder="Réglementaire, Opérationnel…" className="mt-1" />
+              <Label className="text-[12.5px]">Coût estimé (FCFA)</Label>
+              <Input type="number" min={0} value={form.estimated_cost} onChange={e => setForm(p => ({ ...p, estimated_cost: Number(e.target.value) }))} className="mt-1" />
             </div>
             <div>
               <Label className="text-[12.5px]">Description</Label>
