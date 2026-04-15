@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
 import StatusPill from '@/components/StatusPill';
 import PhaseChecklist from '@/components/country/PhaseChecklist';
+import CountryDocuments from '@/components/country/CountryDocuments';
+import CountryMembers from '@/components/country/CountryMembers';
+import CountryKpiCharts from '@/components/country/CountryKpiCharts';
 import { computeMarketScore, getScoreColor, getScoreLabel } from '@/lib/marketScoring';
 import { useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/hooks/useMilestoneMutations';
@@ -59,14 +62,10 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
   const colorMap: Record<string, string> = { sage: 'text-sage', sky: 'text-sky', gold: 'text-gold', terracotta: 'text-terracotta', plum: 'text-plum' };
 
   const openCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setErrors({}); setDialogOpen(true); };
-
   const openEdit = (m: typeof milestones[0]) => {
     setForm({ title: m.title, icon: m.icon, start_date: m.start_date ?? '', end_date: m.end_date ?? '' });
-    setEditingId(m.id);
-    setErrors({});
-    setDialogOpen(true);
+    setEditingId(m.id); setErrors({}); setDialogOpen(true);
   };
-
   const toggleDone = (m: typeof milestones[0]) => {
     if (!canWrite) return;
     updateMilestone.mutate({ id: m.id, is_done: !m.is_done, country_id: countryId });
@@ -77,16 +76,12 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
     if (!result.success) {
       const fe: Record<string, string> = {};
       result.error.errors.forEach(e => { fe[e.path[0] as string] = e.message; });
-      setErrors(fe);
-      return;
+      setErrors(fe); return;
     }
     const payload = {
-      title: result.data.title,
-      icon: result.data.icon || '📌',
-      target_date: result.data.end_date || null,
-      start_date: result.data.start_date || null,
-      end_date: result.data.end_date || null,
-      country_id: countryId,
+      title: result.data.title, icon: result.data.icon || '📌',
+      target_date: result.data.end_date || null, start_date: result.data.start_date || null,
+      end_date: result.data.end_date || null, country_id: countryId,
     };
     if (editingId) {
       updateMilestone.mutate({ id: editingId, ...payload }, {
@@ -123,6 +118,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
         <StatusPill status={country.status} />
       </div>
 
+      {/* Phase Progress */}
       <div className="flex items-center gap-0 mb-6">
         {phaseNames.map((phase, i) => (
           <div key={i} className="flex items-center flex-1">
@@ -137,6 +133,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
+        {/* Informations */}
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Informations</h3>
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -150,6 +147,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
           <div className="bg-muted rounded-lg p-3.5 text-[13px] leading-relaxed">{country.description}</div>
         </div>
 
+        {/* Milestones */}
         <div className="bg-card border border-border rounded-lg p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-[15.5px] font-semibold text-primary">Jalons clés</h3>
@@ -162,19 +160,14 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
           {milestones.length === 0 && <div className="text-sm text-muted-foreground py-4 text-center">Aucun jalon</div>}
           {milestones.map(m => (
             <div key={m.id} className="flex gap-3 py-3 border-b border-border last:border-b-0 group">
-              <div
-                onClick={() => toggleDone(m)}
-                className={`w-5 h-5 mt-0.5 border-2 rounded flex-shrink-0 flex items-center justify-center transition-colors ${canWrite ? 'cursor-pointer' : ''} ${m.is_done ? 'bg-accent border-accent' : 'border-border hover:border-accent'}`}
-              >
+              <div onClick={() => toggleDone(m)} className={`w-5 h-5 mt-0.5 border-2 rounded flex-shrink-0 flex items-center justify-center transition-colors ${canWrite ? 'cursor-pointer' : ''} ${m.is_done ? 'bg-accent border-accent' : 'border-border hover:border-accent'}`}>
                 {m.is_done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent-foreground" strokeWidth="3"><polyline points="20,6 9,17 4,12" /></svg>}
               </div>
               <span className="text-lg w-7 text-center flex-shrink-0">{m.icon}</span>
               <div className="flex-1">
                 <div className={`text-[13px] font-medium ${m.is_done ? 'line-through text-muted-foreground' : ''}`}>{m.title}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {m.start_date && m.end_date
-                    ? `${m.start_date} → ${m.end_date}`
-                    : m.end_date || m.start_date || m.target_date}
+                  {m.start_date && m.end_date ? `${m.start_date} → ${m.end_date}` : m.end_date || m.start_date || m.target_date}
                 </div>
               </div>
               <StatusPill status={m.is_done ? 'done' : 'planning'} />
@@ -191,6 +184,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
         {/* Phase Checklist */}
         <PhaseChecklist countryId={countryId} phase={country.phase} canWrite={canWrite} />
 
+        {/* Market Score */}
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Scoring Marché</h3>
           {(() => {
@@ -209,6 +203,16 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
           })()}
         </div>
 
+        {/* Documents */}
+        <CountryDocuments countryId={countryId} canWrite={canWrite} />
+
+        {/* Team Members */}
+        <CountryMembers countryId={countryId} canWrite={canWrite} />
+
+        {/* KPI Charts inline */}
+        <CountryKpiCharts countryId={countryId} />
+
+        {/* KPIs snapshot */}
         <div className="bg-card border border-border rounded-lg p-5 col-span-2">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">KPIs</h3>
           <div className="grid grid-cols-4 gap-3">
