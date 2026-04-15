@@ -118,13 +118,23 @@ export default function HistoryPage({ searchQuery = '' }: { searchQuery?: string
         <div className="bg-card border border-border rounded-lg p-5">
           {paginated.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">Aucune activité trouvée</p>
-          ) : paginated.map(item => (
+          ) : paginated.map(item => {
+            // Parse diff from action text
+            const diffMatch = item.action.match(/(.+?) de (.+?) à (.+)/);
+            return (
             <div key={item.id} className="flex gap-3 py-2.5 border-b border-border last:border-b-0">
               <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColors[item.color || 'navy'] || 'bg-muted'}`} />
               <div className="flex-1">
                 <div className="text-[12.5px] leading-relaxed">
                   <span className="font-medium">{item.user_name}</span> {item.action}
                 </div>
+                {diffMatch && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive line-through">{diffMatch[2]}</span>
+                    <span className="text-[10px] text-muted-foreground">→</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-medium">{diffMatch[3]}</span>
+                  </div>
+                )}
                 <div className="flex gap-2 items-center mt-0.5">
                   <span className="text-[11px] text-muted-foreground">
                     {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -137,7 +147,8 @@ export default function HistoryPage({ searchQuery = '' }: { searchQuery?: string
                 </div>
               </div>
             </div>
-          ))}
+          );
+          })}
 
           {/* Pagination */}
           {totalPages > 1 && (

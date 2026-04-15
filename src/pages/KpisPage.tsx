@@ -487,6 +487,9 @@ export default function KpisPage() {
         </div>
       )}
 
+      {/* Custom KPIs */}
+      {canEdit && <CustomKpiSection />}
+
       {/* History table */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         <div className="p-4 border-b border-border">
