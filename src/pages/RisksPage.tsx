@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRisks, useCountries } from '@/hooks/useExpansionData';
 import { useCreateRisk, useUpdateRisk, useDeleteRisk } from '@/hooks/useRiskMutations';
+import { useCreateTask } from '@/hooks/useTaskMutations';
+import { useRiskHistory } from '@/hooks/useRiskHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, History, ShieldPlus } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 import { z } from 'zod';
