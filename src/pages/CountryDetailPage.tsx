@@ -40,9 +40,8 @@ interface CountryDetailPageProps {
 
 export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
   const { countryId } = useParams<{ countryId: string }>();
-  if (!countryId) return null;
   const { data: countries = [] } = useCountries();
-  const { data: milestones = [] } = useMilestones(countryId);
+  const { data: milestones = [] } = useMilestones(countryId ?? undefined);
   const { data: myRole } = useCurrentUserRole();
   const createMilestone = useCreateMilestone();
   const updateMilestone = useUpdateMilestone();
@@ -56,6 +55,8 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<MilestoneForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  if (!countryId) return null;
 
   if (!country) return null;
 
