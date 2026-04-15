@@ -30,6 +30,7 @@ const taskSchema = z.object({
   due_date: z.string().optional(),
   owner_name: z.string().max(100).optional(),
   assigned_to: z.string().optional(),
+  recurrence: z.enum(['none', 'daily', 'weekly', 'biweekly', 'monthly']).optional(),
 });
 
 type TaskForm = z.infer<typeof taskSchema>;
@@ -44,7 +45,16 @@ const EMPTY_FORM: TaskForm = {
   country_id: '',
   country_label: '',
   milestone_id: '',
+  recurrence: 'none',
 };
+
+const RECURRENCE_OPTIONS = [
+  { value: 'none', label: 'Aucune' },
+  { value: 'daily', label: 'Quotidienne' },
+  { value: 'weekly', label: 'Hebdomadaire' },
+  { value: 'biweekly', label: 'Bi-hebdomadaire' },
+  { value: 'monthly', label: 'Mensuelle' },
+];
 
 const CAN_WRITE_ROLES = ['admin', 'director', 'country_manager'];
 
@@ -118,6 +128,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
       milestone_id: task.milestone_id ?? '',
+      recurrence: (task as any).recurrence || 'none',
     });
     setEditingId(task.id);
     setErrors({});
