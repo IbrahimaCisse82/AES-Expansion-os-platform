@@ -346,19 +346,41 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
       })()}
 
         <div className="bg-card border border-border rounded-lg p-5">
-          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Matrice Probabilité × Impact</h3>
+          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Heat Map — Probabilité × Impact</h3>
           <div className="space-y-1">
             {[5, 4, 3, 2, 1].map(prob => (
               <div key={prob} className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr] gap-1 items-center">
-                <div className="text-[9.5px] font-bold text-muted-foreground text-right pr-1">{prob}</div>
+                <div className="text-[9.5px] font-bold text-muted-foreground text-right pr-1">P{prob}</div>
                 {[1, 2, 3, 4, 5].map(imp => {
                   const score = prob * imp;
                   const count = matrixData[`${prob}-${imp}`] || 0;
-                  const bg = score >= 15 ? 'bg-destructive/15' : score >= 8 ? 'bg-[hsl(var(--gold))]/15' : 'bg-accent/10';
+                  const risksHere = searchedRisks.filter(r => {
+                    const ra = r as Record<string, unknown>;
+                    return ((ra.probability as number) ?? 3) === prob && ((ra.impact as number) ?? 3) === imp;
+                  });
+                  const bg = score >= 20 ? 'bg-destructive/30' : score >= 15 ? 'bg-destructive/20' : score >= 10 ? 'bg-[hsl(var(--gold))]/25' : score >= 5 ? 'bg-[hsl(var(--gold))]/10' : 'bg-accent/10';
                   const textCol = score >= 15 ? 'text-destructive' : score >= 8 ? 'text-[hsl(var(--gold))]' : 'text-accent';
                   return (
-                    <div key={imp} className={`h-[44px] ${bg} rounded-md flex items-center justify-center`}>
-                      {count > 0 && <span className={`text-[11px] font-bold ${textCol}`}>{count}</span>}
+                    <div
+                      key={imp}
+                      className={`h-[52px] ${bg} rounded-md flex flex-col items-center justify-center cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all relative group`}
+                      title={risksHere.map(r => r.title).join('\n') || `P${prob} × I${imp} = ${score}`}
+                    >
+                      {count > 0 ? (
+                        <>
+                          <span className={`text-[13px] font-bold ${textCol}`}>{count}</span>
+                          <span className="text-[7px] text-muted-foreground">score {score}</span>
+                          {/* Tooltip on hover */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-card border border-border rounded-md p-2 shadow-lg hidden group-hover:block z-20 w-[160px]">
+                            {risksHere.slice(0, 3).map(r => (
+                              <div key={r.id} className="text-[9px] text-foreground truncate">• {r.title}</div>
+                            ))}
+                            {risksHere.length > 3 && <div className="text-[8px] text-muted-foreground">+{risksHere.length - 3} autres</div>}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-[8px] text-muted-foreground/50">{score}</span>
+                      )}
                     </div>
                   );
                 })}
@@ -366,11 +388,23 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
             ))}
             <div className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr] gap-1 mt-1">
               <div />
-              {[1, 2, 3, 4, 5].map(i => <div key={i} className="text-[9.5px] font-bold text-muted-foreground text-center">{i}</div>)}
+              {[1, 2, 3, 4, 5].map(i => <div key={i} className="text-[9.5px] font-bold text-muted-foreground text-center">I{i}</div>)}
             </div>
-            <div className="flex justify-between text-[9px] text-muted-foreground mt-1 px-8">
-              <span>← Probabilité (vertical)</span>
-              <span>Impact (horizontal) →</span>
+            <div className="flex justify-between text-[9px] text-muted-foreground mt-2 px-8">
+              <span>↑ Probabilité</span>
+              <span>Impact →</span>
+            </div>
+            {/* Legend */}
+            <div className="flex gap-3 mt-3 justify-center">
+              {[
+                { label: 'Critique (15-25)', bg: 'bg-destructive/25' },
+                { label: 'Élevé (8-14)', bg: 'bg-[hsl(var(--gold))]/20' },
+                { label: 'Faible (1-7)', bg: 'bg-accent/10' },
+              ].map(l => (
+                <div key={l.label} className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+                  <div className={`w-3 h-3 rounded ${l.bg}`} />{l.label}
+                </div>
+              ))}
             </div>
           </div>
         </div>

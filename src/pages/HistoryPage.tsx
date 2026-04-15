@@ -3,7 +3,7 @@ import { useActivityLog, useTasks } from '@/hooks/useExpansionData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
 const dotColors: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]', navy: 'bg-primary' };
 
@@ -94,6 +94,23 @@ export default function HistoryPage({ searchQuery = '' }: { searchQuery?: string
             Réinitialiser
           </Button>
         )}
+        <Button variant="outline" size="sm" className="text-[11px] h-8 gap-1" onClick={() => {
+          const csvData = filtered.map(a => ({
+            'Date': new Date(a.created_at).toLocaleString('fr-FR'),
+            'Utilisateur': a.user_name || '',
+            'Action': a.action,
+            'Type': ENTITY_TYPES.find(et => et.value === a.entity_type)?.label?.replace(/^[^\s]+ /, '') || a.entity_type || '',
+          }));
+          const headers = Object.keys(csvData[0] || {});
+          const csv = [headers.join(','), ...csvData.map(row => headers.map(h => `"${(row as Record<string, string>)[h] || ''}"`).join(','))].join('\n');
+          const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `historique_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+          URL.revokeObjectURL(url);
+        }}>
+          <Download className="w-3.5 h-3.5" /> Exporter CSV
+        </Button>
         <span className="text-[11px] text-muted-foreground self-center ml-auto">{filtered.length} résultat(s)</span>
       </div>
 
