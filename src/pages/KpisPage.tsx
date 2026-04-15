@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
 const EDITABLE_ROLES = ['admin', 'director', 'analyst'];
 
@@ -132,6 +133,33 @@ export default function KpisPage() {
       const country = countries.find(c => c.id === editRow.country_id);
       logActivity({ action: `a ${editRow.isNew ? 'ajouté' : 'modifié'} les KPIs ${editRow.month} pour ${country?.name ?? editRow.country_id}`, entityType: 'kpi_history', entityId: editRow.country_id, marketFlag: country?.flag });
       toast.success(editRow.isNew ? 'KPI ajouté' : 'KPI mis à jour');
+
+      // Check KPI alerts and send email notifications
+      const ALERT_THRESHOLD = 0.8;
+      const metrics = [
+        { key: 'ca', label: 'CA Mensuel', actual: editRow.ca ?? 0, target: editRow.target_ca ?? 0 },
+        { key: 'clients', label: 'Clients Actifs', actual: editRow.clients ?? 0, target: editRow.target_clients ?? 0 },
+        { key: 'nps', label: 'NPS Score', actual: editRow.nps ?? 0, target: editRow.target_nps ?? 0 },
+        { key: 'retention', label: 'Rétention', actual: editRow.retention ?? 0, target: editRow.target_retention ?? 0 },
+      ];
+      for (const m of metrics) {
+        if (m.target > 0 && m.actual < m.target * ALERT_THRESHOLD) {
+          const pct = Math.round((m.actual / m.target) * 100);
+          notifyAdminsViaEmail({
+            templateName: 'kpi-alert',
+            idempotencyKey: `kpi-alert-${editRow.country_id}-${editRow.month}-${m.key}`,
+            templateData: {
+              countryName: country?.name ?? editRow.country_id,
+              month: editRow.month,
+              metric: m.label,
+              actual: m.key === 'ca' ? `${m.actual.toLocaleString('fr-FR')} FCFA` : String(m.actual),
+              target: m.key === 'ca' ? `${m.target.toLocaleString('fr-FR')} FCFA` : String(m.target),
+              percentage: String(pct),
+            },
+          });
+        }
+      }
+
       setEditRow(null);
     } catch {
       toast.error('Erreur lors de la sauvegarde');

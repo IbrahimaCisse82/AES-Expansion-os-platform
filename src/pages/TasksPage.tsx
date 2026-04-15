@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { z } from 'zod';
 import { exportToCSV } from '@/lib/csvExport';
+import { sendNotificationEmail, notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
@@ -158,7 +159,26 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       });
     } else {
       createTask.mutate({ ...payload, created_by: user?.id ?? null }, {
-        onSuccess: () => { toast.success('Tâche créée'); setDialogOpen(false); },
+        onSuccess: (data) => {
+          toast.success('Tâche créée');
+          setDialogOpen(false);
+          // Send email to assigned user
+          if (payload.assigned_to) {
+            const priorityLabels: Record<string, string> = { high: 'Haute', med: 'Moyenne', low: 'Basse' };
+            sendNotificationEmail({
+              templateName: 'task-assigned',
+              recipientEmail: `__user__:${payload.assigned_to}`,
+              idempotencyKey: `task-assigned-${data?.id || crypto.randomUUID()}`,
+              templateData: {
+                taskTitle: payload.title,
+                countryName: payload.country_label || '',
+                priority: priorityLabels[payload.priority] || payload.priority,
+                dueDate: payload.due_date || '',
+                assignedBy: user?.user_metadata?.full_name || user?.email || '',
+              },
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       });
     }
@@ -175,7 +195,23 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const toggleDone = (task: typeof tasks[0]) => {
     if (!canWrite) return;
     const newStatus = task.status === 'done' ? 'open' : 'done';
-    updateTask.mutate({ id: task.id, status: newStatus });
+    updateTask.mutate({ id: task.id, status: newStatus }, {
+      onSuccess: () => {
+        // When task becomes late, notify admins
+        if (newStatus === 'late') {
+          notifyAdminsViaEmail({
+            templateName: 'task-overdue',
+            idempotencyKey: `task-overdue-${task.id}`,
+            templateData: {
+              taskTitle: task.title,
+              countryName: task.country_label || '',
+              dueDate: task.due_date || '',
+              assigneeName: task.owner_name || '',
+            },
+          });
+        }
+      },
+    });
   };
 
   const handleExportCSV = () => {

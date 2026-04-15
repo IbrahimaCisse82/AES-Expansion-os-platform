@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Download } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
+import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 import { z } from 'zod';
 
 const levelConfig: Record<string, { bg: string; text: string; bar: string; label: string }> = {
@@ -104,7 +105,25 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
       });
     } else {
       createRisk.mutate(payload, {
-        onSuccess: () => { toast.success('Risque créé'); setDialogOpen(false); },
+        onSuccess: (data) => {
+          toast.success('Risque créé');
+          setDialogOpen(false);
+          // Email admins for high-level risks
+          if (payload.level === 'high') {
+            const levelLabels: Record<string, string> = { high: 'Élevé', medium: 'Moyen', low: 'Faible' };
+            notifyAdminsViaEmail({
+              templateName: 'risk-alert',
+              idempotencyKey: `risk-alert-${data?.id || crypto.randomUUID()}`,
+              templateData: {
+                riskTitle: payload.title,
+                level: levelLabels[payload.level] || payload.level,
+                countryName: payload.country_label || '',
+                description: payload.description || '',
+                category: payload.category || '',
+              },
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       });
     }
