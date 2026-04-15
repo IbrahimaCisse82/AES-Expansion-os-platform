@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useKpiHistory, useUpsertKpiHistory, useDeleteKpiHistory, type KpiHistoryEntry } from '@/hooks/useKpiHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useAppSetting } from '@/hooks/useAppSettings';
 import { logActivity } from '@/hooks/useActivityLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -9,8 +10,6 @@ import { Input } from '@/components/ui/input';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-
-const ALERT_THRESHOLD = 0.8; // 80%
 const KPI_LABELS: Record<string, string> = { ca: 'CA', clients: 'Clients', nps: 'NPS', retention: 'Rétention' };
 
 interface KpiAlert {
@@ -43,6 +42,8 @@ export default function KpisPage() {
   const { data: countries = [], isLoading: loadingCountries } = useCountries();
   const { data: role } = useCurrentUserRole();
   const canEdit = EDITABLE_ROLES.includes(role ?? '');
+  const { data: thresholdStr } = useAppSetting('kpi_alert_threshold');
+  const ALERT_THRESHOLD = (Number(thresholdStr) || 80) / 100;
 
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const countryId = selectedCountry === 'all' ? undefined : selectedCountry;
