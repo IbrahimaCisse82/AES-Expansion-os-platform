@@ -302,6 +302,21 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
         const mentions = extractMentions(trimmed, allUsers.map((u: any) => ({ user_id: u.user_id, full_name: u.full_name })));
         if (mentions.length > 0 && data?.id) {
           await supabase.from('comment_mentions').insert(mentions.map(m => ({ comment_id: data.id, mentioned_user_id: m.user_id, mentioned_name: m.full_name })));
+          // Send email notifications for each mention
+          const country = countries.find(c => c.id === marketId);
+          for (const m of mentions) {
+            sendNotificationEmail({
+              templateName: 'mention-notification',
+              recipientEmail: `__user__:${m.user_id}`,
+              idempotencyKey: `mention-${data.id}-${m.user_id}`,
+              templateData: {
+                mentionedName: m.full_name,
+                authorName: fullName,
+                commentExcerpt: trimmed.substring(0, 200),
+                marketName: country ? `${country.flag} ${country.name}` : '',
+              },
+            });
+          }
         }
         if (parentId) { setReplyContent(''); setReplyingTo(null); }
         else { setContent(''); setMarketId(''); }
