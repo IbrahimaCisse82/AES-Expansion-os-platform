@@ -57,6 +57,30 @@ const EMPTY_FORM: RiskForm = {
 
 const CAN_WRITE = ['admin', 'director', 'country_manager'];
 
+// Risk History Panel component
+function RiskHistoryPanel({ riskId, riskTitle }: { riskId: string; riskTitle: string }) {
+  const { data: history = [], isLoading } = useRiskHistory(riskId);
+  if (isLoading) return <p className="text-[11px] text-muted-foreground">Chargement…</p>;
+  if (history.length === 0) return <p className="text-[11px] text-muted-foreground text-center py-2">Aucun historique</p>;
+  return (
+    <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+      {history.map(h => (
+        <div key={h.id} className="flex gap-2 py-1.5 border-b border-border last:border-b-0">
+          <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px]">
+              {h.old_level && h.new_level && h.old_level !== h.new_level && <span>Niveau: {h.old_level} → <strong>{h.new_level}</strong> · </span>}
+              {h.old_status && h.new_status && h.old_status !== h.new_status && <span>Statut: {h.old_status} → <strong>{h.new_status}</strong> · </span>}
+              {h.note && <span>{h.note}</span>}
+            </div>
+            <div className="text-[10px] text-muted-foreground">{h.changed_by_name} · {new Date(h.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
   const { data: risks = [], isLoading } = useRisks();
