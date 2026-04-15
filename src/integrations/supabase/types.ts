@@ -1210,6 +1210,45 @@ export type Database = {
         }
         Relationships: []
       }
+      kpi_history: {
+        Row: {
+          ca: number
+          clients: number
+          country_id: string
+          created_at: string
+          id: string
+          month: string
+          notes: string | null
+          nps: number
+          retention: number
+          updated_at: string
+        }
+        Insert: {
+          ca?: number
+          clients?: number
+          country_id: string
+          created_at?: string
+          id?: string
+          month: string
+          notes?: string | null
+          nps?: number
+          retention?: number
+          updated_at?: string
+        }
+        Update: {
+          ca?: number
+          clients?: number
+          country_id?: string
+          created_at?: string
+          id?: string
+          month?: string
+          notes?: string | null
+          nps?: number
+          retention?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       market_intel_items: {
         Row: {
           amount: string | null
