@@ -14,9 +14,10 @@ interface KpiAlertProps {
   actual?: string
   target?: string
   percentage?: string
+  threshold?: string
 }
 
-const KpiAlertEmail = ({ countryName, month, metric, actual, target, percentage }: KpiAlertProps) => (
+const KpiAlertEmail = ({ countryName, month, metric, actual, target, percentage, threshold }: KpiAlertProps) => (
   <Html lang="fr" dir="ltr">
     <Head />
     <Preview>⚠️ Alerte KPI — {metric || 'Indicateur'} sous le seuil pour {countryName || 'un marché'}</Preview>
@@ -25,7 +26,7 @@ const KpiAlertEmail = ({ countryName, month, metric, actual, target, percentage 
         <Text style={brand}>{SITE_NAME}</Text>
         <Heading style={h1}>⚠️ Alerte KPI</Heading>
         <Text style={text}>
-          Un indicateur de performance est tombé sous le seuil d'alerte pour <strong>{countryName || '—'}</strong> ({month || '—'}).
+          Un indicateur de performance est tombé sous le seuil d'alerte ({threshold || '80'}%) pour <strong>{countryName || '—'}</strong> ({month || '—'}).
         </Text>
         <Section style={alertBox}>
           <Text style={alertLabel}>Indicateur</Text>
@@ -50,7 +51,7 @@ export const template = {
   component: KpiAlertEmail,
   subject: (data: Record<string, any>) => `⚠️ Alerte KPI — ${data.metric || 'Indicateur'} sous le seuil (${data.countryName || ''})`,
   displayName: 'Alerte KPI sous seuil',
-  previewData: { countryName: 'Sénégal', month: '2026-04', metric: 'CA Mensuel', actual: '450 000 FCFA', target: '1 000 000 FCFA', percentage: '45' },
+  previewData: { countryName: 'Sénégal', month: '2026-04', metric: 'CA Mensuel', actual: '450 000 FCFA', target: '1 000 000 FCFA', percentage: '45', threshold: '80' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'DM Sans', Arial, sans-serif" }

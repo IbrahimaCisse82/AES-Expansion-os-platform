@@ -91,6 +91,77 @@ function DataExportSection() {
   );
 }
 
+function KpiAlertThresholdSection() {
+  const { data: settings } = useQuery({
+    queryKey: ['app_settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('app_settings').select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const qc = useQueryClient();
+  const [threshold, setThreshold] = useState('80');
+
+  const currentThreshold = settings?.find(s => s.key === 'kpi_alert_threshold')?.value || '80';
+
+  const updateThreshold = useMutation({
+    mutationFn: async (newValue: string) => {
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'kpi_alert_threshold', value: newValue });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['app_settings'] });
+      toast.success('Seuil d\'alerte KPI mis à jour');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const handleSave = () => {
+    const val = parseInt(threshold);
+    if (isNaN(val) || val < 1 || val > 100) {
+      toast.error('Le seuil doit être entre 1 et 100%');
+      return;
+    }
+    updateThreshold.mutate(threshold);
+  };
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-6">
+      <div className="mb-4">
+        <h3 className="font-display text-[16px] font-semibold text-primary">Seuil d'alerte KPI</h3>
+        <p className="text-[12px] text-muted-foreground">
+          Déclenche une alerte email lorsqu'un KPI tombe sous ce pourcentage de l'objectif
+        </p>
+      </div>
+      <div className="flex items-end gap-3">
+        <div className="flex-1">
+          <Label className="text-[12.5px] mb-1.5 block">Seuil d'alerte (%)</Label>
+          <Input
+            type="number"
+            min="1"
+            max="100"
+            value={threshold}
+            onChange={e => setThreshold(e.target.value)}
+            onFocus={() => setThreshold(currentThreshold)}
+            placeholder={currentThreshold}
+            className="w-full"
+          />
+        </div>
+        <Button onClick={handleSave} disabled={updateThreshold.isPending} size="sm">
+          Enregistrer
+        </Button>
+      </div>
+      <p className="text-[11px] text-muted-foreground mt-2">
+        Valeur actuelle : {currentThreshold}% de l'objectif
+      </p>
+    </div>
+  );
+}
+
 function PlatformInfoSection() {
   return (
     <div className="bg-card border border-border rounded-lg p-6">
@@ -195,6 +266,8 @@ export default function SettingsPage() {
       <p className="text-[12.5px] text-muted-foreground mb-8">Gerez les parametres de votre plateforme</p>
 
       <div className="space-y-6 max-w-xl">
+
+      <KpiAlertThresholdSection />
 
       <DataExportSection />
 
