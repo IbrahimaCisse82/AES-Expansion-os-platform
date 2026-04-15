@@ -388,6 +388,80 @@ export default function TeamPage() {
           </table>
         </div>
       )}
+
+      {/* Workload & Country Assignments */}
+      {(users ?? []).length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+          <div className="bg-card border border-border rounded-lg p-5">
+            <h3 className="font-display text-[15.5px] font-semibold text-primary flex items-center gap-2 mb-4">
+              <BarChart3 className="w-4 h-4" /> Charge de travail
+            </h3>
+            <div className="space-y-2">
+              {(users ?? []).map(u => {
+                const userTasks = tasks.filter(t => t.assigned_to === u.user_id);
+                const openTasks = userTasks.filter(t => t.status !== 'done').length;
+                const doneTasks = userTasks.filter(t => t.status === 'done').length;
+                const lateTasks = userTasks.filter(t => t.status === 'late').length;
+                const total = userTasks.length;
+                if (total === 0) return null;
+                return (
+                  <div key={u.user_id} className="flex items-center gap-3 py-2 border-b border-border last:border-b-0">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-primary-foreground" style={{ backgroundColor: u.avatar_color }}>
+                      {u.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12.5px] font-medium truncate">{u.full_name}</div>
+                      <div className="flex gap-2 text-[10.5px] text-muted-foreground">
+                        <span>{openTasks} en cours</span>
+                        <span>·</span>
+                        <span className="text-accent">{doneTasks} terminées</span>
+                        {lateTasks > 0 && <><span>·</span><span className="text-destructive">{lateTasks} en retard</span></>}
+                      </div>
+                    </div>
+                    <div className="w-[60px] h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${lateTasks > 0 ? 'bg-destructive' : 'bg-accent'}`} style={{ width: `${total > 0 ? Math.min((openTasks / Math.max(total, 1)) * 100, 100) : 0}%` }} />
+                    </div>
+                    <span className="text-[11px] font-bold text-muted-foreground w-6 text-right">{total}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-5">
+            <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Marchés assignés</h3>
+            <div className="space-y-2">
+              {(users ?? []).map(u => {
+                const memberEntries = countryMembers.filter(cm => cm.user_id === u.user_id);
+                if (memberEntries.length === 0) return null;
+                return (
+                  <div key={u.user_id} className="flex items-center gap-3 py-2 border-b border-border last:border-b-0">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-primary-foreground" style={{ backgroundColor: u.avatar_color }}>
+                      {u.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12.5px] font-medium truncate">{u.full_name}</div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {memberEntries.map(cm => {
+                          const country = countries.find(c => c.id === cm.country_id);
+                          return country ? (
+                            <span key={cm.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-[10px] font-medium">
+                              {country.flag} {country.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(users ?? []).every(u => countryMembers.filter(cm => cm.user_id === u.user_id).length === 0) && (
+                <p className="text-sm text-muted-foreground text-center py-4">Aucune assignation de marché</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
