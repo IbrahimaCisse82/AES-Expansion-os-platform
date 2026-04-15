@@ -20,7 +20,9 @@ export default function CalendarPage() {
   const { data: allMilestones = [] } = useMilestones(null);
   const { data: myRole } = useCurrentUserRole();
   const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
   const canWrite = CAN_WRITE.includes(myRole ?? '');
+  const [dragTaskId, setDragTaskId] = useState<string | null>(null);
 
   const [viewType, setViewType] = useState<'month' | 'week'>('month');
   const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
