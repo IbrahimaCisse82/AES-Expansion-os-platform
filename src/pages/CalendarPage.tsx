@@ -22,6 +22,7 @@ export default function CalendarPage() {
   const createTask = useCreateTask();
   const canWrite = CAN_WRITE.includes(myRole ?? '');
 
+  const [viewType, setViewType] = useState<'month' | 'week'>('month');
   const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now.getMonth());
@@ -117,14 +118,77 @@ export default function CalendarPage() {
 
   return (
     <div className="animate-page-enter">
-      <div className="mb-6">
-        <h2 className="font-display text-[23px] font-bold text-primary mb-1">Calendrier</h2>
-        <p className="text-[12.5px] text-muted-foreground">
-          Taches et echeances par date
-          {canWrite && ' - Cliquez sur un jour pour ajouter une tache'}
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-[23px] font-bold text-primary mb-1">Calendrier</h2>
+          <p className="text-[12.5px] text-muted-foreground">
+            Taches et echeances par date
+            {canWrite && ' - Cliquez sur un jour pour ajouter une tache'}
+          </p>
+        </div>
+        <div className="flex bg-secondary rounded-lg p-0.5">
+          <button onClick={() => setViewType('month')} className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${viewType === 'month' ? 'bg-card text-primary shadow-card' : 'text-muted-foreground hover:text-foreground'}`}>Mois</button>
+          <button onClick={() => setViewType('week')} className={`px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${viewType === 'week' ? 'bg-card text-primary shadow-card' : 'text-muted-foreground hover:text-foreground'}`}>Semaine</button>
+        </div>
       </div>
 
+      {viewType === 'week' ? (() => {
+        // Week view
+        const startOfWeek = new Date(viewYear, viewMonth, now.getDate() - ((now.getDay() + 6) % 7));
+        const weekDays = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(startOfWeek);
+          d.setDate(d.getDate() + i);
+          return d;
+        });
+        const hours = Array.from({ length: 12 }, (_, i) => i + 7); // 7h-18h
+
+        return (
+          <div className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-display text-lg font-semibold text-primary flex-1 text-center">
+                Semaine du {weekDays[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+              </h3>
+            </div>
+            <div className="grid grid-cols-[60px_repeat(7,1fr)] gap-px bg-border">
+              <div className="bg-card" />
+              {weekDays.map((d, i) => {
+                const isToday = d.toDateString() === now.toDateString();
+                return (
+                  <div key={i} className={`bg-card text-center py-2 ${isToday ? 'font-bold text-accent' : 'text-muted-foreground'}`}>
+                    <div className="text-[10.5px] font-semibold">{days[i]}</div>
+                    <div className="text-[13px]">{d.getDate()}</div>
+                  </div>
+                );
+              })}
+              {hours.map(h => (
+                <>
+                  <div key={`h-${h}`} className="bg-card text-[10px] text-muted-foreground text-right pr-2 py-3">{h}:00</div>
+                  {weekDays.map((d, di) => {
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    const dayTasks = tasks.filter(t => t.due_date === dateStr);
+                    return (
+                      <div
+                        key={`${h}-${di}`}
+                        onClick={() => canWrite && openCreateForDay(d.getDate())}
+                        className={`bg-card border-t border-border min-h-[44px] p-0.5 ${canWrite ? 'cursor-pointer hover:bg-muted/30' : ''}`}
+                      >
+                        {h === 9 && dayTasks.map((t, j) => {
+                          const colorMap: Record<string, string> = { high: 'bg-destructive', med: 'bg-[hsl(var(--gold))]', low: 'bg-accent' };
+                          return (
+                            <div key={j} className={`text-[9px] font-medium text-white px-1 py-0.5 rounded mb-0.5 truncate ${colorMap[t.priority] || 'bg-accent'}`}>
+                              {t.title.slice(0, 20)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </>
+              ))}
+            </div>
+          </div>
+        );
+      })() : (
       <div className="bg-card border border-border rounded-lg p-5">
         <div className="flex items-center gap-2 mb-4">
           <button onClick={goToPrev} className="p-1.5 rounded-md hover:bg-muted transition-colors" aria-label="Mois precedent">
@@ -183,6 +247,7 @@ export default function CalendarPage() {
           <p className="text-sm text-muted-foreground text-center py-4 mt-4">Aucune tache avec echeance. Ajoutez des dates a vos taches pour les voir ici.</p>
         )}
       </div>
+      )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[420px]">
