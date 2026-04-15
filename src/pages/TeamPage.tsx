@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole } from '@/hooks/useUserRoles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { useTasks, useCountries } from '@/hooks/useExpansionData';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw, Trash2 } from 'lucide-react';
+import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
