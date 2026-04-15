@@ -309,44 +309,172 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
   );
 }
 
+interface AIAnalysisResult {
+  summary: string;
+  country_context: string;
+  matched_items: Array<{ id: string; relevance_score: number; relevance_reason: string }>;
+  recommendations: Array<{ title: string; description: string; priority: string; category: string }>;
+  risks: Array<{ title: string; description: string; severity: string; mitigation: string }>;
+  opportunities: Array<{ title: string; description: string; potential_impact: string }>;
+  next_steps: string[];
+}
+
+const ALL_ITEMS = [...AGREEMENTS, ...PROGRAMS, ...PROJECTS, ...FUNDERS, ...TENDERS, ...STAKEHOLDERS];
+
+const PRIORITY_COLORS: Record<string, string> = {
+  haute: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  moyenne: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  basse: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+};
+
+const SEVERITY_COLORS: Record<string, string> = {
+  'élevé': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  moyen: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  faible: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+};
+
+const IMPACT_COLORS: Record<string, string> = {
+  fort: 'bg-accent/15 text-accent',
+  moyen: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  faible: 'bg-muted text-muted-foreground',
+};
+
 function AnalyseIA() {
   const { data: countries = [] } = useCountries();
   const [selectedCountry, setSelectedCountry] = useState('');
   const [description, setDescription] = useState('');
-  const [results, setResults] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<AIAnalysisResult | null>(null);
+  const [streamText, setStreamText] = useState('');
   const [selectedItem, setSelectedItem] = useState<DealItem | null>(null);
+  const { toast } = useToast();
 
-  const handleAnalyze = () => {
-    const country = countries.find(c => c.name === selectedCountry);
-    const countryName = country?.name || selectedCountry || 'Afrique de l\'Ouest';
-    const matchingAccords = AGREEMENTS.filter(a => a.countries.includes(countryName));
-    const matchingProgs = PROGRAMS.filter(p => p.countries.includes(countryName));
-    const matchingProjects = PROJECTS.filter(p => p.countries.includes(countryName));
-    const matchingFunders = FUNDERS.filter(f => f.countries.includes(countryName));
-    const matchingTenders = TENDERS.filter(t => t.countries.includes(countryName));
-    const matchingStakeholders = STAKEHOLDERS.filter(s => s.countries.includes(countryName));
+  const handleAnalyze = useCallback(async () => {
+    if (!selectedCountry && !description) return;
+    setIsLoading(true);
+    setAiResult(null);
+    setStreamText('');
 
-    setResults({
-      country: countryName,
-      accords: matchingAccords, programmes: matchingProgs, projets: matchingProjects,
-      financeurs: matchingFunders, appels: matchingTenders, parties: matchingStakeholders,
-      total: matchingAccords.length + matchingProgs.length + matchingProjects.length + matchingFunders.length + matchingTenders.length + matchingStakeholders.length,
-    });
-  };
+    const countryName = selectedCountry || 'Non spécifié';
+
+    // Build compact data summary for the AI
+    const existingData = {
+      accords: AGREEMENTS.map(a => ({ id: a.id, title: a.title, countries: a.countries, sector: a.sector, amount: a.amount })),
+      programmes: PROGRAMS.map(p => ({ id: p.id, title: p.title, countries: p.countries, sector: p.sector })),
+      projets: PROJECTS.map(p => ({ id: p.id, title: p.title, countries: p.countries, sector: p.sector, amount: p.amount })),
+      financeurs: FUNDERS.map(f => ({ id: f.id, title: f.title, countries: f.countries, sector: f.sector, amount: f.amount })),
+      appels: TENDERS.map(t => ({ id: t.id, title: t.title, countries: t.countries, sector: t.sector })),
+      parties: STAKEHOLDERS.map(s => ({ id: s.id, title: s.title, countries: s.countries, sector: s.sector })),
+    };
+
+    try {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/afridatahub-analyze`;
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ country: countryName, description, existingData }),
+      });
+
+      if (resp.status === 429) {
+        toast({ title: 'Limite atteinte', description: 'Veuillez réessayer dans quelques instants.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+      if (resp.status === 402) {
+        toast({ title: 'Crédits IA épuisés', description: 'Ajoutez des crédits dans les paramètres.', variant: 'destructive' });
+        setIsLoading(false);
+        return;
+      }
+      if (!resp.ok || !resp.body) {
+        throw new Error('Erreur lors de l\'analyse');
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let fullText = '';
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') { streamDone = true; break; }
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              fullText += content;
+              setStreamText(fullText);
+            }
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Parse JSON from accumulated text
+      try {
+        // Extract JSON from potential markdown code blocks
+        let jsonText = fullText;
+        const jsonMatch = fullText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonText = jsonMatch[1].trim();
+        
+        const parsed = JSON.parse(jsonText) as AIAnalysisResult;
+        setAiResult(parsed);
+        setStreamText('');
+      } catch {
+        console.warn('Could not parse AI response as JSON, showing raw text');
+      }
+    } catch (err) {
+      console.error('Analysis error:', err);
+      toast({ title: 'Erreur', description: 'Impossible de lancer l\'analyse IA. Réessayez.', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCountry, description, toast]);
+
+  const matchedDealItems = useMemo(() => {
+    if (!aiResult?.matched_items) return [];
+    return aiResult.matched_items
+      .map(m => {
+        const item = ALL_ITEMS.find(i => i.id === m.id);
+        return item ? { ...m, item } : null;
+      })
+      .filter((m): m is { id: string; relevance_score: number; relevance_reason: string; item: DealItem } => m !== null)
+      .sort((a, b) => b.relevance_score - a.relevance_score);
+  }, [aiResult]);
 
   return (
     <div>
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-foreground">Analyse IA</h3>
-        <p className="text-[12.5px] text-muted-foreground">Soumettez un projet pour découvrir les accords, programmes, financeurs et appels d'offres compatibles</p>
+        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <Brain size={20} className="text-accent" />Analyse IA
+        </h3>
+        <p className="text-[12.5px] text-muted-foreground">Analyse intelligente propulsée par l'IA — recommandations stratégiques, matching sémantique, risques et opportunités</p>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-4">
-        <div className="bg-card border border-border rounded-lg p-5 space-y-4">
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4">
+        {/* Input Panel */}
+        <div className="bg-card border border-border rounded-lg p-5 space-y-4 h-fit">
           <div className="flex items-center gap-2 text-[14px] font-semibold text-foreground">
             <Sparkles size={16} className="text-accent" />Soumettre un projet
           </div>
           <div>
-            <label className="text-[12px] text-muted-foreground mb-1 block">Sélectionner un pays cible</label>
+            <label className="text-[12px] text-muted-foreground mb-1 block">Pays cible</label>
             <Select value={selectedCountry} onValueChange={setSelectedCountry}>
               <SelectTrigger className="h-9 text-[13px]"><SelectValue placeholder="-- Choisir un pays --" /></SelectTrigger>
               <SelectContent>
@@ -355,57 +483,189 @@ function AnalyseIA() {
             </Select>
           </div>
           <div>
-            <label className="text-[12px] text-muted-foreground mb-1 block">Ou décrivez votre projet</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Décrivez le projet, son secteur, son pays, ses objectifs..." className="w-full p-3 border border-border rounded-lg text-[13px] bg-background resize-none h-28 focus:outline-none focus:border-accent" />
+            <label className="text-[12px] text-muted-foreground mb-1 block">Description du projet</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Ex: Projet d'installation d'une usine de transformation agroalimentaire au Sénégal, ciblant l'export de produits transformés vers l'UE..."
+              className="w-full p-3 border border-border rounded-lg text-[13px] bg-background resize-none h-32 focus:outline-none focus:border-accent"
+            />
           </div>
-          <button onClick={handleAnalyze} disabled={!selectedCountry && !description} className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white text-[13px] font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50">
-            <Sparkles size={14} />Lancer l'analyse
+          <button
+            onClick={handleAnalyze}
+            disabled={(!selectedCountry && !description) || isLoading}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white text-[13px] font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
+          >
+            {isLoading ? <><Loader2 size={14} className="animate-spin" />Analyse en cours...</> : <><Sparkles size={14} />Lancer l'analyse IA</>}
           </button>
         </div>
-        {results ? (
-          <div className="bg-card border border-border rounded-lg p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-[14px] font-bold text-primary">Résultats pour {results.country}</h4>
-              <span className="text-[12px] text-muted-foreground">{results.total} correspondance{results.total > 1 ? 's' : ''}</span>
-            </div>
-            {[
-              { label: 'Accords', items: results.accords, icon: '📄' },
-              { label: 'Programmes', items: results.programmes, icon: '📋' },
-              { label: 'Projets', items: results.projets, icon: '🏗️' },
-              { label: 'Financeurs', items: results.financeurs, icon: '🏦' },
-              { label: 'Appels d\'offres', items: results.appels, icon: '📢' },
-              { label: 'Parties prenantes', items: results.parties, icon: '🤝' },
-            ].map(cat => (
-              <div key={cat.label}>
-                <div className="text-[12px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
-                  <span>{cat.icon}</span> {cat.label} ({cat.items.length})
+
+        {/* Results Panel */}
+        <div className="space-y-4">
+          {isLoading && !aiResult && (
+            <div className="bg-card border border-accent/30 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">
+                  <Loader2 size={16} className="text-accent animate-spin" />
                 </div>
-                {cat.items.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {cat.items.map((item: DealItem) => (
-                      <div key={item.id} onClick={() => setSelectedItem(item)}
-                        className="flex items-center gap-2 text-[12px] py-1.5 px-3 rounded-lg bg-muted/50 border border-border/50 cursor-pointer hover:bg-muted hover:border-accent/30 transition-colors">
-                        <span className="font-medium text-foreground flex-1">{item.title}</span>
-                        {item.amount && <span className="text-accent text-[10.5px] font-semibold">{item.amount}</span>}
-                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>{item.status}</span>
-                        <ChevronRight size={12} className="text-muted-foreground" />
+                <div>
+                  <h4 className="text-[14px] font-semibold text-foreground">Analyse en cours...</h4>
+                  <p className="text-[11px] text-muted-foreground">L'IA analyse votre projet et génère des recommandations</p>
+                </div>
+              </div>
+              {streamText && (
+                <div className="bg-muted/30 rounded-lg p-3 text-[11px] text-muted-foreground max-h-32 overflow-y-auto font-mono">
+                  {streamText.substring(0, 200)}...
+                </div>
+              )}
+            </div>
+          )}
+
+          {aiResult && (
+            <>
+              {/* Summary */}
+              <div className="bg-gradient-to-r from-accent/5 to-primary/5 border border-accent/20 rounded-lg p-5">
+                <h4 className="text-[14px] font-bold text-foreground mb-2 flex items-center gap-2">
+                  <Brain size={16} className="text-accent" />Résumé exécutif
+                </h4>
+                <p className="text-[13px] text-foreground leading-relaxed">{aiResult.summary}</p>
+                {aiResult.country_context && (
+                  <div className="mt-3 pt-3 border-t border-border/50">
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                      <span className="font-semibold text-foreground">Contexte pays : </span>
+                      {aiResult.country_context}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Matched Items */}
+              {matchedDealItems.length > 0 && (
+                <div className="bg-card border border-border rounded-lg p-5">
+                  <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
+                    🎯 Données matchées ({matchedDealItems.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {matchedDealItems.map(m => (
+                      <div key={m.id} onClick={() => setSelectedItem(m.item)}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/50 cursor-pointer hover:bg-muted hover:border-accent/30 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                          <span className="text-[12px] font-bold text-accent">{m.relevance_score}%</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[12.5px] font-medium text-foreground truncate">{m.item.title}</div>
+                          <div className="text-[11px] text-muted-foreground">{m.relevance_reason}</div>
+                        </div>
+                        <ChevronRight size={14} className="text-muted-foreground shrink-0" />
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground italic">Aucun résultat dans cette catégorie</p>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {aiResult.recommendations && aiResult.recommendations.length > 0 && (
+                <div className="bg-card border border-border rounded-lg p-5">
+                  <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
+                    <Lightbulb size={14} className="text-yellow-500" />Recommandations stratégiques
+                  </h4>
+                  <div className="space-y-3">
+                    {aiResult.recommendations.map((rec, i) => (
+                      <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${PRIORITY_COLORS[rec.priority] || 'bg-muted text-muted-foreground'}`}>
+                            {rec.priority}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-secondary text-muted-foreground">{rec.category}</span>
+                        </div>
+                        <h5 className="text-[12.5px] font-semibold text-foreground">{rec.title}</h5>
+                        <p className="text-[11.5px] text-muted-foreground mt-1">{rec.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Risks & Opportunities side by side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {aiResult.risks && aiResult.risks.length > 0 && (
+                  <div className="bg-card border border-border rounded-lg p-5">
+                    <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
+                      <AlertTriangle size={14} className="text-red-500" />Risques identifiés
+                    </h4>
+                    <div className="space-y-2.5">
+                      {aiResult.risks.map((risk, i) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-red-50/50 dark:bg-red-900/10 border border-red-200/30 dark:border-red-900/20">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${SEVERITY_COLORS[risk.severity] || 'bg-muted text-muted-foreground'}`}>
+                              {risk.severity}
+                            </span>
+                          </div>
+                          <h5 className="text-[12px] font-semibold text-foreground">{risk.title}</h5>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{risk.description}</p>
+                          <p className="text-[10.5px] text-accent mt-1 flex items-center gap-1">
+                            <Shield size={10} />Mitigation : {risk.mitigation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {aiResult.opportunities && aiResult.opportunities.length > 0 && (
+                  <div className="bg-card border border-border rounded-lg p-5">
+                    <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
+                      <TrendingUp size={14} className="text-green-500" />Opportunités
+                    </h4>
+                    <div className="space-y-2.5">
+                      {aiResult.opportunities.map((opp, i) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-green-50/50 dark:bg-green-900/10 border border-green-200/30 dark:border-green-900/20">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${IMPACT_COLORS[opp.potential_impact] || 'bg-muted text-muted-foreground'}`}>
+                              Impact {opp.potential_impact}
+                            </span>
+                          </div>
+                          <h5 className="text-[12px] font-semibold text-foreground">{opp.title}</h5>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{opp.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-card border border-border rounded-lg p-8 flex items-center justify-center">
-            <div className="text-center">
-              <Sparkles size={40} className="mx-auto text-muted-foreground/20 mb-3" />
-              <p className="text-sm text-muted-foreground">Les résultats de l'analyse apparaîtront ici</p>
+
+              {/* Next Steps */}
+              {aiResult.next_steps && aiResult.next_steps.length > 0 && (
+                <div className="bg-card border border-accent/20 rounded-lg p-5">
+                  <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
+                    <ArrowRight size={14} className="text-accent" />Prochaines étapes
+                  </h4>
+                  <ol className="space-y-2">
+                    {aiResult.next_steps.map((step, i) => (
+                      <li key={i} className="flex items-start gap-3 text-[12.5px]">
+                        <span className="w-6 h-6 rounded-full bg-accent/15 text-accent text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                        <span className="text-foreground">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </>
+          )}
+
+          {!isLoading && !aiResult && !streamText && (
+            <div className="bg-card border border-border rounded-lg p-10 flex items-center justify-center">
+              <div className="text-center">
+                <Brain size={48} className="mx-auto text-muted-foreground/15 mb-4" />
+                <h4 className="text-[14px] font-semibold text-muted-foreground mb-1">Analyse IA intelligente</h4>
+                <p className="text-[12px] text-muted-foreground max-w-md">
+                  Soumettez un projet avec un pays cible et une description pour obtenir une analyse complète : 
+                  matching sémantique avec les données existantes, recommandations stratégiques, risques et opportunités.
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       <DealDetailDialog item={selectedItem} open={!!selectedItem} onClose={() => setSelectedItem(null)} />
     </div>
