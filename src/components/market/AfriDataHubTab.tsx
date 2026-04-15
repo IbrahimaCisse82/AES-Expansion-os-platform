@@ -155,11 +155,27 @@ function DealDetailDialog({ item, open, onClose }: { item: DealItem | null; open
   );
 }
 
-function DealCard({ item, onClick }: { item: DealItem; onClick: () => void }) {
+function DealCard({ item, onClick, selectedCountry }: { item: DealItem; onClick: () => void; selectedCountry?: string }) {
+  const isSpecific = selectedCountry && selectedCountry !== 'all' && item.countries.length === 1 && item.countries[0] === selectedCountry;
+  const isMulti = item.countries.length > 1;
+
   return (
-    <div onClick={onClick} className="bg-card border border-border rounded-lg p-5 hover:shadow-md hover:border-accent/30 transition-all cursor-pointer group">
+    <div onClick={onClick} className={`bg-card border rounded-lg p-5 hover:shadow-md transition-all cursor-pointer group ${isSpecific ? 'border-accent/50 ring-1 ring-accent/20' : 'border-border hover:border-accent/30'}`}>
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h4 className="text-[14px] font-semibold text-foreground leading-tight flex-1 group-hover:text-accent transition-colors">{item.title}</h4>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {selectedCountry && selectedCountry !== 'all' && (
+            isSpecific ? (
+              <span className="shrink-0 px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-accent/15 text-accent border border-accent/30 flex items-center gap-1">
+                <MapPin size={9} />Spécifique
+              </span>
+            ) : isMulti ? (
+              <span className="shrink-0 px-2 py-0.5 rounded-full text-[9.5px] font-medium bg-muted text-muted-foreground border border-border flex items-center gap-1">
+                <Globe size={9} />Multi-pays
+              </span>
+            ) : null
+          )}
+          <h4 className="text-[14px] font-semibold text-foreground leading-tight flex-1 group-hover:text-accent transition-colors truncate">{item.title}</h4>
+        </div>
         <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${STATUS_COLORS[item.status] || 'bg-muted text-muted-foreground'}`}>
           {item.status}
         </span>
