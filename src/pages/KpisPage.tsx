@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil } from 'lucide-react';
+import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, Download, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 import { supabase } from '@/integrations/supabase/client';
+import { exportToCSV } from '@/lib/csvExport';
 
 const EDITABLE_ROLES = ['admin', 'director', 'analyst'];
 
@@ -236,6 +237,34 @@ export default function KpisPage() {
               <Plus size={14} /> Ajouter
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-9"
+            disabled={history.length === 0}
+            onClick={() => {
+              const csvData = history.map(h => {
+                const c = countries.find(x => x.id === h.country_id);
+                return {
+                  'Pays': c ? `${c.flag} ${c.name}` : h.country_id,
+                  'Mois': h.month,
+                  'CA': h.ca,
+                  'Obj. CA': h.target_ca,
+                  'Clients': h.clients,
+                  'Obj. Clients': h.target_clients,
+                  'NPS': h.nps,
+                  'Obj. NPS': h.target_nps,
+                  'Rétention': h.retention,
+                  'Obj. Rétention': h.target_retention,
+                  'Notes': h.notes || '',
+                };
+              });
+              exportToCSV(csvData, 'kpis_export');
+              toast.success('KPIs exportés en CSV');
+            }}
+          >
+            <Download size={14} /> Exporter
+          </Button>
         </div>
       </div>
 
