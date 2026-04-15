@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useKpiHistory, useUpsertKpiHistory, useDeleteKpiHistory, type KpiHistoryEntry } from '@/hooks/useKpiHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -10,6 +11,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Re
 import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
+import { supabase } from '@/integrations/supabase/client';
 
 const EDITABLE_ROLES = ['admin', 'director', 'analyst'];
 
@@ -30,6 +32,17 @@ export default function KpisPage() {
   const { data: countries = [], isLoading: loadingCountries } = useCountries();
   const { data: role } = useCurrentUserRole();
   const canEdit = EDITABLE_ROLES.includes(role ?? '');
+
+  const { data: settings } = useQuery({
+    queryKey: ['app_settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('app_settings').select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const alertThreshold = parseInt(settings?.find(s => s.key === 'kpi_alert_threshold')?.value || '80') / 100;
 
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const countryId = selectedCountry === 'all' ? undefined : selectedCountry;
@@ -135,15 +148,15 @@ export default function KpisPage() {
       toast.success(editRow.isNew ? 'KPI ajouté' : 'KPI mis à jour');
 
       // Check KPI alerts and send email notifications
-      const ALERT_THRESHOLD = 0.8;
       const metrics = [
         { key: 'ca', label: 'CA Mensuel', actual: editRow.ca ?? 0, target: editRow.target_ca ?? 0 },
         { key: 'clients', label: 'Clients Actifs', actual: editRow.clients ?? 0, target: editRow.target_clients ?? 0 },
         { key: 'nps', label: 'NPS Score', actual: editRow.nps ?? 0, target: editRow.target_nps ?? 0 },
         { key: 'retention', label: 'Rétention', actual: editRow.retention ?? 0, target: editRow.target_retention ?? 0 },
       ];
+      const thresholdPct = Math.round(alertThreshold * 100);
       for (const m of metrics) {
-        if (m.target > 0 && m.actual < m.target * ALERT_THRESHOLD) {
+        if (m.target > 0 && m.actual < m.target * alertThreshold) {
           const pct = Math.round((m.actual / m.target) * 100);
           notifyAdminsViaEmail({
             templateName: 'kpi-alert',
@@ -155,6 +168,7 @@ export default function KpisPage() {
               actual: m.key === 'ca' ? `${m.actual.toLocaleString('fr-FR')} FCFA` : String(m.actual),
               target: m.key === 'ca' ? `${m.target.toLocaleString('fr-FR')} FCFA` : String(m.target),
               percentage: String(pct),
+              threshold: thresholdPct.toString(),
             },
           });
         }
