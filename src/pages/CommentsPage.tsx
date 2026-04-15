@@ -16,6 +16,39 @@ import { sendNotificationEmail } from '@/lib/notificationEmail';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '🎉', '😂', '🤔', '👏'];
 
+// Attachment display component
+function CommentAttachments({ commentId }: { commentId: string }) {
+  const { data: attachments = [] } = useQuery({
+    queryKey: ['comment_attachments', commentId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('comment_attachments').select('*').eq('comment_id', commentId).order('created_at');
+      if (error) throw error;
+      return data;
+    },
+  });
+  if (attachments.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {attachments.map(a => {
+        const isImage = a.mime_type.startsWith('image/');
+        const url = supabase.storage.from('comment-attachments').getPublicUrl(a.file_path).data.publicUrl;
+        return isImage ? (
+          <a key={a.id} href={url} target="_blank" rel="noopener noreferrer" className="block">
+            <img src={url} alt={a.file_name} className="max-h-[120px] rounded-lg border border-border object-cover hover:opacity-80 transition-opacity" />
+          </a>
+        ) : (
+          <a key={a.id} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 transition-colors text-[12px]">
+            <FileIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="truncate max-w-[150px]">{a.file_name}</span>
+            <span className="text-[10px] text-muted-foreground">{(a.file_size / 1024).toFixed(0)} KB</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
 interface CommentItemProps {
   c: any;
   user: any;
