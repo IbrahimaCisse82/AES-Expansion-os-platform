@@ -240,6 +240,16 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
     return result;
   }, [items, search, sectorFilter, countryFilter]);
 
+  const specificCount = useMemo(() => {
+    if (countryFilter === 'all') return 0;
+    return filtered.filter(i => i.countries.length === 1 && i.countries[0] === countryFilter).length;
+  }, [filtered, countryFilter]);
+
+  const multiCount = useMemo(() => {
+    if (countryFilter === 'all') return 0;
+    return filtered.filter(i => i.countries.length > 1).length;
+  }, [filtered, countryFilter]);
+
   const sectors = useMemo(() => [...new Set(items.map(i => i.sector))].sort(), [items]);
 
   return (
