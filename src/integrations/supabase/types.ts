@@ -1386,6 +1386,45 @@ export type Database = {
           },
         ]
       }
+      phase_checklist_items: {
+        Row: {
+          checked_at: string | null
+          checked_by: string | null
+          country_id: string
+          created_at: string
+          id: string
+          is_checked: boolean
+          label: string
+          phase: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          checked_at?: string | null
+          checked_by?: string | null
+          country_id: string
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          label: string
+          phase?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          checked_at?: string | null
+          checked_by?: string | null
+          country_id?: string
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          label?: string
+          phase?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_color: string
@@ -1423,9 +1462,16 @@ export type Database = {
           country_label: string | null
           created_at: string
           description: string | null
+          estimated_cost: number
           id: string
+          impact: number
           level: Database["public"]["Enums"]["risk_level"]
           mitigation: string | null
+          owner_id: string | null
+          owner_name: string | null
+          probability: number
+          review_date: string | null
+          risk_status: string
           title: string
           updated_at: string
         }
@@ -1435,9 +1481,16 @@ export type Database = {
           country_label?: string | null
           created_at?: string
           description?: string | null
+          estimated_cost?: number
           id?: string
+          impact?: number
           level?: Database["public"]["Enums"]["risk_level"]
           mitigation?: string | null
+          owner_id?: string | null
+          owner_name?: string | null
+          probability?: number
+          review_date?: string | null
+          risk_status?: string
           title: string
           updated_at?: string
         }
@@ -1447,9 +1500,16 @@ export type Database = {
           country_label?: string | null
           created_at?: string
           description?: string | null
+          estimated_cost?: number
           id?: string
+          impact?: number
           level?: Database["public"]["Enums"]["risk_level"]
           mitigation?: string | null
+          owner_id?: string | null
+          owner_name?: string | null
+          probability?: number
+          review_date?: string | null
+          risk_status?: string
           title?: string
           updated_at?: string
         }

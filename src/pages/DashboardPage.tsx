@@ -1,11 +1,14 @@
 import KpiCard from '@/components/KpiCard';
 import StatusPill from '@/components/StatusPill';
-import { useCountries, useTasks, useActivityLog } from '@/hooks/useExpansionData';
+import { useCountries, useTasks, useActivityLog, useRisks } from '@/hooks/useExpansionData';
+import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard } from '@/components/dashboard/DashboardCharts';
+import { computeMarketScore } from '@/lib/marketScoring';
 
 export default function DashboardPage() {
   const { data: countries = [] } = useCountries();
   const { data: tasks = [] } = useTasks();
   const { data: activity = [] } = useActivityLog();
+  const { data: risks = [] } = useRisks();
 
   const lateTasks = tasks.filter(t => t.status === 'late').length;
   const totalTeam = countries.reduce((s, c) => s + (c.team_size || 0), 0);
@@ -13,6 +16,8 @@ export default function DashboardPage() {
 
   const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
   const dotColors: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]', navy: 'bg-primary' };
+
+  const scores = countries.map(c => ({ name: c.name, flag: c.flag, score: computeMarketScore(c) }));
 
   const isEmpty = countries.length === 0 && tasks.length === 0;
 
@@ -35,7 +40,16 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <PipelineChart countries={countries} />
+            <RiskWeatherChart risks={risks} />
+            <MarketScoreCard scores={scores} />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <ProgressChart countries={countries} />
+
             <div className="bg-card border border-border rounded-lg p-5 transition-shadow hover:shadow-card">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display text-[15.5px] font-semibold text-primary">Statut des marchés</h3>
@@ -59,7 +73,9 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div className="bg-card border border-border rounded-lg p-5 transition-shadow hover:shadow-card">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-display text-[15.5px] font-semibold text-primary">Activité récente</h3>
@@ -81,36 +97,36 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
 
-          <div className="bg-card border border-border rounded-lg p-5 transition-shadow hover:shadow-card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-[15.5px] font-semibold text-primary">Tâches prioritaires</h3>
-            </div>
-            {tasks.filter(t => t.status !== 'done').length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">Toutes les tâches sont terminées 🎉</p>
-            ) : tasks.filter(t => t.status !== 'done').slice(0, 5).map(task => (
-              <div key={task.id} className="flex items-center gap-3 py-3 border-b border-border last:border-b-0">
-                <div className={`w-[19px] h-[19px] border-2 rounded-[5px] flex-shrink-0 ${
-                  task.status === 'done' ? 'bg-accent border-accent' : 'border-border'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-medium">{task.title}</div>
-                  <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap">
-                    {task.country_label && <span>{task.country_label}</span>}
-                    {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
-                    {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
-                  </div>
-                </div>
-                {task.status === 'late' && <StatusPill status="late" />}
-                <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${
-                  task.priority === 'high' ? 'bg-destructive/10 text-destructive' :
-                  task.priority === 'med' ? 'bg-[hsl(var(--gold))]/10 text-[hsl(var(--gold))]' : 'bg-accent/10 text-accent'
-                }`}>
-                  {task.priority === 'high' ? 'Haute' : task.priority === 'med' ? 'Moyenne' : 'Faible'}
-                </span>
+            <div className="bg-card border border-border rounded-lg p-5 transition-shadow hover:shadow-card">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-[15.5px] font-semibold text-primary">Tâches prioritaires</h3>
               </div>
-            ))}
+              {tasks.filter(t => t.status !== 'done').length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">Toutes les tâches sont terminées 🎉</p>
+              ) : tasks.filter(t => t.status !== 'done').slice(0, 5).map(task => (
+                <div key={task.id} className="flex items-center gap-3 py-3 border-b border-border last:border-b-0">
+                  <div className={`w-[19px] h-[19px] border-2 rounded-[5px] flex-shrink-0 ${
+                    task.status === 'done' ? 'bg-accent border-accent' : 'border-border'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-medium">{task.title}</div>
+                    <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap">
+                      {task.country_label && <span>{task.country_label}</span>}
+                      {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
+                      {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
+                    </div>
+                  </div>
+                  {task.status === 'late' && <StatusPill status="late" />}
+                  <span className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${
+                    task.priority === 'high' ? 'bg-destructive/10 text-destructive' :
+                    task.priority === 'med' ? 'bg-[hsl(var(--gold))]/10 text-[hsl(var(--gold))]' : 'bg-accent/10 text-accent'
+                  }`}>
+                    {task.priority === 'high' ? 'Haute' : task.priority === 'med' ? 'Moyenne' : 'Faible'}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </>
       )}
