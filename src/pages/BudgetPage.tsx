@@ -287,6 +287,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'validation' && <DataValidation scenarioId={activeScenarioId} lines={lines} categories={categories} canWrite={canWrite} />}
           {viewMode === 'investments' && <InvestmentRegister scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
           {viewMode === 'xbrl' && <XBRLExport lines={lines} categories={categories} scenarioName={activeScenario?.name || ''} fiscalYear={fiscalYear} />}
+          {viewMode === 'cashflow' && <CashFlowView lines={lines} categories={categories} />}
         </>
       )}
 
