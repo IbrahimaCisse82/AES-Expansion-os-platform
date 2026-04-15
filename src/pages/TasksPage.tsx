@@ -154,7 +154,23 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
 
     if (editingId) {
       updateTask.mutate({ id: editingId, ...payload }, {
-        onSuccess: () => { toast.success('Tâche modifiée'); setDialogOpen(false); },
+        onSuccess: () => {
+          toast.success('Tâche modifiée');
+          setDialogOpen(false);
+          // Notify admins when task is marked as late
+          if (payload.status === 'late') {
+            notifyAdminsViaEmail({
+              templateName: 'task-overdue',
+              idempotencyKey: `task-overdue-${editingId}`,
+              templateData: {
+                taskTitle: payload.title,
+                countryName: payload.country_label || '',
+                dueDate: payload.due_date || '',
+                assigneeName: payload.owner_name || '',
+              },
+            });
+          }
+        },
         onError: (err: Error) => toast.error(err.message),
       });
     } else {
@@ -195,23 +211,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const toggleDone = (task: typeof tasks[0]) => {
     if (!canWrite) return;
     const newStatus = task.status === 'done' ? 'open' : 'done';
-    updateTask.mutate({ id: task.id, status: newStatus }, {
-      onSuccess: () => {
-        // When task becomes late, notify admins
-        if (newStatus === 'late') {
-          notifyAdminsViaEmail({
-            templateName: 'task-overdue',
-            idempotencyKey: `task-overdue-${task.id}`,
-            templateData: {
-              taskTitle: task.title,
-              countryName: task.country_label || '',
-              dueDate: task.due_date || '',
-              assigneeName: task.owner_name || '',
-            },
-          });
-        }
-      },
-    });
+    updateTask.mutate({ id: task.id, status: newStatus });
   };
 
   const handleExportCSV = () => {
