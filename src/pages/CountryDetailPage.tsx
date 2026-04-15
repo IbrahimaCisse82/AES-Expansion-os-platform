@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
 import StatusPill from '@/components/StatusPill';
+import PhaseChecklist from '@/components/country/PhaseChecklist';
+import { computeMarketScore, getScoreColor, getScoreLabel } from '@/lib/marketScoring';
 import { useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/hooks/useMilestoneMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -184,6 +186,27 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Phase Checklist */}
+        <PhaseChecklist countryId={countryId} phase={country.phase} canWrite={canWrite} />
+
+        <div className="bg-card border border-border rounded-lg p-5">
+          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Scoring Marché</h3>
+          {(() => {
+            const score = computeMarketScore(country);
+            const colorClass = getScoreColor(score);
+            const label = getScoreLabel(score);
+            return (
+              <div className="text-center py-4">
+                <div className={`font-display text-[42px] font-bold ${colorClass}`}>{score}</div>
+                <div className="text-[12px] text-muted-foreground">{label}</div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden mt-3 mx-auto max-w-[200px]">
+                  <div className={`h-full rounded-full ${score >= 75 ? 'bg-accent' : score >= 50 ? 'bg-[hsl(var(--sky))]' : score >= 25 ? 'bg-[hsl(var(--gold))]' : 'bg-destructive'}`} style={{ width: `${score}%` }} />
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         <div className="bg-card border border-border rounded-lg p-5 col-span-2">
