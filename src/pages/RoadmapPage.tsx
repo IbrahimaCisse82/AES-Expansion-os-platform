@@ -17,6 +17,7 @@ import { z } from 'zod';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 const currentYear = new Date().getFullYear();
+const AVAILABLE_YEARS = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
 function useRoadmapTypes() {
   return useQuery({
     queryKey: ['roadmap_types'],
@@ -62,6 +63,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<BarForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
   useEffect(() => {
     if (addSignal && addSignal > 0 && canWrite) openCreate();
@@ -129,13 +131,21 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="font-display text-[23px] font-bold text-primary mb-1">Feuille de Route</h2>
-          <p className="text-[12.5px] text-muted-foreground">Timeline interactive des marchés · {currentYear}</p>
+          <p className="text-[12.5px] text-muted-foreground">Timeline interactive des marchés</p>
         </div>
-        {canWrite && (
-          <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
-            <Plus className="w-4 h-4" /> Nouvelle barre
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <Select value={String(selectedYear)} onValueChange={v => setSelectedYear(Number(v))}>
+            <SelectTrigger className="w-[100px] h-8 text-[12px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {AVAILABLE_YEARS.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {canWrite && (
+            <Button onClick={openCreate} size="sm" className="gap-1.5 text-[12.5px]">
+              <Plus className="w-4 h-4" /> Nouvelle barre
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-5">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole } from '@/hooks/useUserRoles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 
 const ROLES = [
   { value: 'admin', label: 'Admin' },
@@ -392,9 +393,44 @@ export default function TeamPage() {
       {/* Workload & Country Assignments */}
       {(users ?? []).length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+          {/* Workload Bar Chart */}
           <div className="bg-card border border-border rounded-lg p-5">
             <h3 className="font-display text-[15.5px] font-semibold text-primary flex items-center gap-2 mb-4">
-              <BarChart3 className="w-4 h-4" /> Charge de travail
+              <BarChart3 className="w-4 h-4" /> Répartition des tâches
+            </h3>
+            {(() => {
+              const chartData = (users ?? []).map(u => {
+                const userTasks = tasks.filter(t => t.assigned_to === u.user_id);
+                return {
+                  name: u.full_name.split(' ')[0],
+                  'En cours': userTasks.filter(t => t.status === 'open' || t.status === 'wip').length,
+                  'En retard': userTasks.filter(t => t.status === 'late').length,
+                  'Terminées': userTasks.filter(t => t.status === 'done').length,
+                };
+              }).filter(d => d['En cours'] + d['En retard'] + d['Terminées'] > 0);
+
+              return chartData.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Aucune tâche assignée</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={chartData} layout="vertical">
+                    <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} width={80} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                    <Legend wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="En cours" stackId="a" fill="hsl(var(--sky))" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="En retard" stackId="a" fill="hsl(var(--destructive))" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Terminées" stackId="a" fill="hsl(var(--accent))" radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              );
+            })()}
+          </div>
+
+          {/* Charge de travail detail */}
+          <div className="bg-card border border-border rounded-lg p-5">
+            <h3 className="font-display text-[15.5px] font-semibold text-primary flex items-center gap-2 mb-4">
+              Charge de travail
             </h3>
             <div className="space-y-2">
               {(users ?? []).map(u => {

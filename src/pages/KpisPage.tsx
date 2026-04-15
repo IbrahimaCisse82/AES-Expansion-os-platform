@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useKpiHistory, useUpsertKpiHistory, useDeleteKpiHistory, type KpiHistoryEntry } from '@/hooks/useKpiHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -8,10 +8,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
-import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil } from 'lucide-react';
+import { Plus, Save, Trash2, TrendingUp, BarChart3, Target, Pencil, Download, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 import { supabase } from '@/integrations/supabase/client';
+import { exportToCSV } from '@/lib/csvExport';
+
+// Custom KPI Definitions Section
+function CustomKpiSection() {
+  const qc = useQueryClient();
+  const { data: defs = [] } = useQuery({
+    queryKey: ['custom_kpi_definitions'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('custom_kpi_definitions').select('*').order('sort_order');
+      if (error) throw error;
+      return data;
+    },
+  });
+  const [newName, setNewName] = useState('');
+  const [newUnit, setNewUnit] = useState('');
+  const createDef = useMutation({
+    mutationFn: async (payload: { name: string; unit: string; sort_order: number }) => {
+      const { error } = await supabase.from('custom_kpi_definitions').insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['custom_kpi_definitions'] }); setNewName(''); setNewUnit(''); },
+  });
+  const deleteDef = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('custom_kpi_definitions').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['custom_kpi_definitions'] }),
+  });
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-5 mb-5">
+      <h3 className="font-display text-[15.5px] font-semibold text-primary mb-3">KPIs Personnalisés</h3>
+      <div className="flex gap-2 mb-3">
+        <Input placeholder="Nom du KPI" value={newName} onChange={e => setNewName(e.target.value)} className="h-8 text-[12px] flex-1" />
+        <Input placeholder="Unité (%, €, pts)" value={newUnit} onChange={e => setNewUnit(e.target.value)} className="h-8 text-[12px] w-24" />
+        <Button size="sm" className="h-8 text-[11px]" disabled={!newName.trim()} onClick={() => createDef.mutate({ name: newName.trim(), unit: newUnit || '', sort_order: defs.length })}>
+          <Plus size={13} /> Ajouter
+        </Button>
+      </div>
+      {defs.length === 0 ? (
+        <p className="text-[11px] text-muted-foreground text-center py-2">Aucun KPI personnalisé défini</p>
+      ) : (
+        <div className="space-y-1">
+          {defs.map(d => (
+            <div key={d.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 group">
+              <span className="text-[12.5px] font-medium flex-1">{d.name}</span>
+              <span className="text-[10.5px] text-muted-foreground">{d.unit}</span>
+              <button onClick={() => deleteDef.mutate(d.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded"><Trash2 size={12} className="text-destructive" /></button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const EDITABLE_ROLES = ['admin', 'director', 'analyst'];
 
@@ -236,6 +292,34 @@ export default function KpisPage() {
               <Plus size={14} /> Ajouter
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-9"
+            disabled={history.length === 0}
+            onClick={() => {
+              const csvData = history.map(h => {
+                const c = countries.find(x => x.id === h.country_id);
+                return {
+                  'Pays': c ? `${c.flag} ${c.name}` : h.country_id,
+                  'Mois': h.month,
+                  'CA': h.ca,
+                  'Obj. CA': h.target_ca,
+                  'Clients': h.clients,
+                  'Obj. Clients': h.target_clients,
+                  'NPS': h.nps,
+                  'Obj. NPS': h.target_nps,
+                  'Rétention': h.retention,
+                  'Obj. Rétention': h.target_retention,
+                  'Notes': h.notes || '',
+                };
+              });
+              exportToCSV(csvData, 'kpis_export');
+              toast.success('KPIs exportés en CSV');
+            }}
+          >
+            <Download size={14} /> Exporter
+          </Button>
         </div>
       </div>
 
@@ -402,6 +486,9 @@ export default function KpisPage() {
           </div>
         </div>
       )}
+
+      {/* Custom KPIs */}
+      {canEdit && <CustomKpiSection />}
 
       {/* History table */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
