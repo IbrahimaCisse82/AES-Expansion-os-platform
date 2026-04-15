@@ -270,7 +270,7 @@ function SectionView({ items, title, description }: { items: DealItem[]; title: 
       </div>
       <div className="text-[12px] text-muted-foreground mb-3">{filtered.length} résultat{filtered.length > 1 ? 's' : ''}</div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        {filtered.map(item => <DealCard key={item.id} item={item} onClick={() => setSelectedItem(item)} />)}
+        {filtered.map(item => <DealCard key={item.id} item={item} onClick={() => setSelectedItem(item)} selectedCountry={countryFilter} />)}
       </div>
       {filtered.length === 0 && (
         <div className="text-center py-12 text-muted-foreground text-sm">Aucun résultat pour cette recherche</div>
