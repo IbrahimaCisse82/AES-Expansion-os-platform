@@ -296,7 +296,53 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
               </div>
             );
           })}
-        </div>
+      </div>
+
+      {/* Risk Detail / History Panel */}
+      {detailRiskId && (() => {
+        const risk = searchedRisks.find(r => r.id === detailRiskId);
+        if (!risk) return null;
+        const rAny = risk as Record<string, unknown>;
+        return (
+          <div className="bg-card border border-border rounded-lg p-5 mt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-[15.5px] font-semibold text-primary flex items-center gap-2">
+                <History className="w-4 h-4" /> Historique — {risk.title}
+              </h3>
+              <div className="flex gap-2">
+                {canWrite && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-[11px]"
+                    onClick={() => {
+                      createTask.mutate({
+                        title: `Mitigation: ${risk.title}`,
+                        priority: risk.level === 'high' ? 'high' : 'med',
+                        status: 'open',
+                        country_id: risk.country_id || null,
+                        country_label: risk.country_label || null,
+                        milestone_id: null,
+                        due_date: (rAny.review_date as string) || null,
+                        owner_name: (rAny.owner_name as string) || null,
+                        assigned_to: null,
+                        created_by: null,
+                      }, {
+                        onSuccess: () => toast.success('Tâche de mitigation créée'),
+                        onError: (err: Error) => toast.error(err.message),
+                      });
+                    }}
+                  >
+                    <ShieldPlus className="w-3.5 h-3.5" /> Créer tâche de mitigation
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" className="text-[11px]" onClick={() => setDetailRiskId(null)}>Fermer</Button>
+              </div>
+            </div>
+            <RiskHistoryPanel riskId={detailRiskId} riskTitle={risk.title} />
+          </div>
+        );
+      })()}
 
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Matrice Probabilité × Impact</h3>
