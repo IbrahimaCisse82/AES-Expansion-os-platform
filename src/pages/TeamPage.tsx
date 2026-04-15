@@ -39,6 +39,16 @@ export default function TeamPage() {
   const { data: myRole } = useCurrentUserRole();
   const { data: users, isLoading, refetch } = useAllUsersWithRoles();
   const updateRole = useUpdateUserRole();
+  const { data: tasks = [] } = useTasks();
+  const { data: countries = [] } = useCountries();
+  const { data: countryMembers = [] } = useQuery({
+    queryKey: ['country_members_all'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('country_members').select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
   const [statuses, setStatuses] = useState<UserStatus[]>([]);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
