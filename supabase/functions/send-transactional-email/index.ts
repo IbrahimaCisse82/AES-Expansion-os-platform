@@ -108,7 +108,61 @@ Deno.serve(async (req) => {
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
-  const effectiveRecipient = template.to || recipientEmail
+  let effectiveRecipient = template.to || recipientEmail
+
+  // Special recipient '__admins__': resolve all admin emails server-side and send to each
+  if (effectiveRecipient === '__admins__') {
+    const { data: adminRoles } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin')
+
+    if (!adminRoles?.length) {
+      return new Response(
+        JSON.stringify({ success: false, reason: 'no_admins_found' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Fetch admin emails from auth.users via admin API
+    const adminEmails: string[] = []
+    for (const ar of adminRoles) {
+      const { data: { user: adminUser } } = await supabase.auth.admin.getUserById(ar.user_id)
+      if (adminUser?.email) adminEmails.push(adminUser.email)
+    }
+
+    if (!adminEmails.length) {
+      return new Response(
+        JSON.stringify({ success: false, reason: 'no_admin_emails' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Send to each admin by recursively invoking ourselves
+    const results = []
+    for (const email of adminEmails) {
+      const innerResp = await fetch(req.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.get('Authorization') || '',
+          'apikey': req.headers.get('apikey') || '',
+        },
+        body: JSON.stringify({
+          templateName,
+          recipientEmail: email,
+          idempotencyKey: `${idempotencyKey}-${email}`,
+          templateData,
+        }),
+      })
+      results.push({ email, status: innerResp.status })
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, sent_to: results }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
 
   if (!effectiveRecipient) {
     return new Response(
