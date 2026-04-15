@@ -40,10 +40,11 @@ import CloseManagementView from '@/components/budget/CloseManagement';
 import DataValidation from '@/components/budget/DataValidation';
 import InvestmentRegister from '@/components/budget/InvestmentRegister';
 import XBRLExport from '@/components/budget/XBRLExport';
+import CashFlowView from '@/components/budget/CashFlowView';
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl';
+type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
