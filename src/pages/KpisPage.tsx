@@ -265,6 +265,37 @@ export default function KpisPage() {
         </div>
       </div>
 
+      {/* Alerts banner */}
+      {alerts.length > 0 && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={16} className="text-destructive" />
+            <h3 className="text-[13px] font-semibold text-destructive">
+              {alerts.length} alerte{alerts.length > 1 ? 's' : ''} KPI — sous 80% de l'objectif
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {alerts.slice(0, 6).map((a, i) => (
+              <div key={i} className="flex items-center gap-2 bg-card/80 rounded-md px-3 py-2 text-[12px]">
+                <span>{a.country_flag}</span>
+                <span className="font-medium text-primary">{a.country_name}</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-muted-foreground">{KPI_LABELS[a.metric]}</span>
+                <span className={`ml-auto font-bold ${a.pct < 50 ? 'text-destructive' : 'text-[hsl(var(--gold))]'}`}>
+                  {a.pct}%
+                </span>
+                <span className="text-[10px] text-muted-foreground">{formatMonth(a.month)}</span>
+              </div>
+            ))}
+          </div>
+          {alerts.length > 6 && (
+            <p className="text-[11px] text-muted-foreground mt-2">
+              + {alerts.length - 6} autre{alerts.length - 6 > 1 ? 's' : ''} alerte{alerts.length - 6 > 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Summary KPI cards with target comparison */}
       {latestKpis && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
