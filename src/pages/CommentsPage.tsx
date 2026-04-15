@@ -280,6 +280,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const updateComment = useUpdateComment();
   const deleteComment = useDeleteComment();
   const toggleReaction = useToggleReaction();
+  const qc = useQueryClient();
 
   const isAdmin = myRole === 'admin';
 
@@ -292,6 +293,9 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const [profileUser, setProfileUser] = useState<any>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const commentIds = useMemo(() => comments.map(c => c.id), [comments]);
   const { data: allReactions = [] } = useCommentReactions(commentIds);
