@@ -229,10 +229,13 @@ export default function CalendarPage() {
               <div
                 key={i}
                 onClick={() => day && canWrite && openCreateForDay(day)}
-                className={`min-h-[80px] rounded-lg p-1.5 group relative ${
+                onDragOver={e => { if (day && canWrite) { e.preventDefault(); e.currentTarget.classList.add('ring-2', 'ring-accent'); } }}
+                onDragLeave={e => { e.currentTarget.classList.remove('ring-2', 'ring-accent'); }}
+                onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('ring-2', 'ring-accent'); if (day) handleDrop(day); }}
+                className={`min-h-[80px] rounded-lg p-1.5 group relative transition-all ${
                   isToday ? 'bg-accent/10 border-[1.5px] border-accent' :
                   day ? 'bg-muted/30' : 'opacity-40 bg-muted/30'
-                } ${day && canWrite ? 'cursor-pointer hover:bg-muted/60 transition-colors' : ''}`}
+                } ${day && canWrite ? 'cursor-pointer hover:bg-muted/60' : ''}`}
               >
                 {day && (
                   <>
@@ -245,7 +248,13 @@ export default function CalendarPage() {
                       )}
                     </div>
                     {tasksByDay[day]?.map((ev, j) => (
-                      <div key={j} className={`text-[10px] font-medium text-white px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color}`}>
+                      <div
+                        key={j}
+                        draggable={canWrite}
+                        onDragStart={e => { e.stopPropagation(); setDragTaskId(ev.id); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragEnd={() => setDragTaskId(null)}
+                        className={`text-[10px] font-medium text-white px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color} ${canWrite ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                      >
                         {ev.label}
                       </div>
                     ))}
