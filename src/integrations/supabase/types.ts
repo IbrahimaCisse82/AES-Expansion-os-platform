@@ -1221,6 +1221,10 @@ export type Database = {
           notes: string | null
           nps: number
           retention: number
+          target_ca: number
+          target_clients: number
+          target_nps: number
+          target_retention: number
           updated_at: string
         }
         Insert: {
@@ -1233,6 +1237,10 @@ export type Database = {
           notes?: string | null
           nps?: number
           retention?: number
+          target_ca?: number
+          target_clients?: number
+          target_nps?: number
+          target_retention?: number
           updated_at?: string
         }
         Update: {
@@ -1245,6 +1253,10 @@ export type Database = {
           notes?: string | null
           nps?: number
           retention?: number
+          target_ca?: number
+          target_clients?: number
+          target_nps?: number
+          target_retention?: number
           updated_at?: string
         }
         Relationships: []

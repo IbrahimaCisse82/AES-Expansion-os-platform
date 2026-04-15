@@ -9,6 +9,10 @@ export interface KpiHistoryEntry {
   clients: number;
   nps: number;
   retention: number;
+  target_ca: number;
+  target_clients: number;
+  target_nps: number;
+  target_retention: number;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -40,6 +44,10 @@ export function useUpsertKpiHistory() {
       clients: number;
       nps: number;
       retention: number;
+      target_ca: number;
+      target_clients: number;
+      target_nps: number;
+      target_retention: number;
       notes?: string;
     }) => {
       const { data: existing } = await supabase
@@ -57,6 +65,10 @@ export function useUpsertKpiHistory() {
             clients: entry.clients,
             nps: entry.nps,
             retention: entry.retention,
+            target_ca: entry.target_ca,
+            target_clients: entry.target_clients,
+            target_nps: entry.target_nps,
+            target_retention: entry.target_retention,
             notes: entry.notes ?? '',
           })
           .eq('id', existing.id);
