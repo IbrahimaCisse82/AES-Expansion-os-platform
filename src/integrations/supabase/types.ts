@@ -939,6 +939,47 @@ export type Database = {
           },
         ]
       }
+      comment_attachments: {
+        Row: {
+          comment_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          mime_type: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_attachments_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comment_mentions: {
         Row: {
           comment_id: string
@@ -1233,6 +1274,77 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      custom_kpi_definitions: {
+        Row: {
+          aggregation: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          aggregation?: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          aggregation?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      custom_kpi_values: {
+        Row: {
+          country_id: string
+          created_at: string
+          id: string
+          kpi_id: string
+          month: string
+          target_value: number
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          country_id: string
+          created_at?: string
+          id?: string
+          kpi_id: string
+          month: string
+          target_value?: number
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          country_id?: string
+          created_at?: string
+          id?: string
+          kpi_id?: string
+          month?: string
+          target_value?: number
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_kpi_values_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "custom_kpi_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_send_log: {
         Row: {
@@ -1736,6 +1848,7 @@ export type Database = {
           color: string
           country_id: string
           created_at: string
+          depends_on: string | null
           end_month: number
           id: string
           label: string
@@ -1746,6 +1859,7 @@ export type Database = {
           color?: string
           country_id: string
           created_at?: string
+          depends_on?: string | null
           end_month: number
           id?: string
           label?: string
@@ -1756,6 +1870,7 @@ export type Database = {
           color?: string
           country_id?: string
           created_at?: string
+          depends_on?: string | null
           end_month?: number
           id?: string
           label?: string
@@ -1768,6 +1883,13 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roadmap_bars_depends_on_fkey"
+            columns: ["depends_on"]
+            isOneToOne: false
+            referencedRelation: "roadmap_bars"
             referencedColumns: ["id"]
           },
         ]
@@ -1862,6 +1984,9 @@ export type Database = {
           milestone_id: string | null
           owner_name: string | null
           priority: Database["public"]["Enums"]["task_priority"]
+          recurrence: string
+          recurrence_interval: number
+          recurrence_next_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
@@ -1877,6 +2002,9 @@ export type Database = {
           milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
+          recurrence?: string
+          recurrence_interval?: number
+          recurrence_next_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
@@ -1892,6 +2020,9 @@ export type Database = {
           milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
+          recurrence?: string
+          recurrence_interval?: number
+          recurrence_next_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string
