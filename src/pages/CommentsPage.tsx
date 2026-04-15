@@ -1,19 +1,53 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useComments, useCountries } from '@/hooks/useExpansionData';
 import { useCreateComment, useUpdateComment, useDeleteComment } from '@/hooks/useCommentMutations';
 import { useCurrentUserRole, useAllUsersWithRoles } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { useCommentReactions, useToggleReaction } from '@/hooks/useCommentReactions';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Trash2, Pencil, X, Check, MessageSquare, SmilePlus } from 'lucide-react';
+import { Trash2, Pencil, X, Check, MessageSquare, SmilePlus, Paperclip, FileIcon, Image as ImageIcon } from 'lucide-react';
 import MentionInput, { extractMentions, renderMentionedText } from '@/components/MentionInput';
 import { sendNotificationEmail } from '@/lib/notificationEmail';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '🎉', '😂', '🤔', '👏'];
+
+// Attachment display component
+function CommentAttachments({ commentId }: { commentId: string }) {
+  const { data: attachments = [] } = useQuery({
+    queryKey: ['comment_attachments', commentId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('comment_attachments').select('*').eq('comment_id', commentId).order('created_at');
+      if (error) throw error;
+      return data;
+    },
+  });
+  if (attachments.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {attachments.map(a => {
+        const isImage = a.mime_type.startsWith('image/');
+        const url = supabase.storage.from('comment-attachments').getPublicUrl(a.file_path).data.publicUrl;
+        return isImage ? (
+          <a key={a.id} href={url} target="_blank" rel="noopener noreferrer" className="block">
+            <img src={url} alt={a.file_name} className="max-h-[120px] rounded-lg border border-border object-cover hover:opacity-80 transition-opacity" />
+          </a>
+        ) : (
+          <a key={a.id} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 transition-colors text-[12px]">
+            <FileIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="truncate max-w-[150px]">{a.file_name}</span>
+            <span className="text-[10px] text-muted-foreground">{(a.file_size / 1024).toFixed(0)} KB</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
 
 interface CommentItemProps {
   c: any;
@@ -136,6 +170,9 @@ function CommentItem({
             </div>
           )}
 
+          {/* Attachments */}
+          <CommentAttachments commentId={c.id} />
+
           {/* Reactions display */}
           {grouped.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1.5">
@@ -243,6 +280,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const updateComment = useUpdateComment();
   const deleteComment = useDeleteComment();
   const toggleReaction = useToggleReaction();
+  const qc = useQueryClient();
 
   const isAdmin = myRole === 'admin';
 
@@ -255,6 +293,9 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const [profileUser, setProfileUser] = useState<any>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const commentIds = useMemo(() => comments.map(c => c.id), [comments]);
   const { data: allReactions = [] } = useCommentReactions(commentIds);
@@ -326,6 +367,63 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   };
 
   const handlePublish = () => publishComment(content);
+  const handlePublishWithAttachments = async () => {
+    if (!content.trim() && pendingFiles.length === 0) return;
+    // First publish the comment
+    const trimmed = content.trim() || '📎 Pièce(s) jointe(s)';
+    const country = countries.find(c => c.id === marketId);
+    const payload: any = {
+      content: trimmed,
+      author_id: user?.id ?? null,
+      author_name: fullName,
+      author_initials: initials,
+      author_color: '#1C2B3A',
+      market_id: marketId || null,
+      market_label: country ? `${country.flag} ${country.name}` : null,
+      tags: [],
+      parent_id: null,
+    };
+    createComment.mutate(payload, {
+      onSuccess: async (data) => {
+        // Upload attachments
+        if (pendingFiles.length > 0 && data?.id) {
+          setUploading(true);
+          try {
+            for (const file of pendingFiles) {
+              const filePath = `${data.id}/${Date.now()}_${file.name}`;
+              const { error: uploadErr } = await supabase.storage.from('comment-attachments').upload(filePath, file);
+              if (uploadErr) { toast.error(`Erreur upload: ${file.name}`); continue; }
+              await supabase.from('comment_attachments').insert({
+                comment_id: data.id,
+                file_name: file.name,
+                file_path: filePath,
+                file_size: file.size,
+                mime_type: file.type || 'application/octet-stream',
+                uploaded_by: user?.id ?? null,
+              });
+            }
+            qc.invalidateQueries({ queryKey: ['comment_attachments'] });
+            toast.success('Commentaire publié avec pièces jointes');
+          } catch (err) {
+            toast.error('Erreur lors de l\'upload');
+          } finally {
+            setUploading(false);
+          }
+        } else {
+          toast.success('Commentaire publié');
+        }
+        // Handle mentions
+        const mentions = extractMentions(trimmed, allUsers.map((u: any) => ({ user_id: u.user_id, full_name: u.full_name })));
+        if (mentions.length > 0 && data?.id) {
+          await supabase.from('comment_mentions').insert(mentions.map(m => ({ comment_id: data.id, mentioned_user_id: m.user_id, mentioned_name: m.full_name })));
+        }
+        setContent('');
+        setMarketId('');
+        setPendingFiles([]);
+      },
+      onError: (err: Error) => toast.error(err.message),
+    });
+  };
   const handleReply = () => { if (replyingTo) publishComment(replyContent, replyingTo); };
 
   const handleDelete = () => {
@@ -416,6 +514,18 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 rows={3}
                 placeholder="Ajouter un commentaire… Tapez @ pour mentionner quelqu'un"
               />
+              {/* Pending attachments preview */}
+              {pendingFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {pendingFiles.map((f, i) => (
+                    <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/50 border border-border text-[11px]">
+                      {f.type.startsWith('image/') ? <ImageIcon className="w-3 h-3 text-accent" /> : <FileIcon className="w-3 h-3 text-muted-foreground" />}
+                      <span className="truncate max-w-[120px]">{f.name}</span>
+                      <button onClick={() => setPendingFiles(prev => prev.filter((_, j) => j !== i))} className="p-0.5 hover:bg-destructive/10 rounded"><X className="w-3 h-3 text-destructive" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2 mt-2 items-center">
                 <Select value={marketId || '_none'} onValueChange={v => setMarketId(v === '_none' ? '' : v)}>
                   <SelectTrigger className="w-[180px] h-8 text-[12px]"><SelectValue placeholder="Marché (optionnel)" /></SelectTrigger>
@@ -424,9 +534,30 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                     {countries.map(c => <SelectItem key={c.id} value={c.id}>{c.flag} {c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                  title="Joindre un fichier"
+                >
+                  <Paperclip className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                  className="hidden"
+                  onChange={e => {
+                    if (e.target.files) {
+                      setPendingFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+                    }
+                    e.target.value = '';
+                  }}
+                />
                 <span className="text-[11px] text-muted-foreground ml-auto">{content.length}/1000</span>
-                <button onClick={handlePublish} disabled={createComment.isPending || !content.trim()} className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50">
-                  Publier →
+                <button onClick={handlePublishWithAttachments} disabled={createComment.isPending || uploading || (!content.trim() && pendingFiles.length === 0)} className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50">
+                  {uploading ? 'Envoi…' : 'Publier →'}
                 </button>
               </div>
             </div>

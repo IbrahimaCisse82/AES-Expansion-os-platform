@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
-import { useCreateTask } from '@/hooks/useTaskMutations';
+import { useCreateTask, useUpdateTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
@@ -20,7 +20,9 @@ export default function CalendarPage() {
   const { data: allMilestones = [] } = useMilestones(null);
   const { data: myRole } = useCurrentUserRole();
   const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
   const canWrite = CAN_WRITE.includes(myRole ?? '');
+  const [dragTaskId, setDragTaskId] = useState<string | null>(null);
 
   const [viewType, setViewType] = useState<'month' | 'week'>('month');
   const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -60,7 +62,7 @@ export default function CalendarPage() {
   while (cells.length % 7 !== 0) cells.push(null);
 
   const tasksByDay = useMemo(() => {
-    const map: Record<number, { label: string; color: string }[]> = {};
+    const map: Record<number, { id: string; label: string; color: string }[]> = {};
     tasks.forEach(t => {
       if (!t.due_date) return;
       const parsed = new Date(t.due_date);
@@ -70,12 +72,23 @@ export default function CalendarPage() {
       if (!map[day]) map[day] = [];
       const colorMap: Record<string, string> = { high: 'bg-destructive', med: 'bg-[hsl(var(--gold))]', low: 'bg-accent' };
       map[day].push({
+        id: t.id,
         label: `${t.country_label ? t.country_label.split(' ')[0] + ' ' : ''}${t.title.slice(0, 25)}`,
         color: colorMap[t.priority] || 'bg-accent',
       });
     });
     return map;
   }, [tasks, viewMonth, viewYear]);
+
+  const handleDrop = useCallback((day: number) => {
+    if (!dragTaskId || !canWrite) return;
+    const newDate = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    updateTask.mutate({ id: dragTaskId, due_date: newDate }, {
+      onSuccess: () => toast.success('Tâche replanifiée'),
+      onError: (err: Error) => toast.error(err.message),
+    });
+    setDragTaskId(null);
+  }, [dragTaskId, canWrite, viewYear, viewMonth, updateTask]);
 
   const openCreateForDay = (day: number) => {
     if (!canWrite) return;
@@ -216,10 +229,13 @@ export default function CalendarPage() {
               <div
                 key={i}
                 onClick={() => day && canWrite && openCreateForDay(day)}
-                className={`min-h-[80px] rounded-lg p-1.5 group relative ${
+                onDragOver={e => { if (day && canWrite) { e.preventDefault(); e.currentTarget.classList.add('ring-2', 'ring-accent'); } }}
+                onDragLeave={e => { e.currentTarget.classList.remove('ring-2', 'ring-accent'); }}
+                onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('ring-2', 'ring-accent'); if (day) handleDrop(day); }}
+                className={`min-h-[80px] rounded-lg p-1.5 group relative transition-all ${
                   isToday ? 'bg-accent/10 border-[1.5px] border-accent' :
                   day ? 'bg-muted/30' : 'opacity-40 bg-muted/30'
-                } ${day && canWrite ? 'cursor-pointer hover:bg-muted/60 transition-colors' : ''}`}
+                } ${day && canWrite ? 'cursor-pointer hover:bg-muted/60' : ''}`}
               >
                 {day && (
                   <>
@@ -232,7 +248,13 @@ export default function CalendarPage() {
                       )}
                     </div>
                     {tasksByDay[day]?.map((ev, j) => (
-                      <div key={j} className={`text-[10px] font-medium text-white px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color}`}>
+                      <div
+                        key={j}
+                        draggable={canWrite}
+                        onDragStart={e => { e.stopPropagation(); setDragTaskId(ev.id); e.dataTransfer.effectAllowed = 'move'; }}
+                        onDragEnd={() => setDragTaskId(null)}
+                        className={`text-[10px] font-medium text-white px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color} ${canWrite ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                      >
                         {ev.label}
                       </div>
                     ))}

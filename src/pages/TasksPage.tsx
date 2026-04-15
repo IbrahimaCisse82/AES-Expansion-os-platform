@@ -30,6 +30,7 @@ const taskSchema = z.object({
   due_date: z.string().optional(),
   owner_name: z.string().max(100).optional(),
   assigned_to: z.string().optional(),
+  recurrence: z.enum(['none', 'daily', 'weekly', 'biweekly', 'monthly']).optional(),
 });
 
 type TaskForm = z.infer<typeof taskSchema>;
@@ -44,7 +45,16 @@ const EMPTY_FORM: TaskForm = {
   country_id: '',
   country_label: '',
   milestone_id: '',
+  recurrence: 'none',
 };
+
+const RECURRENCE_OPTIONS = [
+  { value: 'none', label: 'Aucune' },
+  { value: 'daily', label: 'Quotidienne' },
+  { value: 'weekly', label: 'Hebdomadaire' },
+  { value: 'biweekly', label: 'Bi-hebdomadaire' },
+  { value: 'monthly', label: 'Mensuelle' },
+];
 
 const CAN_WRITE_ROLES = ['admin', 'director', 'country_manager'];
 
@@ -118,6 +128,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
       milestone_id: task.milestone_id ?? '',
+      recurrence: (task as any).recurrence || 'none',
     });
     setEditingId(task.id);
     setErrors({});
@@ -153,6 +164,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       country_id: result.data.country_id || null,
       country_label: result.data.country_label || null,
       milestone_id: result.data.milestone_id || null,
+      recurrence: result.data.recurrence === 'none' ? null : result.data.recurrence || null,
     };
 
     if (editingId) {
@@ -308,6 +320,9 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 })()}
                 {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
+                {(task as any).recurrence && (task as any).recurrence !== 'none' && (
+                  <><span>·</span><span className="text-accent">🔄 {RECURRENCE_OPTIONS.find(r => r.value === (task as any).recurrence)?.label || (task as any).recurrence}</span></>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -460,6 +475,20 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Recurrence */}
+            <div>
+              <Label className="text-[12.5px]">Récurrence</Label>
+              <Select value={form.recurrence || 'none'} onValueChange={v => setForm(p => ({ ...p, recurrence: v as TaskForm['recurrence'] }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {RECURRENCE_OPTIONS.map(r => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10.5px] text-muted-foreground mt-1">Les tâches récurrentes seront automatiquement recréées à la fréquence choisie</p>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
