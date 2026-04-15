@@ -62,7 +62,7 @@ export default function CalendarPage() {
   while (cells.length % 7 !== 0) cells.push(null);
 
   const tasksByDay = useMemo(() => {
-    const map: Record<number, { label: string; color: string }[]> = {};
+    const map: Record<number, { id: string; label: string; color: string }[]> = {};
     tasks.forEach(t => {
       if (!t.due_date) return;
       const parsed = new Date(t.due_date);
@@ -72,12 +72,23 @@ export default function CalendarPage() {
       if (!map[day]) map[day] = [];
       const colorMap: Record<string, string> = { high: 'bg-destructive', med: 'bg-[hsl(var(--gold))]', low: 'bg-accent' };
       map[day].push({
+        id: t.id,
         label: `${t.country_label ? t.country_label.split(' ')[0] + ' ' : ''}${t.title.slice(0, 25)}`,
         color: colorMap[t.priority] || 'bg-accent',
       });
     });
     return map;
   }, [tasks, viewMonth, viewYear]);
+
+  const handleDrop = useCallback((day: number) => {
+    if (!dragTaskId || !canWrite) return;
+    const newDate = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    updateTask.mutate({ id: dragTaskId, due_date: newDate }, {
+      onSuccess: () => toast.success('Tâche replanifiée'),
+      onError: (err: Error) => toast.error(err.message),
+    });
+    setDragTaskId(null);
+  }, [dragTaskId, canWrite, viewYear, viewMonth, updateTask]);
 
   const openCreateForDay = (day: number) => {
     if (!canWrite) return;
