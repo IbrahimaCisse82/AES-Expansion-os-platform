@@ -300,6 +300,77 @@ function PlatformInfoSection() {
   );
 }
 
+// ── Currency Settings ──
+function CurrencySettingsSection() {
+  const { data: settings } = useQuery({
+    queryKey: ['app_settings'],
+    queryFn: async () => { const { data, error } = await supabase.from('app_settings').select('*'); if (error) throw error; return data; },
+  });
+  const qc = useQueryClient();
+  const currentCurrency = settings?.find(s => s.key === 'default_currency')?.value || 'FCFA';
+  const [currency, setCurrency] = useState('FCFA');
+  const updateCurrency = useMutation({
+    mutationFn: async (newValue: string) => { const { error } = await supabase.from('app_settings').upsert({ key: 'default_currency', value: newValue }); if (error) throw error; },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['app_settings'] }); toast.success('Devise mise à jour'); },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const CURRENCIES = ['FCFA', 'EUR', 'USD', 'GBP', 'XOF', 'XAF', 'NGN', 'KES', 'ZAR', 'MAD', 'EGP', 'GHS'];
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-6">
+      <div className="mb-4">
+        <h3 className="font-display text-[16px] font-semibold text-primary">Devise de référence</h3>
+        <p className="text-[12px] text-muted-foreground">Devise utilisée comme base pour les montants (actuellement: {currentCurrency})</p>
+      </div>
+      <div className="flex items-end gap-3">
+        <div className="flex-1">
+          <Label className="text-[12.5px] mb-1.5 block">Devise</Label>
+          <Select value={currency} onValueChange={setCurrency}>
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <Button onClick={() => updateCurrency.mutate(currency)} disabled={updateCurrency.isPending} size="sm">Enregistrer</Button>
+      </div>
+    </div>
+  );
+}
+
+// ── Theme Customization ──
+function ThemeCustomizationSection() {
+  const { data: settings } = useQuery({
+    queryKey: ['app_settings'],
+    queryFn: async () => { const { data, error } = await supabase.from('app_settings').select('*'); if (error) throw error; return data; },
+  });
+  const qc = useQueryClient();
+  const currentName = settings?.find(s => s.key === 'company_name')?.value || 'ExpansionOS';
+  const [companyName, setCompanyName] = useState('');
+  const updateName = useMutation({
+    mutationFn: async (newValue: string) => { const { error } = await supabase.from('app_settings').upsert({ key: 'company_name', value: newValue }); if (error) throw error; },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['app_settings'] }); toast.success('Nom mis à jour'); },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-6">
+      <div className="mb-4">
+        <h3 className="font-display text-[16px] font-semibold text-primary">Personnalisation</h3>
+        <p className="text-[12px] text-muted-foreground">Nom de l'entreprise affiché dans la plateforme (actuel: {currentName})</p>
+      </div>
+      <div className="flex items-end gap-3">
+        <div className="flex-1">
+          <Label className="text-[12.5px] mb-1.5 block">Nom de l'entreprise</Label>
+          <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder={currentName} onFocus={() => setCompanyName(currentName)} />
+        </div>
+        <Button onClick={() => { if (companyName.trim()) updateName.mutate(companyName.trim()); }} disabled={updateName.isPending} size="sm">Enregistrer</Button>
+      </div>
+    </div>
+  );
+}
+
 // ── Roadmap Types ──
 function useRoadmapTypes() {
   return useQuery({
@@ -362,6 +433,8 @@ export default function SettingsPage() {
       <p className="text-[12.5px] text-muted-foreground mb-8">Gérez les paramètres de votre plateforme</p>
 
       <div className="space-y-6 max-w-xl">
+        <CurrencySettingsSection />
+        <ThemeCustomizationSection />
         <KpiAlertThresholdSection />
         <NotificationPreferencesSection />
         <RiskCategoriesSection />
