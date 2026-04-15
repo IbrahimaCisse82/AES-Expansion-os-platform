@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useKpiHistory, useUpsertKpiHistory, useDeleteKpiHistory, type KpiHistoryEntry } from '@/hooks/useKpiHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
-import { useActivityLogger } from '@/hooks/useActivityLogger';
+import { logActivity } from '@/hooks/useActivityLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
