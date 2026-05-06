@@ -47,7 +47,7 @@ function CustomKpiSection() {
       <h3 className="font-display text-[15.5px] font-semibold text-primary mb-3">KPIs Personnalisés</h3>
       <div className="flex gap-2 mb-3">
         <Input placeholder="Nom du KPI" value={newName} onChange={e => setNewName(e.target.value)} className="h-8 text-[12px] flex-1" />
-        <Input placeholder="Unité (%, €, pts)" value={newUnit} onChange={e => setNewUnit(e.target.value)} className="h-8 text-[12px] w-24" />
+        <Input placeholder="Unité (%, FCFA, pts)" value={newUnit} onChange={e => setNewUnit(e.target.value)} className="h-8 text-[12px] w-24" />
         <Button size="sm" className="h-8 text-[11px]" disabled={!newName.trim()} onClick={() => createDef.mutate({ name: newName.trim(), unit: newUnit || '', sort_order: defs.length })}>
           <Plus size={13} /> Ajouter
         </Button>
