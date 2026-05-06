@@ -13,6 +13,14 @@ import { toast } from 'sonner';
 import { Trash2, Pencil, X, Check, MessageSquare, SmilePlus, Paperclip, FileIcon, Image as ImageIcon } from 'lucide-react';
 import MentionInput, { extractMentions, renderMentionedText } from '@/components/MentionInput';
 import { sendNotificationEmail } from '@/lib/notificationEmail';
+import type { Database } from '@/integrations/supabase/types';
+import type { User } from '@supabase/supabase-js';
+
+type CommentRow = Database['public']['Tables']['comments']['Row'];
+type CommentInsert = Database['public']['Tables']['comments']['Insert'];
+type ReactionRow = Database['public']['Tables']['comment_reactions']['Row'];
+type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+type UserWithRole = ProfileRow & { role: string; role_id?: string };
 
 const EMOJI_OPTIONS = ['👍', '❤️', '🎉', '😂', '🤔', '👏'];
 
@@ -50,18 +58,18 @@ function CommentAttachments({ commentId }: { commentId: string }) {
 }
 
 interface CommentItemProps {
-  c: any;
-  user: any;
+  c: CommentRow;
+  user: User | null;
   isAdmin: boolean;
-  reactions: any[];
-  allUsers: any[];
+  reactions: ReactionRow[];
+  allUsers: UserWithRole[];
   knownNames: string[];
   depth?: number;
-  replies: any[];
-  allComments: any[];
-  allReactions: any[];
+  replies: CommentRow[];
+  allComments: CommentRow[];
+  allReactions: ReactionRow[];
   onDelete: (id: string) => void;
-  onEdit: (c: any) => void;
+  onEdit: (c: CommentRow) => void;
   onReply: (id: string) => void;
   onMentionClick: (name: string) => void;
   onToggleReaction: (commentId: string, emoji: string) => void;
@@ -109,7 +117,7 @@ function CommentItem({
   return (
     <div className={`${depth > 0 ? 'ml-8 border-l-2 border-border pl-3' : ''}`}>
       <div className="flex gap-3 py-3 group">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 mt-0.5" style={{ background: c.author_color }}>
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-[12px] font-bold flex-shrink-0 mt-0.5" style={{ background: c.author_color }}>
           {c.author_initials}
         </div>
         <div className="flex-1 min-w-0">
@@ -290,7 +298,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
-  const [profileUser, setProfileUser] = useState<any>(null);
+  const [profileUser, setProfileUser] = useState<UserWithRole | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -303,7 +311,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const profile = user?.user_metadata;
   const fullName = profile?.full_name || user?.email || 'Utilisateur';
   const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-  const knownNames = allUsers.map((u: any) => u.full_name);
+  const knownNames = allUsers.map((u) => u.full_name ?? '').filter(Boolean);
 
   // Only show top-level comments (no parent_id)
   const topLevel = comments.filter(c => !c.parent_id);
@@ -317,15 +325,15 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   }, [addSignal]);
 
   const handleMentionClick = (name: string) => {
-    const found = allUsers.find((u: any) => u.full_name === name);
-    if (found) setProfileUser(found);
+    const found = allUsers.find((u) => u.full_name === name);
+    if (found) setProfileUser(found as UserWithRole);
   };
 
   const publishComment = async (text: string, parentId?: string) => {
     const trimmed = text.trim();
     if (!trimmed) { toast.error('Le commentaire ne peut pas être vide'); return; }
     const country = countries.find(c => c.id === marketId);
-    const payload: any = {
+    const payload: CommentInsert = {
       content: trimmed,
       author_id: user?.id ?? null,
       author_name: fullName,
@@ -340,7 +348,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     createComment.mutate(payload, {
       onSuccess: async (data) => {
         toast.success(parentId ? 'Réponse publiée' : 'Commentaire publié');
-        const mentions = extractMentions(trimmed, allUsers.map((u: any) => ({ user_id: u.user_id, full_name: u.full_name })));
+        const mentions = extractMentions(trimmed, allUsers.map((u) => ({ user_id: u.user_id, full_name: u.full_name ?? '' })));
         if (mentions.length > 0 && data?.id) {
           await supabase.from('comment_mentions').insert(mentions.map(m => ({ comment_id: data.id, mentioned_user_id: m.user_id, mentioned_name: m.full_name })));
           // Send email notifications for each mention
@@ -372,7 +380,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     // First publish the comment
     const trimmed = content.trim() || '📎 Pièce(s) jointe(s)';
     const country = countries.find(c => c.id === marketId);
-    const payload: any = {
+    const payload: CommentInsert = {
       content: trimmed,
       author_id: user?.id ?? null,
       author_name: fullName,
@@ -413,7 +421,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           toast.success('Commentaire publié');
         }
         // Handle mentions
-        const mentions = extractMentions(trimmed, allUsers.map((u: any) => ({ user_id: u.user_id, full_name: u.full_name })));
+        const mentions = extractMentions(trimmed, allUsers.map((u) => ({ user_id: u.user_id, full_name: u.full_name ?? '' })));
         if (mentions.length > 0 && data?.id) {
           await supabase.from('comment_mentions').insert(mentions.map(m => ({ comment_id: data.id, mentioned_user_id: m.user_id, mentioned_name: m.full_name })));
         }
@@ -434,7 +442,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     });
   };
 
-  const startEdit = (c: any) => { setEditingId(c.id); setEditContent(c.content); };
+  const startEdit = (c: CommentRow) => { setEditingId(c.id); setEditContent(c.content); };
 
   const handleUpdate = () => {
     if (!editingId) return;
@@ -584,7 +592,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           <DialogHeader><DialogTitle>Profil utilisateur</DialogTitle></DialogHeader>
           {profileUser && (
             <div className="flex flex-col items-center gap-3 py-4">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold" style={{ background: profileUser.avatar_color }}>{profileUser.initials}</div>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-primary-foreground text-xl font-bold" style={{ background: profileUser.avatar_color ?? 'hsl(var(--navy))' }}>{profileUser.initials}</div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-primary">{profileUser.full_name}</p>
                 <span className="inline-block mt-1 px-3 py-1 rounded-full text-[12px] font-medium bg-accent/10 text-accent">{ROLE_LABELS[profileUser.role] || profileUser.role}</span>
