@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
+
+type TaskRow = Database['public']['Tables']['tasks']['Row'];
+type RiskRow = Database['public']['Tables']['risks']['Row'];
+type CommentRow = Database['public']['Tables']['comments']['Row'];
+type MentionRow = Database['public']['Tables']['comment_mentions']['Row'];
 
 const statusLabels: Record<string, string> = {
   open: 'À faire',
@@ -29,65 +35,77 @@ export function useRealtimeNotifications() {
       // Tasks
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
         qc.invalidateQueries({ queryKey: ['tasks'] });
-        const record = (payload.new as any) || (payload.old as any);
+        const newRow = payload.new as Partial<TaskRow> | undefined;
+        const oldRow = payload.old as Partial<TaskRow> | undefined;
+        const record = newRow ?? oldRow;
         if (record?.created_by === user.id) return;
 
         switch (payload.eventType) {
           case 'INSERT':
-            toast.info(`📋 Nouvelle tâche : ${(payload.new as any).title}`, {
-              description: (payload.new as any).country_label || undefined,
-            });
+            if (newRow?.title) {
+              toast.info(`📋 Nouvelle tâche : ${newRow.title}`, {
+                description: newRow.country_label || undefined,
+              });
+            }
             break;
           case 'UPDATE': {
-            const newData = payload.new as any;
-            const oldData = payload.old as any;
+            const newData = newRow;
+            const oldData = oldRow;
+            if (!newData?.title) break;
             const statusChanged = oldData?.status !== newData?.status;
             toast.info(
               statusChanged
-                ? `🔄 Tâche "${newData.title}" → ${statusLabels[newData.status] || newData.status}`
+                ? `🔄 Tâche "${newData.title}" → ${statusLabels[newData.status ?? ''] || newData.status}`
                 : `✏️ Tâche modifiée : ${newData.title}`,
               { description: newData.country_label || undefined }
             );
             break;
           }
           case 'DELETE':
-            toast.info(`🗑️ Tâche supprimée`, { description: (payload.old as any)?.title });
+            toast.info(`🗑️ Tâche supprimée`, { description: oldRow?.title || undefined });
             break;
         }
       })
       // Risks
       .on('postgres_changes', { event: '*', schema: 'public', table: 'risks' }, (payload) => {
         qc.invalidateQueries({ queryKey: ['risks'] });
+        const newRow = payload.new as Partial<RiskRow> | undefined;
+        const oldRow = payload.old as Partial<RiskRow> | undefined;
 
         switch (payload.eventType) {
           case 'INSERT': {
-            const r = payload.new as any;
+            const r = newRow;
+            if (!r?.title) break;
             toast.info(`⚠️ Nouveau risque : ${r.title}`, {
-              description: `${riskLevelLabels[r.level] || r.level} · ${r.country_label || ''}`,
+              description: `${riskLevelLabels[r.level ?? ''] || r.level} · ${r.country_label || ''}`,
             });
             break;
           }
           case 'UPDATE': {
-            const r = payload.new as any;
+            const r = newRow;
+            if (!r?.title) break;
             toast.info(`🔄 Risque modifié : ${r.title}`, {
-              description: `${riskLevelLabels[r.level] || r.level} · ${r.country_label || ''}`,
+              description: `${riskLevelLabels[r.level ?? ''] || r.level} · ${r.country_label || ''}`,
             });
             break;
           }
           case 'DELETE':
-            toast.info(`🗑️ Risque supprimé`, { description: (payload.old as any)?.title });
+            toast.info(`🗑️ Risque supprimé`, { description: oldRow?.title || undefined });
             break;
         }
       })
       // Comments
       .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, (payload) => {
         qc.invalidateQueries({ queryKey: ['comments'] });
-        const record = (payload.new as any) || (payload.old as any);
+        const newRow = payload.new as Partial<CommentRow> | undefined;
+        const oldRow = payload.old as Partial<CommentRow> | undefined;
+        const record = newRow ?? oldRow;
         if (record?.author_id === user.id) return;
 
         switch (payload.eventType) {
           case 'INSERT': {
-            const c = payload.new as any;
+            const c = newRow;
+            if (!c) break;
             toast.info(`💬 ${c.author_name} a commenté`, {
               description: c.content?.substring(0, 80) || undefined,
             });
@@ -100,7 +118,7 @@ export function useRealtimeNotifications() {
       })
       // Mentions — notify when YOU are mentioned
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comment_mentions' }, (payload) => {
-        const mention = payload.new as any;
+        const mention = payload.new as Partial<MentionRow> | undefined;
         if (mention?.mentioned_user_id === user.id) {
           toast.info(`🔔 Vous avez été mentionné(e) par un collègue`, {
             description: `@${mention.mentioned_name}`,

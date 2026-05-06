@@ -128,7 +128,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       country_id: task.country_id ?? '',
       country_label: task.country_label ?? '',
       milestone_id: task.milestone_id ?? '',
-      recurrence: (task as any).recurrence || 'none',
+      recurrence: (task.recurrence as TaskForm['recurrence']) || 'none',
     });
     setEditingId(task.id);
     setErrors({});
@@ -320,8 +320,8 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                 })()}
                 {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
-                {(task as any).recurrence && (task as any).recurrence !== 'none' && (
-                  <><span>·</span><span className="text-accent">🔄 {RECURRENCE_OPTIONS.find(r => r.value === (task as any).recurrence)?.label || (task as any).recurrence}</span></>
+                {task.recurrence && task.recurrence !== 'none' && (
+                  <><span>·</span><span className="text-accent">🔄 {RECURRENCE_OPTIONS.find(r => r.value === task.recurrence)?.label || task.recurrence}</span></>
                 )}
               </div>
             </div>

@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Download, Mail, Bell, Shield } from 'lucide-react';
 import { useCountries, useTasks, useRisks, useBudgetEntries } from '@/hooks/useExpansionData';
 import { exportToCSV } from '@/lib/csvExport';
+import ExchangeRatesSettings from '@/components/settings/ExchangeRatesSettings';
 
 const COLOR_OPTIONS = [
   { value: 'sage', label: 'Vert', css: 'bg-sage' },
@@ -434,6 +435,7 @@ export default function SettingsPage() {
 
       <div className="space-y-6 max-w-xl">
         <CurrencySettingsSection />
+        <ExchangeRatesSettings />
         <ThemeCustomizationSection />
         <KpiAlertThresholdSection />
         <NotificationPreferencesSection />

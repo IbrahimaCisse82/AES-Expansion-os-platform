@@ -6,7 +6,8 @@ import { MapPin, Users, TrendingUp, Shield, CheckCircle2, Clock, AlertTriangle, 
 
 const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899'];
 
-function KpiBox({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub?: string }) {
+import type { LucideIcon } from 'lucide-react';
+function KpiBox({ icon: Icon, label, value, sub }: { icon: LucideIcon; label: string; value: string; sub?: string }) {
   return (
     <div className="bg-card border border-border rounded-lg p-4 flex items-start gap-3">
       <div className="p-2 rounded-lg bg-primary/10">

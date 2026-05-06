@@ -29,11 +29,11 @@ export default function MentionInput({ value, onChange, placeholder, maxLength, 
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [suggestionsPos, setSuggestionsPos] = useState({ top: 0, left: 0 });
 
-  const users: UserSuggestion[] = allUsers.map((u: any) => ({
+  const users: UserSuggestion[] = allUsers.map((u) => ({
     user_id: u.user_id,
-    full_name: u.full_name,
-    initials: u.initials,
-    avatar_color: u.avatar_color,
+    full_name: u.full_name ?? '',
+    initials: u.initials ?? '',
+    avatar_color: u.avatar_color ?? 'hsl(var(--navy))',
     role: u.role,
   }));
 
@@ -175,7 +175,7 @@ export default function MentionInput({ value, onChange, placeholder, maxLength, 
               onMouseEnter={() => setSelectedIndex(index)}
             >
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground text-[10px] font-bold flex-shrink-0"
                 style={{ background: user.avatar_color }}
               >
                 {user.initials}

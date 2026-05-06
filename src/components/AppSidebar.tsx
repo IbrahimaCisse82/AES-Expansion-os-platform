@@ -42,8 +42,8 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
 
   const badgeCounts: Record<string, number> = {
     countries: countries.length,
-    tasks: tasks.filter((t: any) => t.status === 'open' || t.status === 'late').length,
-    risks: risks.filter((r: any) => r.level === 'high').length,
+    tasks: tasks.filter((t) => t.status === 'open' || t.status === 'late').length,
+    risks: risks.filter((r) => r.level === 'high').length,
   };
 
   const handleNav = (id: string) => {
@@ -98,8 +98,8 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
                 {item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
                   <span className={`ml-auto text-[9.5px] font-bold px-1.5 rounded-full
                     ${activePage === item.id 
-                      ? 'bg-white/25 text-primary-foreground' 
-                      : 'bg-destructive text-white'
+                      ? 'bg-primary-foreground/25 text-primary-foreground' 
+                      : 'bg-destructive text-destructive-foreground'
                     }`}>
                     {badgeCounts[item.badgeKey]}
                   </span>
@@ -136,7 +136,7 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/40" onClick={onMobileClose} />
+          <div className="absolute inset-0 bg-foreground/40" onClick={onMobileClose} />
           <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-card border-r border-border flex flex-col z-10 animate-page-enter">
             {sidebarContent}
           </aside>

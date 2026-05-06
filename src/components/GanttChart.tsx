@@ -19,7 +19,7 @@ const borderColorMap: Record<string, string> = {
   plum: 'border-[hsl(var(--plum))]',
 };
 
-function parseMonthIndex(dateStr: string | null): number | null {
+function parseMonthIndex(dateStr: string | null | undefined): number | null {
   if (!dateStr) return null;
   // Try ISO date
   const iso = new Date(dateStr);
@@ -49,8 +49,8 @@ export default function GanttChart() {
           .filter(m => m.country_id === country.id)
           .map(m => ({
             ...m,
-            startMonthIdx: parseMonthIndex((m as any).start_date) ?? parseMonthIndex(m.target_date),
-            endMonthIdx: parseMonthIndex((m as any).end_date) ?? parseMonthIndex(m.target_date),
+            startMonthIdx: parseMonthIndex(m.start_date) ?? parseMonthIndex(m.target_date),
+            endMonthIdx: parseMonthIndex(m.end_date) ?? parseMonthIndex(m.target_date),
           }))
           .filter(m => m.startMonthIdx !== null || m.endMonthIdx !== null)
           .sort((a, b) => (a.startMonthIdx ?? a.endMonthIdx ?? 0) - (b.startMonthIdx ?? b.endMonthIdx ?? 0));
@@ -143,8 +143,8 @@ export default function GanttChart() {
                       <div className="bg-popover border border-border text-popover-foreground rounded-lg shadow-lg px-3 py-2 whitespace-nowrap text-[11px]">
                         <div className="font-semibold">{milestone.icon} {milestone.title}</div>
                         <div className="text-muted-foreground mt-0.5">
-                          {(milestone as any).start_date && (milestone as any).end_date
-                            ? `${(milestone as any).start_date} → ${(milestone as any).end_date}`
+                          {milestone.start_date && milestone.end_date
+                            ? `${milestone.start_date} → ${milestone.end_date}`
                             : milestone.target_date} · {milestone.is_done ? '✅ Terminé' : '⏳ En cours'}
                         </div>
                       </div>
