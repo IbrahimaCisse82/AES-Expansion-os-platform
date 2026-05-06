@@ -220,12 +220,14 @@ export function useAdjustScenarioPercent() {
       const factor = 1 + percent / 100;
       const MKEYS = ['m1','m2','m3','m4','m5','m6','m7','m8','m9','m10','m11','m12'];
 
-      const updates = lines
-        .filter(l => !categoryType || (l.budget_categories as any)?.type === categoryType)
+      type LineWithCat = (typeof lines)[number] & { budget_categories: { type: string } | null };
+      const updates = (lines as LineWithCat[])
+        .filter(l => !categoryType || l.budget_categories?.type === categoryType)
         .map(l => {
           const adjusted: Record<string, number> = {};
           MKEYS.forEach(k => {
-            adjusted[k] = Math.round(Number((l as any)[k] || 0) * factor * 100) / 100;
+            const val = (l as unknown as Record<string, number | null>)[k];
+            adjusted[k] = Math.round(Number(val ?? 0) * factor * 100) / 100;
           });
           return supabase.from('budget_lines').update(adjusted).eq('id', l.id);
         });
