@@ -1433,6 +1433,39 @@ export type Database = {
         }
         Relationships: []
       }
+      exchange_rates: {
+        Row: {
+          created_at: string
+          currency_code: string
+          effective_date: string
+          id: string
+          notes: string | null
+          rate_to_fcfa: number
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency_code: string
+          effective_date?: string
+          id?: string
+          notes?: string | null
+          rate_to_fcfa: number
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency_code?: string
+          effective_date?: string
+          id?: string
+          notes?: string | null
+          rate_to_fcfa?: number
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kpi_history: {
         Row: {
           ca: number
