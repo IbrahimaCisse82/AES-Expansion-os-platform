@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useCreateTask, useUpdateTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useAllUsersWithRoles } from '@/hooks/useUserRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,6 +20,7 @@ export default function CalendarPage() {
   const { data: countries = [] } = useCountries();
   const { data: allMilestones = [] } = useMilestones(null);
   const { data: myRole } = useCurrentUserRole();
+  const { data: members = [] } = useAllUsersWithRoles();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const canWrite = CAN_WRITE.includes(myRole ?? '');
@@ -38,6 +40,7 @@ export default function CalendarPage() {
   const [newDate, setNewDate] = useState('');
   const [newCountryId, setNewCountryId] = useState('');
   const [newMilestoneId, setNewMilestoneId] = useState('');
+  const [newAssigneeId, setNewAssigneeId] = useState('');
   const [newPriority, setNewPriority] = useState<'high' | 'med' | 'low'>('med');
 
   const countryMilestones = allMilestones.filter(m => m.country_id === newCountryId);
@@ -97,6 +100,7 @@ export default function CalendarPage() {
     setNewTitle('');
     setNewCountryId('');
     setNewMilestoneId('');
+    setNewAssigneeId('');
     setNewPriority('med');
     setDialogOpen(true);
   };
@@ -110,8 +114,10 @@ export default function CalendarPage() {
     if (!newTitle.trim()) { toast.error('Le titre est requis'); return; }
     if (!newCountryId) { toast.error('Le marche est requis'); return; }
     if (!newMilestoneId) { toast.error('Le jalon est requis'); return; }
+    if (!newAssigneeId) { toast.error('La personne assignée est requise'); return; }
 
     const country = countries.find(c => c.id === newCountryId);
+    const assignee = members.find(m => m.user_id === newAssigneeId);
     createTask.mutate({
       title: newTitle.trim(),
       due_date: newDate,
@@ -120,6 +126,8 @@ export default function CalendarPage() {
       country_id: newCountryId,
       country_label: country ? `${country.flag} ${country.name}` : null,
       milestone_id: newMilestoneId,
+      assigned_to: newAssigneeId,
+      owner_name: assignee?.full_name ?? '',
       created_by: user?.id ?? null,
     }, {
       onSuccess: () => { toast.success('Tache creee'); setDialogOpen(false); },
@@ -326,6 +334,18 @@ export default function CalendarPage() {
                   <SelectItem value="high">Haute</SelectItem>
                   <SelectItem value="med">Moyenne</SelectItem>
                   <SelectItem value="low">Faible</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[12.5px]">Assigné à *</Label>
+              <Select value={newAssigneeId || '_none'} onValueChange={v => setNewAssigneeId(v === '_none' ? '' : v)}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionner un membre" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sélectionner un membre</SelectItem>
+                  {members.map(m => (
+                    <SelectItem key={m.user_id} value={m.user_id}>{m.full_name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -94,7 +94,7 @@ export default function JournalEntriesView({ scenarioId, categories, countries, 
                     <td className="text-right px-2 py-1.5 font-medium">{fmt(e.credit_amount)}</td>
                     <td className="text-center px-2 py-1.5"><Badge variant={statusBadge(e.status) as 'default' | 'secondary' | 'outline'} className="text-[9px]">{e.status}</Badge></td>
                     <td className="px-1 flex items-center gap-1">
-                      {isAdmin && e.status === 'draft' && <button onClick={() => handleApprove(e)} className="p-1 hover:text-green-600"><Check className="w-3 h-3" /></button>}
+                      {isAdmin && e.status === 'draft' && <button onClick={() => handleApprove(e)} className="p-1 hover:text-sage"><Check className="w-3 h-3" /></button>}
                       {canWrite && <button onClick={() => deleteEntry.mutate({ id: e.id, scenarioId })} className="p-1 hover:text-destructive"><Trash2 className="w-3 h-3" /></button>}
                     </td>
                   </tr>

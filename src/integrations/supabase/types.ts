@@ -1739,6 +1739,7 @@ export type Database = {
           full_name: string
           id: string
           initials: string
+          timezone: string
           updated_at: string
           user_id: string
         }
@@ -1748,6 +1749,7 @@ export type Database = {
           full_name: string
           id?: string
           initials?: string
+          timezone?: string
           updated_at?: string
           user_id: string
         }
@@ -1757,6 +1759,7 @@ export type Database = {
           full_name?: string
           id?: string
           initials?: string
+          timezone?: string
           updated_at?: string
           user_id?: string
         }
@@ -2046,8 +2049,8 @@ export type Database = {
       }
       tasks: {
         Row: {
-          assigned_to: string | null
-          country_id: string | null
+          assigned_to: string
+          country_id: string
           country_label: string | null
           created_at: string
           created_by: string | null
@@ -2064,8 +2067,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          assigned_to?: string | null
-          country_id?: string | null
+          assigned_to: string
+          country_id: string
           country_label?: string | null
           created_at?: string
           created_by?: string | null
@@ -2082,8 +2085,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          assigned_to?: string | null
-          country_id?: string | null
+          assigned_to?: string
+          country_id?: string
           country_label?: string | null
           created_at?: string
           created_by?: string | null

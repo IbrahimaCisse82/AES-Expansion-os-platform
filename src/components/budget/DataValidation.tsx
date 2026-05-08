@@ -114,11 +114,11 @@ export default function DataValidation({ scenarioId, lines, categories, canWrite
           <div className="text-[10px] text-muted-foreground">Règles actives</div>
         </Card>
         <Card className={`p-3 text-center ${errorCount > 0 ? 'border-destructive/50 bg-destructive/5' : ''}`}>
-          <div className={`text-2xl font-bold ${errorCount > 0 ? 'text-destructive' : 'text-green-600'}`}>{errorCount}</div>
+          <div className={`text-2xl font-bold ${errorCount > 0 ? 'text-destructive' : 'text-sage'}`}>{errorCount}</div>
           <div className="text-[10px] text-muted-foreground">Erreurs</div>
         </Card>
-        <Card className={`p-3 text-center ${warnCount > 0 ? 'border-yellow-500/50 bg-yellow-50/50' : ''}`}>
-          <div className={`text-2xl font-bold ${warnCount > 0 ? 'text-yellow-600' : 'text-green-600'}`}>{warnCount}</div>
+        <Card className={`p-3 text-center ${warnCount > 0 ? 'border-gold/300/50 bg-gold/10' : ''}`}>
+          <div className={`text-2xl font-bold ${warnCount > 0 ? 'text-gold' : 'text-sage'}`}>{warnCount}</div>
           <div className="text-[10px] text-muted-foreground">Avertissements</div>
         </Card>
       </div>
@@ -145,19 +145,19 @@ export default function DataValidation({ scenarioId, lines, categories, canWrite
 
       {violations.length > 0 ? (
         <div className="space-y-1.5">
-          <h4 className="text-[12px] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-yellow-500" /> Violations détectées ({violations.length})</h4>
+          <h4 className="text-[12px] font-semibold flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5 text-gold/300" /> Violations détectées ({violations.length})</h4>
           {violations.slice(0, 50).map((v, i) => (
-            <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded text-[11px] ${v.rule.severity === 'error' ? 'bg-destructive/10 border border-destructive/30' : 'bg-yellow-50 border border-yellow-200'}`}>
-              {v.rule.severity === 'error' ? <AlertTriangle className="w-3 h-3 text-destructive" /> : <AlertTriangle className="w-3 h-3 text-yellow-500" />}
+            <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded text-[11px] ${v.rule.severity === 'error' ? 'bg-destructive/10 border border-destructive/30' : 'bg-gold/10 border border-gold/30'}`}>
+              {v.rule.severity === 'error' ? <AlertTriangle className="w-3 h-3 text-destructive" /> : <AlertTriangle className="w-3 h-3 text-gold/300" />}
               <span className="font-medium">{v.rule.rule_name}</span>
               <span className="text-muted-foreground">{v.message}</span>
             </div>
           ))}
         </div>
       ) : rules.length > 0 ? (
-        <Card className="p-4 text-center border-green-200 bg-green-50/50">
-          <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-600" />
-          <p className="text-[12px] text-green-700 font-medium">Toutes les validations sont conformes ✓</p>
+        <Card className="p-4 text-center border-sage/30 bg-sage/10">
+          <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-sage" />
+          <p className="text-[12px] text-sage font-medium">Toutes les validations sont conformes ✓</p>
         </Card>
       ) : null}
 
