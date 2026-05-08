@@ -1739,6 +1739,7 @@ export type Database = {
           full_name: string
           id: string
           initials: string
+          timezone: string
           updated_at: string
           user_id: string
         }
@@ -1748,6 +1749,7 @@ export type Database = {
           full_name: string
           id?: string
           initials?: string
+          timezone?: string
           updated_at?: string
           user_id: string
         }
@@ -1757,6 +1759,7 @@ export type Database = {
           full_name?: string
           id?: string
           initials?: string
+          timezone?: string
           updated_at?: string
           user_id?: string
         }
@@ -2046,14 +2049,14 @@ export type Database = {
       }
       tasks: {
         Row: {
-          assigned_to: string | null
-          country_id: string | null
+          assigned_to: string
+          country_id: string
           country_label: string | null
           created_at: string
           created_by: string | null
           due_date: string | null
           id: string
-          milestone_id: string | null
+          milestone_id: string
           owner_name: string | null
           priority: Database["public"]["Enums"]["task_priority"]
           recurrence: string
@@ -2064,14 +2067,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          assigned_to?: string | null
-          country_id?: string | null
+          assigned_to: string
+          country_id: string
           country_label?: string | null
           created_at?: string
           created_by?: string | null
           due_date?: string | null
           id?: string
-          milestone_id?: string | null
+          milestone_id: string
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           recurrence?: string
@@ -2082,14 +2085,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          assigned_to?: string | null
-          country_id?: string | null
+          assigned_to?: string
+          country_id?: string
           country_label?: string | null
           created_at?: string
           created_by?: string | null
           due_date?: string | null
           id?: string
-          milestone_id?: string | null
+          milestone_id?: string
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           recurrence?: string
