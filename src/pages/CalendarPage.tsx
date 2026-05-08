@@ -337,6 +337,18 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label className="text-[12.5px]">Assigné à *</Label>
+              <Select value={newAssigneeId || '_none'} onValueChange={v => setNewAssigneeId(v === '_none' ? '' : v)}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionner un membre" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Sélectionner un membre</SelectItem>
+                  {members.map(m => (
+                    <SelectItem key={m.user_id} value={m.user_id}>{m.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Annuler</Button>
               <Button size="sm" onClick={handleCreate} disabled={createTask.isPending}>
