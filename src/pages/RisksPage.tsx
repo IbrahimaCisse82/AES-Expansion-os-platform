@@ -4,6 +4,7 @@ import { useCreateRisk, useUpdateRisk, useDeleteRisk } from '@/hooks/useRiskMuta
 import { useCreateTask } from '@/hooks/useTaskMutations';
 import { useRiskHistory } from '@/hooks/useRiskHistory';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -97,6 +98,7 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
   const updateRisk = useUpdateRisk();
   const deleteRisk = useDeleteRisk();
   const createTask = useCreateTask();
+  const { user } = useAuth();
 
   const canWrite = CAN_WRITE.includes(myRole ?? '');
 
