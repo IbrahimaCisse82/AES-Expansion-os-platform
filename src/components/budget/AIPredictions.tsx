@@ -151,7 +151,7 @@ export default function AIPredictions({ lines, categories, scenarioId }: AIPredi
         <div className="space-y-2">
           {anomalies.map((a, i) => (
             <Card key={i} className="p-3 flex items-start gap-3">
-              <AlertTriangle className={`w-4 h-4 mt-0.5 ${a.severity === 'high' ? 'text-destructive' : a.severity === 'medium' ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+              <AlertTriangle className={`w-4 h-4 mt-0.5 ${a.severity === 'high' ? 'text-destructive' : a.severity === 'medium' ? 'text-gold' : 'text-muted-foreground'}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-[12px]">{a.category}</span>
@@ -174,11 +174,11 @@ export default function AIPredictions({ lines, categories, scenarioId }: AIPredi
           {recommendations.map((r, i) => (
             <Card key={i} className="p-3">
               <div className="flex items-center gap-2 mb-1">
-                <Lightbulb className="w-4 h-4 text-yellow-500" />
+                <Lightbulb className="w-4 h-4 text-gold" />
                 <span className="font-semibold text-[12px]">{r.title}</span>
                 <Badge variant="outline" className="text-[9px]">{impactLabel(r.impact)}</Badge>
                 {r.estimated_savings > 0 && (
-                  <span className="text-[10px] text-green-600 font-medium ml-auto">💰 {r.estimated_savings.toLocaleString()} économisés</span>
+                  <span className="text-[10px] text-sage font-medium ml-auto">💰 {r.estimated_savings.toLocaleString()} économisés</span>
                 )}
               </div>
               <p className="text-[11px] text-muted-foreground">{r.description}</p>

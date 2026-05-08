@@ -85,9 +85,9 @@ export default function SegmentConsolidation({ lines, categories, scenarioId, co
                   <td className="px-2 py-1.5 text-muted-foreground capitalize">{s.segment_type}</td>
                   <td className="text-right px-2 py-1.5">{s.country_ids.length}</td>
                   {s.monthlyData.map((v, i) => <td key={i} className="text-right px-2 py-1.5">{fmt(v)}</td>)}
-                  <td className="text-right px-2 py-1.5 font-medium text-green-600">{fmt(s.revenue)}</td>
+                  <td className="text-right px-2 py-1.5 font-medium text-sage">{fmt(s.revenue)}</td>
                   <td className="text-right px-2 py-1.5 font-medium text-destructive">{fmt(s.expense)}</td>
-                  <td className={`text-right px-2 py-1.5 font-bold ${s.result < 0 ? 'text-destructive' : 'text-green-600'}`}>{fmt(s.result)}</td>
+                  <td className={`text-right px-2 py-1.5 font-bold ${s.result < 0 ? 'text-destructive' : 'text-sage'}`}>{fmt(s.result)}</td>
                   <td className="px-1">
                     {canWrite && <button onClick={() => deleteSegment.mutate({ id: s.id, scenarioId })} className="p-1 hover:text-destructive"><Trash2 className="w-3 h-3" /></button>}
                   </td>
@@ -99,7 +99,7 @@ export default function SegmentConsolidation({ lines, categories, scenarioId, co
                   const total = segmentData.reduce((s, seg) => s + seg.monthlyData[i], 0);
                   return <td key={i} className="text-right px-2 py-2 font-bold">{fmt(total)}</td>;
                 })}
-                <td className="text-right px-2 py-2 font-bold text-green-600">{fmt(segmentData.reduce((s, seg) => s + seg.revenue, 0))}</td>
+                <td className="text-right px-2 py-2 font-bold text-sage">{fmt(segmentData.reduce((s, seg) => s + seg.revenue, 0))}</td>
                 <td className="text-right px-2 py-2 font-bold text-destructive">{fmt(segmentData.reduce((s, seg) => s + seg.expense, 0))}</td>
                 <td className="text-right px-2 py-2 font-bold">{fmt(segmentData.reduce((s, seg) => s + seg.result, 0))}</td>
                 <td></td>
