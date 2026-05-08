@@ -2056,7 +2056,7 @@ export type Database = {
           created_by: string | null
           due_date: string | null
           id: string
-          milestone_id: string
+          milestone_id: string | null
           owner_name: string | null
           priority: Database["public"]["Enums"]["task_priority"]
           recurrence: string
@@ -2074,7 +2074,7 @@ export type Database = {
           created_by?: string | null
           due_date?: string | null
           id?: string
-          milestone_id: string
+          milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           recurrence?: string
@@ -2092,7 +2092,7 @@ export type Database = {
           created_by?: string | null
           due_date?: string | null
           id?: string
-          milestone_id?: string
+          milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           recurrence?: string
