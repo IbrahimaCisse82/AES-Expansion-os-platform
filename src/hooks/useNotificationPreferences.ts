@@ -10,6 +10,13 @@ const NOTIF_TYPES = [
   { key: 'mention', label: 'Mention (@)' },
   { key: 'budget_workflow', label: 'Workflow budget' },
   { key: 'comment_reply', label: 'Réponse commentaire' },
+  { key: 'milestone_j7', label: 'Jalon dans 7 jours' },
+  { key: 'new_member', label: 'Nouveau membre' },
+  { key: 'role_changed', label: 'Changement de rôle' },
+  { key: 'document_uploaded', label: 'Document ajouté (pays suivi)' },
+  { key: 'market_status_changed', label: 'Statut marché modifié' },
+  { key: 'budget_threshold', label: 'Budget > 90 %' },
+  { key: 'monthly_report', label: 'Rapport mensuel' },
 ] as const;
 
 export { NOTIF_TYPES };
