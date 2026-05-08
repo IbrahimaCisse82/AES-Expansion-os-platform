@@ -9,6 +9,8 @@ type TaskRow = Database['public']['Tables']['tasks']['Row'];
 type RiskRow = Database['public']['Tables']['risks']['Row'];
 type CommentRow = Database['public']['Tables']['comments']['Row'];
 type MentionRow = Database['public']['Tables']['comment_mentions']['Row'];
+type NotificationRow = Database['public']['Tables']['notifications']['Row'];
+type NotifPrefRow = Database['public']['Tables']['notification_preferences']['Row'];
 
 const statusLabels: Record<string, string> = {
   open: 'À faire',
@@ -29,6 +31,20 @@ export function useRealtimeNotifications() {
 
   useEffect(() => {
     if (!user) return;
+
+    // Load preferences once; default = enabled in-app
+    let prefs: NotifPrefRow[] = [];
+    supabase
+      .from('notification_preferences')
+      .select('*')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        prefs = (data ?? []) as NotifPrefRow[];
+      });
+    const inAppEnabled = (type: string): boolean => {
+      const p = prefs.find((x) => x.notif_type === type);
+      return p ? p.in_app_enabled : true;
+    };
 
     const channel = supabase
       .channel('realtime-notifications')
@@ -119,12 +135,20 @@ export function useRealtimeNotifications() {
       // Mentions — notify when YOU are mentioned
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comment_mentions' }, (payload) => {
         const mention = payload.new as Partial<MentionRow> | undefined;
-        if (mention?.mentioned_user_id === user.id) {
+        if (mention?.mentioned_user_id === user.id && inAppEnabled('mention')) {
           toast.info(`🔔 Vous avez été mentionné(e) par un collègue`, {
             description: `@${mention.mentioned_name}`,
             duration: 6000,
           });
         }
+      })
+      // Generic notifications table — owner only via RLS, but filter just in case
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
+        qc.invalidateQueries({ queryKey: ['notifications'] });
+        const n = payload.new as Partial<NotificationRow> | undefined;
+        if (!n?.title) return;
+        if (!inAppEnabled(n.type ?? '')) return;
+        toast.info(n.title, { description: n.message || undefined, duration: 6000 });
       })
       .subscribe();
 
