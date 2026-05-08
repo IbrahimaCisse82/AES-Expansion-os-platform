@@ -284,7 +284,7 @@ export default function CountryAnalysisTab() {
                 <span>{m.icon || '📌'}</span>
                 <span className="flex-1 font-medium text-foreground">{m.title}</span>
                 {m.target_date && <span className="text-muted-foreground text-[11px]">{m.target_date}</span>}
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${m.is_done ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${m.is_done ? 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage' : 'bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold'}`}>
                   {m.is_done ? 'Terminé' : 'En cours'}
                 </span>
               </div>

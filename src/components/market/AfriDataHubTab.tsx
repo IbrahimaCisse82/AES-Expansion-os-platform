@@ -10,13 +10,13 @@ import { AGREEMENTS, PROGRAMS, PROJECTS, FUNDERS, TENDERS, STAKEHOLDERS, TARGET_
 import { useCountries } from '@/hooks/useExpansionData';
 
 const STATUS_COLORS: Record<string, string> = {
-  'Actif': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'En cours': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  'Terminé': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  'Planifié': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  'Ouvert': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  'Actif': 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage',
+  'En cours': 'bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold',
+  'Terminé': 'bg-sky/10 text-sky dark:bg-sky/20 dark:text-sky',
+  'Planifié': 'bg-plum/10 text-plum dark:bg-plum/20 dark:text-plum',
+  'Ouvert': 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage',
   'Attribué': 'bg-muted text-muted-foreground',
-  'En évaluation': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  'En évaluation': 'bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold',
 };
 
 function DealDetailDialog({ item, open, onClose }: { item: DealItem | null; open: boolean; onClose: () => void }) {
@@ -125,7 +125,7 @@ function DealDetailDialog({ item, open, onClose }: { item: DealItem | null; open
 
           {/* Eligibility */}
           {d?.eligibility && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-lg p-4">
+            <div className="bg-gold/10 dark:bg-gold/20 rounded-lg p-4">
               <h4 className="text-[13px] font-semibold text-foreground mb-1.5 flex items-center gap-1.5">✅ Éligibilité</h4>
               <p className="text-[12.5px] text-muted-foreground">{d.eligibility}</p>
             </div>
@@ -322,20 +322,20 @@ interface AIAnalysisResult {
 const ALL_ITEMS = [...AGREEMENTS, ...PROGRAMS, ...PROJECTS, ...FUNDERS, ...TENDERS, ...STAKEHOLDERS];
 
 const PRIORITY_COLORS: Record<string, string> = {
-  haute: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  moyenne: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  basse: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  haute: 'bg-coral/10 text-coral dark:bg-coral/20 dark:text-coral',
+  moyenne: 'bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold',
+  basse: 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage',
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
-  'élevé': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  moyen: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  faible: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  'élevé': 'bg-coral/10 text-coral dark:bg-coral/20 dark:text-coral',
+  moyen: 'bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold',
+  faible: 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage',
 };
 
 const IMPACT_COLORS: Record<string, string> = {
   fort: 'bg-accent/15 text-accent',
-  moyen: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  moyen: 'bg-sky/10 text-sky dark:bg-sky/20 dark:text-sky',
   faible: 'bg-muted text-muted-foreground',
 };
 
@@ -567,7 +567,7 @@ function AnalyseIA() {
               {aiResult.recommendations && aiResult.recommendations.length > 0 && (
                 <div className="bg-card border border-border rounded-lg p-5">
                   <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
-                    <Lightbulb size={14} className="text-yellow-500" />Recommandations stratégiques
+                    <Lightbulb size={14} className="text-gold/300" />Recommandations stratégiques
                   </h4>
                   <div className="space-y-3">
                     {aiResult.recommendations.map((rec, i) => (
@@ -591,11 +591,11 @@ function AnalyseIA() {
                 {aiResult.risks && aiResult.risks.length > 0 && (
                   <div className="bg-card border border-border rounded-lg p-5">
                     <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
-                      <AlertTriangle size={14} className="text-red-500" />Risques identifiés
+                      <AlertTriangle size={14} className="text-coral" />Risques identifiés
                     </h4>
                     <div className="space-y-2.5">
                       {aiResult.risks.map((risk, i) => (
-                        <div key={i} className="p-2.5 rounded-lg bg-red-50/50 dark:bg-red-900/10 border border-red-200/30 dark:border-red-900/20">
+                        <div key={i} className="p-2.5 rounded-lg bg-coral/10 dark:bg-coral/20 border border-coral/30 dark:border-coral/30">
                           <div className="flex items-center gap-2 mb-1">
                             <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${SEVERITY_COLORS[risk.severity] || 'bg-muted text-muted-foreground'}`}>
                               {risk.severity}
@@ -615,11 +615,11 @@ function AnalyseIA() {
                 {aiResult.opportunities && aiResult.opportunities.length > 0 && (
                   <div className="bg-card border border-border rounded-lg p-5">
                     <h4 className="text-[13px] font-bold text-foreground mb-3 flex items-center gap-2">
-                      <TrendingUp size={14} className="text-green-500" />Opportunités
+                      <TrendingUp size={14} className="text-sage" />Opportunités
                     </h4>
                     <div className="space-y-2.5">
                       {aiResult.opportunities.map((opp, i) => (
-                        <div key={i} className="p-2.5 rounded-lg bg-green-50/50 dark:bg-green-900/10 border border-green-200/30 dark:border-green-900/20">
+                        <div key={i} className="p-2.5 rounded-lg bg-sage/10 dark:bg-sage/20 border border-sage/30 dark:border-sage/30">
                           <div className="flex items-center gap-2 mb-1">
                             <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-semibold ${IMPACT_COLORS[opp.potential_impact] || 'bg-muted text-muted-foreground'}`}>
                               Impact {opp.potential_impact}

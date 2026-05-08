@@ -112,12 +112,12 @@ ${financialData.byCategory.map(c => `  <!-- ${c.name} -->
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border/50 bg-green-50/50">
+              <tr className="border-b border-border/50 bg-sage/10">
                 <td className="px-3 py-1.5 font-semibold">Revenue</td>
                 <td className="px-2 py-1.5 text-muted-foreground">ifrs-full:Revenue</td>
-                <td className="text-right px-3 py-1.5 font-bold text-green-600">{fmt(financialData.totalRevenue)}</td>
+                <td className="text-right px-3 py-1.5 font-bold text-sage">{fmt(financialData.totalRevenue)}</td>
               </tr>
-              <tr className="border-b border-border/50 bg-red-50/50">
+              <tr className="border-b border-border/50 bg-coral/10">
                 <td className="px-3 py-1.5 font-semibold">CostOfSales</td>
                 <td className="px-2 py-1.5 text-muted-foreground">ifrs-full:CostOfSales</td>
                 <td className="text-right px-3 py-1.5 font-bold text-destructive">{fmt(financialData.totalExpenses)}</td>
@@ -125,7 +125,7 @@ ${financialData.byCategory.map(c => `  <!-- ${c.name} -->
               <tr className="border-b border-border/50 bg-primary/5">
                 <td className="px-3 py-1.5 font-bold text-primary">ProfitLoss</td>
                 <td className="px-2 py-1.5 text-muted-foreground">ifrs-full:ProfitLoss</td>
-                <td className={`text-right px-3 py-1.5 font-bold ${financialData.netIncome < 0 ? 'text-destructive' : 'text-green-600'}`}>{fmt(financialData.netIncome)}</td>
+                <td className={`text-right px-3 py-1.5 font-bold ${financialData.netIncome < 0 ? 'text-destructive' : 'text-sage'}`}>{fmt(financialData.netIncome)}</td>
               </tr>
               {financialData.byCategory.map((c, i) => (
                 <tr key={i} className="border-b border-border/50">
