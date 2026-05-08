@@ -317,17 +317,19 @@ export default function RisksPage({ addSignal, searchQuery = '' }: { addSignal?:
                     size="sm"
                     className="gap-1.5 text-[11px]"
                     onClick={() => {
+                      if (!risk.country_id) { toast.error('Le risque doit être associé à un marché'); return; }
+                      if (!user) { toast.error('Authentification requise'); return; }
                       createTask.mutate({
                         title: `Mitigation: ${risk.title}`,
                         priority: risk.level === 'high' ? 'high' : 'med',
                         status: 'open',
-                        country_id: risk.country_id || null,
+                        country_id: risk.country_id,
                         country_label: risk.country_label || null,
                         milestone_id: null,
                         due_date: (rAny.review_date as string) || null,
                         owner_name: (rAny.owner_name as string) || null,
-                        assigned_to: null,
-                        created_by: null,
+                        assigned_to: user.id,
+                        created_by: user.id,
                       }, {
                         onSuccess: () => toast.success('Tâche de mitigation créée'),
                         onError: (err: Error) => toast.error(err.message),
