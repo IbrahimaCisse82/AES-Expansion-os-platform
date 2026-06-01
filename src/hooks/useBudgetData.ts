@@ -7,7 +7,7 @@ export interface BudgetScenario {
   name: string;
   description: string;
   fiscal_year: number;
-  status: 'draft' | 'submitted' | 'approved' | 'locked';
+  status: 'draft' | 'submitted' | 'approved' | 'locked' | 'rejected';
   is_baseline: boolean;
   created_by: string | null;
   created_at: string;

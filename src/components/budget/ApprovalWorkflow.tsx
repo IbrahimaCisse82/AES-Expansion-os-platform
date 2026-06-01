@@ -8,13 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, Clock, Send, Lock, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Send, Lock, AlertCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ApprovalWorkflowProps {
-  scenario: BudgetScenario & { reviewer_id?: string | null; reviewed_at?: string | null; review_notes?: string | null; country_scope?: string | null };
+  scenario: BudgetScenario & { reviewer_id?: string | null; reviewed_at?: string | null; review_notes?: string | null; country_scope?: string | null; rejected_at?: string | null; rejected_by?: string | null };
   profiles: { user_id: string; full_name: string; initials: string }[];
   canWrite: boolean;
   isAdmin: boolean;
@@ -33,6 +33,8 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
   const [reviewNotes, setReviewNotes] = useState('');
   const [reviewerId, setReviewerId] = useState('');
   const [nextStatus, setNextStatus] = useState<string>('');
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
   const currentStepIndex = STEPS.findIndex(s => s.status === scenario.status);
 
@@ -41,6 +43,11 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
       setNextStatus(newStatus);
       setReviewNotes('');
       setReviewOpen(true);
+      return;
+    }
+    if (newStatus === 'rejected') {
+      setRejectReason('');
+      setRejectOpen(true);
       return;
     }
 
@@ -95,6 +102,37 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
     );
   };
 
+  const handleSubmitReject = async () => {
+    const trimmed = rejectReason.trim();
+    if (trimmed.length < 10) {
+      toast.error('Le motif de rejet doit comporter au moins 10 caractères');
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    updateScenario.mutate(
+      {
+        id: scenario.id,
+        status: 'rejected',
+        review_notes: trimmed,
+        rejected_by: user?.id,
+        rejected_at: new Date().toISOString(),
+      } as Parameters<typeof updateScenario.mutate>[0],
+      {
+        onSuccess: () => {
+          toast.success('Scénario rejeté');
+          setRejectOpen(false);
+          notifyBudgetStatusChange({
+            scenarioId: scenario.id,
+            scenarioName: scenario.name,
+            newStatus: 'rejected',
+            excludeUserId: user?.id,
+          });
+        },
+        onError: (err: Error) => toast.error(err.message),
+      }
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Progress steps */}
@@ -136,6 +174,18 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
           </div>
         )}
 
+        {/* Rejection info */}
+        {scenario.status === 'rejected' && (
+          <div className="bg-destructive/10 border border-destructive/30 rounded-md px-3 py-2 text-[11px] text-destructive">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <XCircle size={12} /> Scénario rejeté
+              {scenario.rejected_by && ` par ${profiles.find(p => p.user_id === scenario.rejected_by)?.full_name || 'N/A'}`}
+              {scenario.rejected_at && ` · ${format(new Date(scenario.rejected_at), 'dd MMM yyyy', { locale: fr })}`}
+            </div>
+            {scenario.review_notes && <div className="mt-1 italic">Motif : « {scenario.review_notes} »</div>}
+          </div>
+        )}
+
         {/* Action buttons */}
         {canWrite && (
           <div className="flex items-center gap-2 mt-3">
@@ -148,6 +198,9 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
               <>
                 <Button size="sm" onClick={() => handleTransition('approved')} className="gap-1.5 text-[11px] bg-accent hover:bg-accent/90">
                   <CheckCircle2 size={12} /> Approuver
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => handleTransition('rejected')} className="gap-1.5 text-[11px]">
+                  <XCircle size={12} /> Rejeter
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => handleTransition('draft')} className="gap-1.5 text-[11px]">
                   <AlertCircle size={12} /> Renvoyer en brouillon
@@ -162,6 +215,11 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
             {scenario.status === 'locked' && isAdmin && (
               <Button size="sm" variant="outline" onClick={() => handleTransition('draft')} className="gap-1.5 text-[11px]">
                 <Clock size={12} /> Déverrouiller (brouillon)
+              </Button>
+            )}
+            {scenario.status === 'rejected' && (
+              <Button size="sm" onClick={() => handleTransition('draft')} className="gap-1.5 text-[11px]">
+                <Clock size={12} /> Reprendre en brouillon
               </Button>
             )}
           </div>
@@ -201,6 +259,48 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
               <Button variant="outline" size="sm" onClick={() => setReviewOpen(false)}>Annuler</Button>
               <Button size="sm" onClick={handleSubmitReview} disabled={updateScenario.isPending}>
                 {nextStatus === 'submitted' ? 'Soumettre' : 'Approuver'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject dialog */}
+      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <DialogContent className="sm:max-w-[440px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg flex items-center gap-2">
+              <XCircle size={18} className="text-destructive" /> Rejeter le scénario
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div className="text-[12px] text-muted-foreground">
+              Le créateur sera notifié du rejet et du motif fourni. Le scénario pourra être repris en brouillon.
+            </div>
+            <div>
+              <Label className="text-[12px]">
+                Motif du rejet <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                className="mt-1 min-h-[100px]"
+                placeholder="Expliquez clairement la raison du rejet (min. 10 caractères)…"
+                autoFocus
+              />
+              <div className={`text-[10px] mt-1 ${rejectReason.trim().length < 10 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {rejectReason.trim().length} / 10 caractères minimum
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setRejectOpen(false)}>Annuler</Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleSubmitReject}
+                disabled={updateScenario.isPending || rejectReason.trim().length < 10}
+              >
+                Confirmer le rejet
               </Button>
             </div>
           </div>
