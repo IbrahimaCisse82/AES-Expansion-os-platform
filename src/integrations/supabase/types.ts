@@ -794,6 +794,8 @@ export type Database = {
           id: string
           is_baseline: boolean
           name: string
+          rejected_at: string | null
+          rejected_by: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewer_id: string | null
@@ -809,6 +811,8 @@ export type Database = {
           id?: string
           is_baseline?: boolean
           name: string
+          rejected_at?: string | null
+          rejected_by?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewer_id?: string | null
@@ -824,6 +828,8 @@ export type Database = {
           id?: string
           is_baseline?: boolean
           name?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewer_id?: string | null
