@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Copy, Trash2, Lock, Unlock, Send, CheckCircle2, Percent } from 'lucide-react';
+import { Plus, Copy, Trash2, Lock, Unlock, Send, CheckCircle2, Percent, XCircle } from 'lucide-react';
 import { notifyAdminsViaEmail } from '@/lib/notificationEmail';
 
 interface ScenarioManagerProps {
@@ -23,6 +23,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; colo
   draft: { label: 'Brouillon', icon: <Unlock size={12} />, color: 'bg-muted text-muted-foreground' },
   submitted: { label: 'Soumis', icon: <Send size={12} />, color: 'bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]' },
   approved: { label: 'Approuvé', icon: <CheckCircle2 size={12} />, color: 'bg-accent/15 text-accent' },
+  rejected: { label: 'Rejeté', icon: <XCircle size={12} />, color: 'bg-destructive/15 text-destructive' },
   locked: { label: 'Verrouillé', icon: <Lock size={12} />, color: 'bg-destructive/15 text-destructive' },
 };
 

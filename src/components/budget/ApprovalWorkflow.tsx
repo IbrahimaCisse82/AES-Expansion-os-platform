@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BudgetScenario, useUpdateScenario } from '@/hooks/useBudgetData';
 import { notifyBudgetStatusChange } from '@/hooks/useBudgetExtras';
+import { sendNotificationEmail } from '@/lib/notificationEmail';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface ApprovalWorkflowProps {
-  scenario: BudgetScenario & { reviewer_id?: string | null; reviewed_at?: string | null; review_notes?: string | null; country_scope?: string | null; rejected_at?: string | null; rejected_by?: string | null };
+  scenario: BudgetScenario & { reviewer_id?: string | null; reviewed_at?: string | null; review_notes?: string | null; country_scope?: string | null; rejected_at?: string | null; rejected_by?: string | null; created_by?: string | null };
   profiles: { user_id: string; full_name: string; initials: string }[];
   canWrite: boolean;
   isAdmin: boolean;
@@ -127,6 +128,20 @@ export default function ApprovalWorkflow({ scenario, profiles, canWrite, isAdmin
             newStatus: 'rejected',
             excludeUserId: user?.id,
           });
+          // Send dedicated rejection email to the scenario creator with the reason
+          if (scenario.created_by && scenario.created_by !== user?.id) {
+            sendNotificationEmail({
+              templateName: 'budget-workflow',
+              recipientEmail: `__user__:${scenario.created_by}`,
+              idempotencyKey: `budget-rejected-${scenario.id}-${Date.now()}`,
+              templateData: {
+                scenarioName: scenario.name,
+                newStatus: 'rejected',
+                changedBy: user?.user_metadata?.full_name || user?.email || '',
+                rejectionReason: trimmed,
+              },
+            });
+          }
         },
         onError: (err: Error) => toast.error(err.message),
       }
