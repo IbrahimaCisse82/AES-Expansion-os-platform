@@ -43,7 +43,7 @@ export default function SegmentConsolidation({ lines, categories, scenarioId, co
 
   const handleAdd = () => {
     if (!name || selectedCountries.length === 0) { toast.error('Remplissez tous les champs'); return; }
-    createSegment.mutate({ scenario_id: scenarioId, segment_name: name, segment_type: type, country_ids: selectedCountries, color: '#6B7280', sort_order: segments.length }, {
+    createSegment.mutate({ scenario_id: scenarioId, segment_name: name, segment_type: type, country_ids: selectedCountries, color: 'hsl(var(--muted-foreground))', sort_order: segments.length }, {
       onSuccess: () => { toast.success('Segment créé'); setAddOpen(false); setName(''); setSelectedCountries([]); },
       onError: (e: Error) => toast.error(e.message),
     });

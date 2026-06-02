@@ -4,7 +4,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 import { MapPin, Users, TrendingUp, Shield, CheckCircle2, Clock, AlertTriangle, DollarSign, Activity, Target } from 'lucide-react';
 
-const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899'];
+const CHART_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--accent))',
+  'hsl(var(--gold))',
+  'hsl(var(--sage))',
+  'hsl(var(--plum))',
+  'hsl(var(--rose))',
+];
 
 import type { LucideIcon } from 'lucide-react';
 function KpiBox({ icon: Icon, label, value, sub }: { icon: LucideIcon; label: string; value: string; sub?: string }) {
@@ -73,16 +80,16 @@ export default function CountryAnalysisTab() {
 
   // Charts data
   const taskChartData = [
-    { name: 'Terminées', value: tasksDone, color: '#10b981' },
-    { name: 'En cours', value: tasksWip, color: '#f59e0b' },
+    { name: 'Terminées', value: tasksDone, color: 'hsl(var(--sage))' },
+    { name: 'En cours', value: tasksWip, color: 'hsl(var(--gold))' },
     { name: 'Ouvertes', value: tasksOpen, color: 'hsl(var(--primary))' },
-    { name: 'En retard', value: tasksLate, color: '#ef4444' },
+    { name: 'En retard', value: tasksLate, color: 'hsl(var(--destructive))' },
   ].filter(d => d.value > 0);
 
   const riskChartData = [
-    { name: 'Élevé', value: risksHigh, color: '#ef4444' },
-    { name: 'Moyen', value: risksMed, color: '#f59e0b' },
-    { name: 'Faible', value: risksLow, color: '#10b981' },
+    { name: 'Élevé', value: risksHigh, color: 'hsl(var(--destructive))' },
+    { name: 'Moyen', value: risksMed, color: 'hsl(var(--gold))' },
+    { name: 'Faible', value: risksLow, color: 'hsl(var(--sage))' },
   ].filter(d => d.value > 0);
 
   // Per-country comparison for bar chart (when "all" selected)
