@@ -385,7 +385,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
       author_id: user?.id ?? null,
       author_name: fullName,
       author_initials: initials,
-      author_color: '#1C2B3A',
+      author_color: 'hsl(var(--primary))',
       market_id: marketId || null,
       market_label: country ? `${country.flag} ${country.name}` : null,
       tags: [],
