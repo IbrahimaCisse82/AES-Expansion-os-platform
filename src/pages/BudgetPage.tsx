@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList } from 'lucide-react';
+import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList, GanttChart } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { exportBudgetXLSX, exportBudgetPDF } from '@/lib/budgetExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
@@ -31,6 +31,7 @@ import CostAllocationView from '@/components/budget/CostAllocationView';
 import CapExPlanning from '@/components/budget/CapExPlanning';
 import VersionManager from '@/components/budget/VersionManager';
 import ApprovalWorkflow from '@/components/budget/ApprovalWorkflow';
+import WorkflowDashboard from '@/components/budget/WorkflowDashboard';
 import BudgetImport from '@/components/budget/BudgetImport';
 import AdHocReporting from '@/components/budget/AdHocReporting';
 import AIPredictions from '@/components/budget/AIPredictions';
@@ -44,7 +45,7 @@ import CashFlowView from '@/components/budget/CashFlowView';
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
+type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'workflow_dashboard' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
@@ -149,6 +150,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     { key: 'compare', icon: <GitCompare size={14} />, label: 'Comparer' },
     { key: 'versions', icon: <History size={14} />, label: 'Versions' },
     { key: 'approval', icon: <ClipboardCheck size={14} />, label: 'Workflow' },
+    ...(isAdmin ? [{ key: 'workflow_dashboard' as const, icon: <GanttChart size={14} />, label: 'Suivi global' }] : []),
     { key: 'journal', icon: <BookOpen size={14} />, label: 'Écritures' },
     { key: 'close', icon: <ClipboardList size={14} />, label: 'Clôture' },
     { key: 'validation', icon: <ShieldCheck size={14} />, label: 'Validation' },
@@ -280,6 +282,16 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'compare' && <ScenarioComparison scenarios={[activeScenario!, ...scenarios.filter(s => compareScenarioIds.includes(s.id))]} allLines={allCompareLines as Record<string, never[]>} categories={categories} lineType={lineType} />}
           {viewMode === 'versions' && <VersionManager scenarioId={activeScenarioId} scenarioName={activeScenario?.name || ''} canWrite={canWrite} />}
           {viewMode === 'approval' && <ApprovalWorkflow scenario={activeScenario as Parameters<typeof ApprovalWorkflow>[0]['scenario']} profiles={profiles} canWrite={canWrite} isAdmin={isAdmin} />}
+          {viewMode === 'workflow_dashboard' && (
+            <WorkflowDashboard
+              profiles={profiles}
+              onOpenScenario={(id, fy) => {
+                if (fy !== fiscalYear) setFiscalYear(fy);
+                setActiveScenarioId(id);
+                setViewMode('approval');
+              }}
+            />
+          )}
           {viewMode === 'adhoc' && <AdHocReporting lines={lines} categories={categories} countries={countries} />}
           {viewMode === 'ai' && <AIPredictions lines={lines} categories={categories} scenarioId={activeScenarioId} />}
           {viewMode === 'segments' && <SegmentConsolidation lines={lines} categories={categories} scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} lineType={lineType} />}
