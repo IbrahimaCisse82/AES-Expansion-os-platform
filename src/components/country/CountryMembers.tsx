@@ -97,7 +97,7 @@ export default function CountryMembers({ countryId, canWrite }: Props) {
               <div key={m.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors group">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
-                  style={{ backgroundColor: profile?.avatar_color || '#1C2B3A' }}
+                  style={{ backgroundColor: profile?.avatar_color || 'hsl(var(--primary))' }}
                 >
                   {profile?.initials || '??'}
                 </div>
