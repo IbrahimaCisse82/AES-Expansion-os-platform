@@ -151,6 +151,7 @@ export async function notifyBudgetStatusChange(params: {
   const statusLabels: Record<string, string> = {
     submitted: 'soumis pour approbation',
     approved: 'approuvé',
+    rejected: 'rejeté',
     locked: 'verrouillé',
     draft: 'remis en brouillon',
   };
