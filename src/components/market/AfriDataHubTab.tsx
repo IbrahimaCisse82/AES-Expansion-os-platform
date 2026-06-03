@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { AGREEMENTS, PROGRAMS, PROJECTS, FUNDERS, TENDERS, STAKEHOLDERS, TARGET_COUNTRIES, type DealItem } from '@/data/marketIntelData';
 import { useCountries } from '@/hooks/useExpansionData';
+import { withFcfaEquivalent } from '@/lib/eurToFcfa';
 
 const STATUS_COLORS: Record<string, string> = {
   'Actif': 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage',
@@ -70,7 +71,8 @@ function DealDetailDialog({ item, open, onClose }: { item: DealItem | null; open
                 <DollarSign size={13} className="text-accent mt-0.5 shrink-0" />
                 <div>
                   <div className="text-muted-foreground text-[11px]">Montant</div>
-                  <div className="font-semibold text-accent">{item.amount}</div>
+                  <div className="font-semibold text-accent">{withFcfaEquivalent(item.amount)}</div>
+                  <div className="text-[10px] text-muted-foreground italic mt-0.5">Source : libellé original (parité fixe 1 EUR = 655,957 FCFA)</div>
                 </div>
               </div>
             )}
@@ -200,7 +202,7 @@ function DealCard({ item, onClick, selectedCountry }: { item: DealItem; onClick:
         <span className="px-2 py-0.5 rounded-md text-[10.5px] font-medium bg-secondary text-muted-foreground">{item.sector}</span>
         {item.amount && (
           <span className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-accent/10 text-accent flex items-center gap-1">
-            <DollarSign size={9} /> {item.amount}
+            <DollarSign size={9} /> {withFcfaEquivalent(item.amount)}
           </span>
         )}
         {item.type && (
