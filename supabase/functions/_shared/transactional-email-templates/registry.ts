@@ -18,6 +18,7 @@ import { template as taskOverdue } from './task-overdue.tsx'
 import { template as riskAlert } from './risk-alert.tsx'
 import { template as mentionNotification } from './mention-notification.tsx'
 import { template as budgetWorkflow } from './budget-workflow.tsx'
+import { template as notification } from './notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'invitation-resend': invitationResend,
@@ -29,4 +30,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'risk-alert': riskAlert,
   'mention-notification': mentionNotification,
   'budget-workflow': budgetWorkflow,
+  'notification': notification,
 }
