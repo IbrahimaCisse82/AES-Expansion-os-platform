@@ -1745,6 +1745,7 @@ export type Database = {
           full_name: string
           id: string
           initials: string
+          notification_preferences: Json
           timezone: string
           updated_at: string
           user_id: string
@@ -1755,6 +1756,7 @@ export type Database = {
           full_name: string
           id?: string
           initials?: string
+          notification_preferences?: Json
           timezone?: string
           updated_at?: string
           user_id: string
@@ -1765,6 +1767,7 @@ export type Database = {
           full_name?: string
           id?: string
           initials?: string
+          notification_preferences?: Json
           timezone?: string
           updated_at?: string
           user_id?: string
