@@ -4,8 +4,8 @@ import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
 const orderMock = vi.fn();
-const selectMock = vi.fn(() => ({ order: orderMock }));
-const fromMock = vi.fn(() => ({ select: selectMock }));
+const selectMock = vi.fn((_cols?: string) => ({ order: orderMock }));
+const fromMock = vi.fn((_table: string) => ({ select: selectMock }));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from: (table: string) => fromMock(table) },
