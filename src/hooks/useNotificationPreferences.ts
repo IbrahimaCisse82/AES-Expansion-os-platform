@@ -21,18 +21,33 @@ const NOTIF_TYPES = [
 
 export { NOTIF_TYPES };
 
+type PrefEntry = { email: boolean; in_app: boolean };
+type PrefsMap = Record<string, PrefEntry>;
+
+interface PrefRow {
+  notif_type: string;
+  email_enabled: boolean;
+  in_app_enabled: boolean;
+}
+
 export function useNotificationPreferences() {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['notification_preferences', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<PrefRow[]> => {
       if (!user?.id) return [];
       const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user.id);
+        .from('profiles')
+        .select('notification_preferences')
+        .eq('user_id', user.id)
+        .maybeSingle();
       if (error) throw error;
-      return data;
+      const prefs = (data?.notification_preferences ?? {}) as PrefsMap;
+      return Object.entries(prefs).map(([notif_type, v]) => ({
+        notif_type,
+        email_enabled: !!v?.email,
+        in_app_enabled: !!v?.in_app,
+      }));
     },
     enabled: !!user?.id,
   });
@@ -46,12 +61,18 @@ export function useUpsertNotificationPref() {
       notif_type: string; email_enabled: boolean; in_app_enabled: boolean;
     }) => {
       if (!user?.id) throw new Error('Non authentifié');
-      const { error } = await supabase.from('notification_preferences').upsert({
-        user_id: user.id,
-        notif_type,
-        email_enabled,
-        in_app_enabled,
-      }, { onConflict: 'user_id,notif_type' });
+      const { data: cur, error: readErr } = await supabase
+        .from('profiles')
+        .select('notification_preferences')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (readErr) throw readErr;
+      const prefs = { ...((cur?.notification_preferences ?? {}) as PrefsMap) };
+      prefs[notif_type] = { email: email_enabled, in_app: in_app_enabled };
+      const { error } = await supabase
+        .from('profiles')
+        .update({ notification_preferences: prefs })
+        .eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notification_preferences'] }),
