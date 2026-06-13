@@ -10,7 +10,8 @@ type RiskRow = Database['public']['Tables']['risks']['Row'];
 type CommentRow = Database['public']['Tables']['comments']['Row'];
 type MentionRow = Database['public']['Tables']['comment_mentions']['Row'];
 type NotificationRow = Database['public']['Tables']['notifications']['Row'];
-type NotifPrefRow = Database['public']['Tables']['notification_preferences']['Row'];
+type PrefEntry = { email?: boolean; in_app?: boolean };
+type PrefsMap = Record<string, PrefEntry>;
 
 const statusLabels: Record<string, string> = {
   open: 'À faire',
@@ -33,17 +34,18 @@ export function useRealtimeNotifications() {
     if (!user) return;
 
     // Load preferences once; default = enabled in-app
-    let prefs: NotifPrefRow[] = [];
+    let prefs: PrefsMap = {};
     supabase
-      .from('notification_preferences')
-      .select('*')
+      .from('profiles')
+      .select('notification_preferences')
       .eq('user_id', user.id)
+      .maybeSingle()
       .then(({ data }) => {
-        prefs = (data ?? []) as NotifPrefRow[];
+        prefs = (data?.notification_preferences ?? {}) as PrefsMap;
       });
     const inAppEnabled = (type: string): boolean => {
-      const p = prefs.find((x) => x.notif_type === type);
-      return p ? p.in_app_enabled : true;
+      const p = prefs[type];
+      return p ? p.in_app !== false : true;
     };
 
     const channel = supabase
