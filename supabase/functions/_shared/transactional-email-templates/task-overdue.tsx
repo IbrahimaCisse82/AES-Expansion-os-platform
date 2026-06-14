@@ -42,7 +42,7 @@ const TaskOverdueEmail = ({ taskTitle, countryName, dueDate, assigneeName }: Tas
 
 export const template = {
   component: TaskOverdueEmail,
-  subject: (data: Record<string, any>) => `🔴 Tâche en retard : ${data.taskTitle || 'Tâche'}`,
+  subject: (data: Record<string, unknown>) => `🔴 Tâche en retard : ${data.taskTitle || 'Tâche'}`,
   displayName: 'Tâche en retard',
   previewData: { taskTitle: 'Audit financier', countryName: '🇧🇯 Bénin', dueDate: '10 avril 2026', assigneeName: 'Marie Koffi' },
 } satisfies TemplateEntry

@@ -39,7 +39,7 @@ const MentionNotificationEmail = ({ mentionedName, authorName, commentExcerpt, m
 
 export const template = {
   component: MentionNotificationEmail,
-  subject: (data: Record<string, any>) => `🔔 ${data.authorName || 'Un collègue'} vous a mentionné sur ${SITE_NAME}`,
+  subject: (data: Record<string, unknown>) => `🔔 ${data.authorName || 'Un collègue'} vous a mentionné sur ${SITE_NAME}`,
   displayName: 'Notification de mention',
   previewData: { mentionedName: 'Marie', authorName: 'Jean Dupont', commentExcerpt: 'Peux-tu vérifier les chiffres du Q1 ?', marketName: '🇸🇳 Sénégal' },
 } satisfies TemplateEntry

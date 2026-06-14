@@ -45,7 +45,7 @@ const NotificationEmail = ({ title, message, link }: NotificationProps) => (
 
 export const template = {
   component: NotificationEmail,
-  subject: (data: Record<string, any>) => data.title || 'Notification ExpansionOS',
+  subject: (data: Record<string, unknown>) => (data.title as string) || 'Notification ExpansionOS',
   displayName: 'Notification générique',
   previewData: {
     title: '⏰ Jalon dans 7 jours',

@@ -59,9 +59,9 @@ Deno.serve(async (req) => {
   let alertsSent = 0
 
   for (const country of countries) {
-    const countryHistory = allHistory
-      .filter((h: any) => h.country_id === country.id)
-      .sort((a: any, b: any) => b.month.localeCompare(a.month))
+    const countryHistory = (allHistory as Array<Record<string, unknown>>)
+      .filter((h) => h.country_id === country.id)
+      .sort((a, b) => String(b.month).localeCompare(String(a.month)))
 
     if (countryHistory.length < MIN_CONSECUTIVE) continue
 
@@ -72,8 +72,8 @@ Deno.serve(async (req) => {
       let latestPct = 0
 
       for (const row of countryHistory) {
-        const actual = Number((row as any)[metric.key])
-        const target = Number((row as any)[metric.targetKey])
+        const actual = Number((row as Record<string, unknown>)[metric.key])
+        const target = Number((row as Record<string, unknown>)[metric.targetKey])
         
         if (target <= 0) break
         
