@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     // Ensure demo user exists
     const { data: existingUsers } = await admin.auth.admin.listUsers();
-    const demoUser = existingUsers?.users?.find((u: any) => u.email === DEMO_EMAIL);
+    const demoUser = existingUsers?.users?.find((u: { email?: string }) => u.email === DEMO_EMAIL);
 
     if (!demoUser) {
       const { error: createErr } = await admin.auth.admin.createUser({
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
 
       await new Promise((r) => setTimeout(r, 500));
       const { data: users2 } = await admin.auth.admin.listUsers();
-      const newUser = users2?.users?.find((u: any) => u.email === DEMO_EMAIL);
+      const newUser = users2?.users?.find((u: { email?: string }) => u.email === DEMO_EMAIL);
       if (newUser) {
         // Use SECURITY DEFINER function to bypass RLS
         await admin.rpc('set_user_role', {
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function cleanDemoData(admin: any) {
+async function cleanDemoData(admin: ReturnType<typeof createClient>) {
   await admin.from("activity_log").delete().in("market_flag", ["🇯🇵", "🇩🇪", "🇧🇷", "🇦🇺", "🇳🇬", "🇸🇦"]);
   await admin.from("comments").delete().in("market_id", DEMO_COUNTRY_IDS);
   await admin.from("budget_entries").delete().in("country_id", DEMO_COUNTRY_IDS);
@@ -85,7 +85,7 @@ async function cleanDemoData(admin: any) {
   await admin.from("countries").delete().in("id", DEMO_COUNTRY_IDS);
 }
 
-async function seedDemoData(admin: any) {
+async function seedDemoData(admin: ReturnType<typeof createClient>) {
   const countries = [
     { id: "demo_jp", flag: "🇯🇵", name: "Japon", region: "Asie-Pacifique", phase: 3, pct: 88, status: "active", color: "sky", budget: "2.0M€", team_size: 12, risk_count: 1, population: "125M", gdp: "4,940 Mds$", language: "Japonais", local_contact: "Yuki Tanaka", description: "Marché le plus avancé. Bureau Tokyo opérationnel.", kpi_ca: "284K€", kpi_clients: "1,240", kpi_nps: "72", kpi_retention: "89%" },
     { id: "demo_de", flag: "🇩🇪", name: "Allemagne", region: "Europe", phase: 2, pct: 75, status: "active", color: "sage", budget: "1.8M€", team_size: 8, risk_count: 1, population: "83M", gdp: "4,200 Mds$", language: "Allemand", local_contact: "Marc Richter", description: "Marché prioritaire avec fort potentiel B2B.", kpi_ca: "156K€", kpi_clients: "580", kpi_nps: "68", kpi_retention: "91%" },

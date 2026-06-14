@@ -49,7 +49,7 @@ const KpiAlertEmail = ({ countryName, month, metric, actual, target, percentage,
 
 export const template = {
   component: KpiAlertEmail,
-  subject: (data: Record<string, any>) => `⚠️ Alerte KPI — ${data.metric || 'Indicateur'} sous le seuil (${data.countryName || ''})`,
+  subject: (data: Record<string, unknown>) => `⚠️ Alerte KPI — ${data.metric || 'Indicateur'} sous le seuil (${data.countryName || ''})`,
   displayName: 'Alerte KPI sous seuil',
   previewData: { countryName: 'Sénégal', month: '2026-04', metric: 'CA Mensuel', actual: '450 000 FCFA', target: '1 000 000 FCFA', percentage: '45', threshold: '80' },
 } satisfies TemplateEntry

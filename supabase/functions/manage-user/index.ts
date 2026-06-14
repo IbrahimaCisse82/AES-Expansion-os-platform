@@ -58,7 +58,14 @@ Deno.serve(async (req: Request) => {
     if (action === "list_status") {
       const { data: { users }, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
       if (error) throw error;
-      const statuses = (users ?? []).map((u: any) => ({
+      const statuses = (users ?? []).map((u: {
+        id: string
+        email?: string
+        email_confirmed_at?: string | null
+        last_sign_in_at?: string | null
+        banned_until?: string | null
+        created_at?: string
+      }) => ({
         user_id: u.id,
         email: u.email,
         email_confirmed: !!u.email_confirmed_at,

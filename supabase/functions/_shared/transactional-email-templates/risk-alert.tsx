@@ -55,7 +55,7 @@ const RiskAlertEmail = ({ riskTitle, level, countryName, description, category }
 
 export const template = {
   component: RiskAlertEmail,
-  subject: (data: Record<string, any>) => `⚠️ Risque ${data.level || 'élevé'} : ${data.riskTitle || 'Nouveau risque'}`,
+  subject: (data: Record<string, unknown>) => `⚠️ Risque ${data.level || 'élevé'} : ${data.riskTitle || 'Nouveau risque'}`,
   displayName: 'Alerte risque élevé',
   previewData: { riskTitle: 'Instabilité réglementaire', level: 'Élevé', countryName: '🇨🇮 Côte d\'Ivoire', description: 'Changements réglementaires imprévus', category: 'Réglementaire' },
 } satisfies TemplateEntry

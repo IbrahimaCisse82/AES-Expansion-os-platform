@@ -48,7 +48,7 @@ const KpiRecurringAlertEmail = ({ countryName, metric, consecutiveMonths, months
 
 export const template = {
   component: KpiRecurringAlertEmail,
-  subject: (data: Record<string, any>) => `🔴 Alerte récurrente — ${data.metric || 'KPI'} sous le seuil depuis ${data.consecutiveMonths || '2'} mois (${data.countryName || ''})`,
+  subject: (data: Record<string, unknown>) => `🔴 Alerte récurrente — ${data.metric || 'KPI'} sous le seuil depuis ${data.consecutiveMonths || '2'} mois (${data.countryName || ''})`,
   displayName: 'Alerte KPI récurrente',
   previewData: {
     countryName: 'Sénégal',

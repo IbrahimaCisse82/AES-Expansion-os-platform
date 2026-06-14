@@ -49,7 +49,7 @@ const TaskAssignedEmail = ({ taskTitle, countryName, priority, dueDate, assigned
 
 export const template = {
   component: TaskAssignedEmail,
-  subject: (data: Record<string, any>) => `📋 Tâche assignée : ${data.taskTitle || 'Nouvelle tâche'}`,
+  subject: (data: Record<string, unknown>) => `📋 Tâche assignée : ${data.taskTitle || 'Nouvelle tâche'}`,
   displayName: 'Tâche assignée',
   previewData: { taskTitle: 'Préparer rapport Q1', countryName: '🇸🇳 Sénégal', priority: 'Haute', dueDate: '15 avril 2026', assignedBy: 'Jean Dupont' },
 } satisfies TemplateEntry
