@@ -83,7 +83,7 @@ export default function BudgetSpreadsheet({
   const toggleCategory = (catId: string) => {
     setCollapsedCategories(prev => {
       const next = new Set(prev);
-      next.has(catId) ? next.delete(catId) : next.add(catId);
+      if (next.has(catId)) next.delete(catId); else next.add(catId);
       return next;
     });
   };

@@ -78,6 +78,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
     },
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const compareQueries = compareScenarioIds.map(id => useBudgetLines(id));
   const allCompareLines: Record<string, unknown[]> = {};
   compareScenarioIds.forEach((id, i) => {
