@@ -16,7 +16,7 @@ export default function BurndownChart({ milestones }: { milestones: Milestone[] 
     const byWeek: Record<string, { total: number; done: number }> = {};
     const now = new Date();
     const startDate = new Date(sorted[0].created_at);
-    let current = new Date(startDate);
+    const current = new Date(startDate);
     while (current <= now) {
       const weekKey = `${current.getFullYear()}-S${String(Math.ceil((current.getDate() + new Date(current.getFullYear(), current.getMonth(), 1).getDay()) / 7)).padStart(2, '0')}`;
       const label = current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
