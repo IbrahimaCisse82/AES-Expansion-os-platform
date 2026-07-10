@@ -29,7 +29,7 @@ const taskSchema = z.object({
   status: z.enum(['open', 'done', 'late', 'wip']),
   due_date: z.string().optional(),
   owner_name: z.string().max(100).optional(),
-  assigned_to: z.string().optional(),
+  assigned_to: z.string().min(1, "L'assignataire est requis"),
   recurrence: z.enum(['none', 'daily', 'weekly', 'biweekly', 'monthly']).optional(),
 });
 
@@ -160,8 +160,8 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       status: result.data.status,
       due_date: result.data.due_date || null,
       owner_name: result.data.owner_name || null,
-      assigned_to: result.data.assigned_to || null,
-      country_id: result.data.country_id || null,
+      assigned_to: result.data.assigned_to,
+      country_id: result.data.country_id,
       country_label: result.data.country_label || null,
       milestone_id: result.data.milestone_id || null,
       recurrence: result.data.recurrence === 'none' ? null : result.data.recurrence || null,
