@@ -76,7 +76,15 @@ export default function RollingForecast({ budgetLines, actualLines, categories, 
 
     // Build 18-month dataset
     const totalMonths = 12 + forecastHorizon;
-    const rows = [];
+    type ForecastRow = {
+      month: string;
+      idx: number;
+      actual: number | undefined;
+      budget: number | undefined;
+      forecast: number | undefined;
+      isCurrent: boolean;
+    };
+    const rows: ForecastRow[] = [];
 
     for (let i = 0; i < totalMonths; i++) {
       const label = FORECAST_MONTHS_LABELS[i] || `M${i + 1}`;
@@ -132,7 +140,7 @@ export default function RollingForecast({ budgetLines, actualLines, categories, 
         const sm = movingAverage(source, 3);
         const { slope, intercept } = linearRegression(sm);
 
-        const projected = [];
+        const projected: number[] = [];
         for (let i = currentMonth + 1; i < 12 + forecastHorizon; i++) {
           const idx = sm.length + (i - currentMonth - 1);
           projected.push(Math.max(0, Math.round(slope * idx + intercept)));
