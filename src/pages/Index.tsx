@@ -1,23 +1,24 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
 import Topbar from '@/components/Topbar';
-import DashboardPage from '@/pages/DashboardPage';
-import CountriesPage from '@/pages/CountriesPage';
-import CountryDetailPage from '@/pages/CountryDetailPage';
-import TasksPage from '@/pages/TasksPage';
-import BudgetPage from '@/pages/BudgetPage';
-import RisksPage from '@/pages/RisksPage';
-import HistoryPage from '@/pages/HistoryPage';
-import TeamPage from '@/pages/TeamPage';
-import CommentsPage from '@/pages/CommentsPage';
-import KpisPage from '@/pages/KpisPage';
-import CalendarPage from '@/pages/CalendarPage';
-import RoadmapPage from '@/pages/RoadmapPage';
-import SettingsPage from '@/pages/SettingsPage';
-import MarketAnalysisPage from '@/pages/MarketAnalysisPage';
-import ProfilePage from '@/pages/ProfilePage';
 import { useCountries } from '@/hooks/useExpansionData';
+
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const CountriesPage = lazy(() => import('@/pages/CountriesPage'));
+const CountryDetailPage = lazy(() => import('@/pages/CountryDetailPage'));
+const TasksPage = lazy(() => import('@/pages/TasksPage'));
+const BudgetPage = lazy(() => import('@/pages/BudgetPage'));
+const RisksPage = lazy(() => import('@/pages/RisksPage'));
+const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
+const TeamPage = lazy(() => import('@/pages/TeamPage'));
+const CommentsPage = lazy(() => import('@/pages/CommentsPage'));
+const KpisPage = lazy(() => import('@/pages/KpisPage'));
+const CalendarPage = lazy(() => import('@/pages/CalendarPage'));
+const RoadmapPage = lazy(() => import('@/pages/RoadmapPage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const MarketAnalysisPage = lazy(() => import('@/pages/MarketAnalysisPage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 
 const Index = () => {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const Index = () => {
           onMenuToggle={() => setMobileMenuOpen(prev => !prev)}
         />
         <div className="p-4 lg:p-8 flex-1">
+          <Suspense fallback={<div className="text-muted-foreground text-sm">Chargement…</div>}>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -88,6 +90,7 @@ const Index = () => {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>
+          </Suspense>
         </div>
       </main>
     </div>

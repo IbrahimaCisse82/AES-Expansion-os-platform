@@ -104,7 +104,7 @@ export default function BudgetImport({ scenarioId, categories, countries, onComp
         await createLine.mutateAsync({
           scenario_id: scenarioId,
           category_id: line.categoryId!,
-          country_id: line.countryId,
+          country_id: line.countryId ?? null,
           country_label: country ? `${country.flag} ${country.name}` : line.country,
           line_type: line.lineType as 'budget' | 'actual' | 'forecast',
           m1: line.m1, m2: line.m2, m3: line.m3, m4: line.m4,

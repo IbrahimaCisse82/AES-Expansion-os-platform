@@ -205,7 +205,7 @@ function CommentItem({
           {/* Tags */}
           {(c.tags || []).length > 0 && (
             <div className="flex gap-1.5 mt-1.5">
-              {c.tags.map((t: string) => <span key={t} className="text-[10.5px] font-medium bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>)}
+              {(c.tags ?? []).map((t: string) => <span key={t} className="text-[10.5px] font-medium bg-secondary text-muted-foreground px-2 py-0.5 rounded-md">{t}</span>)}
             </div>
           )}
 
