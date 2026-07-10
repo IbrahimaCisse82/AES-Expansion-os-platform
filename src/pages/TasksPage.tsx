@@ -164,7 +164,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
       country_id: result.data.country_id,
       country_label: result.data.country_label || null,
       milestone_id: result.data.milestone_id || null,
-      recurrence: result.data.recurrence === 'none' ? null : result.data.recurrence || null,
+      recurrence: result.data.recurrence === 'none' ? undefined : (result.data.recurrence || undefined),
     };
 
     if (editingId) {
