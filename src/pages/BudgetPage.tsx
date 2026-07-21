@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList, GanttChart } from 'lucide-react';
+import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList, GanttChart, Pencil, Scale } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
 import { exportBudgetXLSX, exportBudgetPDF } from '@/lib/budgetExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
@@ -42,10 +42,12 @@ import DataValidation from '@/components/budget/DataValidation';
 import InvestmentRegister from '@/components/budget/InvestmentRegister';
 import XBRLExport from '@/components/budget/XBRLExport';
 import CashFlowView from '@/components/budget/CashFlowView';
+import ActualsEntry from '@/components/budget/ActualsEntry';
+import BudgetVsActual from '@/components/budget/BudgetVsActual';
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
-type ViewMode = 'spreadsheet' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'workflow_dashboard' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
+type ViewMode = 'spreadsheet' | 'actuals' | 'vs_actual' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'workflow_dashboard' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
@@ -139,6 +141,8 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
 
   const VIEW_TABS: { key: ViewMode; icon: React.ReactNode; label: string }[] = [
     { key: 'spreadsheet', icon: <Table2 size={14} />, label: 'Tableur' },
+    { key: 'actuals', icon: <Pencil size={14} />, label: 'Saisie Réel' },
+    { key: 'vs_actual', icon: <Scale size={14} />, label: 'Prévu vs Réel' },
     { key: 'consolidation', icon: <Globe size={14} />, label: 'Consolidation' },
     { key: 'segments', icon: <Layers size={14} />, label: 'Segments' },
     { key: 'pnl', icon: <BarChart3 size={14} />, label: 'P&L' },
@@ -267,6 +271,25 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
 
           {/* Views */}
           {viewMode === 'spreadsheet' && <BudgetSpreadsheet lines={filteredLines} categories={categories} scenarioId={activeScenarioId} canWrite={canWrite} isLocked={isLocked} lineType={lineType} />}
+          {viewMode === 'actuals' && (
+            <ActualsEntry
+              scenarioId={activeScenarioId}
+              fiscalYear={fiscalYear}
+              lines={lines}
+              categories={categories}
+              countries={countries}
+              canWrite={canWrite}
+              isLocked={isLocked}
+            />
+          )}
+          {viewMode === 'vs_actual' && (
+            <BudgetVsActual
+              budgetLines={budgetLines}
+              actualLines={actualLines}
+              categories={categories}
+              fiscalYear={fiscalYear}
+            />
+          )}
           {viewMode === 'consolidation' && <ConsolidationView lines={lines} categories={categories} eliminations={eliminations} countries={countries} lineType={lineType} />}
           {viewMode === 'pnl' && <BudgetPnL budgetLines={budgetLines} actualLines={actualLines} categories={categories} />}
           {viewMode === 'statements' && <FinancialStatements budgetLines={budgetLines} actualLines={actualLines} categories={categories} />}
