@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { BudgetLine, BudgetCategory, MONTHS, MONTH_KEYS, useCreateBudgetLine, useUpdateBudgetLine } from '@/hooks/useBudgetData';
 import { validateActualInput, isFutureMonth, ActualIssue } from '@/lib/actualsValidation';
-import { formatFCFA } from '@/lib/currency';
 import { AlertTriangle, CheckCircle2, Lock, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -284,8 +283,6 @@ export default function ActualsEntry({
           {draftHasErrors
             ? 'Certaines saisies contiennent des erreurs — passez la souris sur les champs pour voir le détail.'
             : `${draftCount} valeur${draftCount > 1 ? 's' : ''} prête${draftCount > 1 ? 's' : ''} à être enregistrée${draftCount > 1 ? 's' : ''}.`}
-          {/* Silence unused import */}
-          <span className="hidden">{formatFCFA(0)}</span>
         </div>
       )}
     </div>
