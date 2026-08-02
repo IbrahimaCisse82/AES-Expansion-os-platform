@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useBudgetScenarios, useBudgetCategories, useBudgetLines, useCreateBudgetLine, BudgetCategory } from '@/hooks/useBudgetData';
 import { useIntercompanyEliminations } from '@/hooks/useBudgetConsolidation';
 import { useCountries } from '@/hooks/useExpansionData';
@@ -13,37 +13,45 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Download, Table2, BarChart3, GitCompare, TrendingUp, FileSpreadsheet, FileText, LayoutDashboard, BookOpen, Globe, ArrowUpDown, Share2, TrendingDown, History, ClipboardCheck, PieChart, Brain, Layers, FileCode, ShieldCheck, Building2, ClipboardList, GanttChart, Pencil, Scale } from 'lucide-react';
 import { exportToCSV } from '@/lib/csvExport';
-import { exportBudgetXLSX, exportBudgetPDF } from '@/lib/budgetExport';
 import { MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
 import BudgetSpreadsheet from '@/components/budget/BudgetSpreadsheet';
 import ScenarioManager from '@/components/budget/ScenarioManager';
 import BudgetKPIs from '@/components/budget/BudgetKPIs';
-import BudgetPnL from '@/components/budget/BudgetPnL';
-import RollingForecast from '@/components/budget/RollingForecast';
-import ScenarioComparison from '@/components/budget/ScenarioComparison';
-import BudgetDashboard from '@/components/budget/BudgetDashboard';
-import FinancialStatements from '@/components/budget/FinancialStatements';
 import BudgetNotifications from '@/components/budget/BudgetNotifications';
-import ConsolidationView from '@/components/budget/ConsolidationView';
-import IntercompanyManager from '@/components/budget/IntercompanyManager';
-import TopDownBottomUp from '@/components/budget/TopDownBottomUp';
-import CostAllocationView from '@/components/budget/CostAllocationView';
-import CapExPlanning from '@/components/budget/CapExPlanning';
-import VersionManager from '@/components/budget/VersionManager';
-import ApprovalWorkflow from '@/components/budget/ApprovalWorkflow';
-import WorkflowDashboard from '@/components/budget/WorkflowDashboard';
-import BudgetImport from '@/components/budget/BudgetImport';
-import AdHocReporting from '@/components/budget/AdHocReporting';
-import AIPredictions from '@/components/budget/AIPredictions';
-import SegmentConsolidation from '@/components/budget/SegmentConsolidation';
-import JournalEntriesView from '@/components/budget/JournalEntriesView';
-import CloseManagementView from '@/components/budget/CloseManagement';
-import DataValidation from '@/components/budget/DataValidation';
-import InvestmentRegister from '@/components/budget/InvestmentRegister';
-import XBRLExport from '@/components/budget/XBRLExport';
-import CashFlowView from '@/components/budget/CashFlowView';
-import ActualsEntry from '@/components/budget/ActualsEntry';
-import BudgetVsActual from '@/components/budget/BudgetVsActual';
+import type ApprovalWorkflowComponent from '@/components/budget/ApprovalWorkflow';
+
+const BudgetImport = lazy(() => import('@/components/budget/BudgetImport'));
+
+// Onglets lourds chargés à la demande
+const BudgetPnL = lazy(() => import('@/components/budget/BudgetPnL'));
+const RollingForecast = lazy(() => import('@/components/budget/RollingForecast'));
+const ScenarioComparison = lazy(() => import('@/components/budget/ScenarioComparison'));
+const BudgetDashboard = lazy(() => import('@/components/budget/BudgetDashboard'));
+const FinancialStatements = lazy(() => import('@/components/budget/FinancialStatements'));
+const ConsolidationView = lazy(() => import('@/components/budget/ConsolidationView'));
+const IntercompanyManager = lazy(() => import('@/components/budget/IntercompanyManager'));
+const TopDownBottomUp = lazy(() => import('@/components/budget/TopDownBottomUp'));
+const CostAllocationView = lazy(() => import('@/components/budget/CostAllocationView'));
+const CapExPlanning = lazy(() => import('@/components/budget/CapExPlanning'));
+const VersionManager = lazy(() => import('@/components/budget/VersionManager'));
+const ApprovalWorkflow = lazy(() => import('@/components/budget/ApprovalWorkflow'));
+const WorkflowDashboard = lazy(() => import('@/components/budget/WorkflowDashboard'));
+const AdHocReporting = lazy(() => import('@/components/budget/AdHocReporting'));
+const AIPredictions = lazy(() => import('@/components/budget/AIPredictions'));
+const SegmentConsolidation = lazy(() => import('@/components/budget/SegmentConsolidation'));
+const JournalEntriesView = lazy(() => import('@/components/budget/JournalEntriesView'));
+const CloseManagementView = lazy(() => import('@/components/budget/CloseManagement'));
+const DataValidation = lazy(() => import('@/components/budget/DataValidation'));
+const InvestmentRegister = lazy(() => import('@/components/budget/InvestmentRegister'));
+const XBRLExport = lazy(() => import('@/components/budget/XBRLExport'));
+const CashFlowView = lazy(() => import('@/components/budget/CashFlowView'));
+const ActualsEntry = lazy(() => import('@/components/budget/ActualsEntry'));
+const BudgetVsActual = lazy(() => import('@/components/budget/BudgetVsActual'));
+
+const ViewFallback = () => (
+  <div className="text-muted-foreground text-sm p-8">Chargement du module…</div>
+);
+
 const CAN_WRITE = ['admin', 'director', 'analyst'];
 const currentYear = new Date().getFullYear();
 
@@ -190,15 +198,25 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           </Select>
           <div className="flex items-center gap-1">
             {activeScenarioId && (
-              <BudgetImport scenarioId={activeScenarioId} categories={categories} countries={countries} onComplete={() => {}} />
+              <Suspense fallback={null}>
+                <BudgetImport scenarioId={activeScenarioId} categories={categories} countries={countries} onComplete={() => {}} />
+              </Suspense>
             )}
             <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
               <Download className="w-3.5 h-3.5" /> CSV
             </Button>
-            <Button onClick={() => activeScenario && exportBudgetXLSX({ lines, categories, scenarioName: activeScenario.name, fiscalYear })} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
+            <Button onClick={async () => {
+              if (!activeScenario) return;
+              const { exportBudgetXLSX } = await import('@/lib/budgetExport');
+              exportBudgetXLSX({ lines, categories, scenarioName: activeScenario.name, fiscalYear });
+            }} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
               <FileSpreadsheet className="w-3.5 h-3.5" /> XLSX
             </Button>
-            <Button onClick={() => activeScenario && exportBudgetPDF({ lines, categories, scenarioName: activeScenario.name, fiscalYear })} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
+            <Button onClick={async () => {
+              if (!activeScenario) return;
+              const { exportBudgetPDF } = await import('@/lib/budgetExport');
+              exportBudgetPDF({ lines, categories, scenarioName: activeScenario.name, fiscalYear });
+            }} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
               <FileText className="w-3.5 h-3.5" /> PDF
             </Button>
           </div>
@@ -270,6 +288,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           )}
 
           {/* Views */}
+          <Suspense fallback={<ViewFallback />}>
           {viewMode === 'spreadsheet' && <BudgetSpreadsheet lines={filteredLines} categories={categories} scenarioId={activeScenarioId} canWrite={canWrite} isLocked={isLocked} lineType={lineType} />}
           {viewMode === 'actuals' && (
             <ActualsEntry
@@ -305,7 +324,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'forecast' && <RollingForecast budgetLines={budgetLines} actualLines={actualLines} categories={categories} forecastHorizon={6} />}
           {viewMode === 'compare' && <ScenarioComparison scenarios={[activeScenario!, ...scenarios.filter(s => compareScenarioIds.includes(s.id))]} allLines={allCompareLines as Record<string, never[]>} categories={categories} lineType={lineType} />}
           {viewMode === 'versions' && <VersionManager scenarioId={activeScenarioId} scenarioName={activeScenario?.name || ''} canWrite={canWrite} />}
-          {viewMode === 'approval' && <ApprovalWorkflow scenario={activeScenario as Parameters<typeof ApprovalWorkflow>[0]['scenario']} profiles={profiles} canWrite={canWrite} isAdmin={isAdmin} />}
+          {viewMode === 'approval' && <ApprovalWorkflow scenario={activeScenario as Parameters<typeof ApprovalWorkflowComponent>[0]['scenario']} profiles={profiles} canWrite={canWrite} isAdmin={isAdmin} />}
           {viewMode === 'workflow_dashboard' && (
             <WorkflowDashboard
               profiles={profiles}
@@ -325,6 +344,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           {viewMode === 'investments' && <InvestmentRegister scenarioId={activeScenarioId} countries={countries} canWrite={canWrite} />}
           {viewMode === 'xbrl' && <XBRLExport lines={lines} categories={categories} scenarioName={activeScenario?.name || ''} fiscalYear={fiscalYear} />}
           {viewMode === 'cashflow' && <CashFlowView lines={lines} categories={categories} />}
+          </Suspense>
         </>
       )}
 
