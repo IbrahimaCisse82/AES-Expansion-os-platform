@@ -18,8 +18,9 @@ import BudgetSpreadsheet from '@/components/budget/BudgetSpreadsheet';
 import ScenarioManager from '@/components/budget/ScenarioManager';
 import BudgetKPIs from '@/components/budget/BudgetKPIs';
 import BudgetNotifications from '@/components/budget/BudgetNotifications';
-import BudgetImport from '@/components/budget/BudgetImport';
 import type ApprovalWorkflowComponent from '@/components/budget/ApprovalWorkflow';
+
+const BudgetImport = lazy(() => import('@/components/budget/BudgetImport'));
 
 // Onglets lourds chargés à la demande
 const BudgetPnL = lazy(() => import('@/components/budget/BudgetPnL'));
