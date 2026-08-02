@@ -198,7 +198,9 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
           </Select>
           <div className="flex items-center gap-1">
             {activeScenarioId && (
-              <BudgetImport scenarioId={activeScenarioId} categories={categories} countries={countries} onComplete={() => {}} />
+              <Suspense fallback={null}>
+                <BudgetImport scenarioId={activeScenarioId} categories={categories} countries={countries} onComplete={() => {}} />
+              </Suspense>
             )}
             <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
               <Download className="w-3.5 h-3.5" /> CSV
