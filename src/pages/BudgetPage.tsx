@@ -74,8 +74,12 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
 
   const { data: scenarios = [], isLoading: loadingScenarios } = useBudgetScenarios(fiscalYear);
   const { data: categories = [] } = useBudgetCategories();
-  const { data: countries = [] } = useCountries();
-  const { data: lines = [], isLoading: loadingLines } = useBudgetLines(activeScenarioId ?? undefined);
+  const { data: allCountries = [] } = useCountries();
+  const { data: allLines = [], isLoading: loadingLines } = useBudgetLines(activeScenarioId ?? undefined);
+
+  // Périmètre pays : un profil rattaché à un pays ne voit que ce pays (+ lignes globales)
+  const countries = myScope ? allCountries.filter(c => c.id === myScope) : allCountries;
+  const lines = myScope ? allLines.filter(l => !l.country_id || l.country_id === myScope) : allLines;
   const { data: eliminations = [] } = useIntercompanyEliminations(activeScenarioId ?? undefined);
   const createLine = useCreateBudgetLine();
 
