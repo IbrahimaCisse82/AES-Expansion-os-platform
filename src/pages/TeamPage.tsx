@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole } from '@/hooks/useUserRoles';
+import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole, useUpdateUserScope } from '@/hooks/useUserRoles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useTasks, useCountries } from '@/hooks/useExpansionData';
@@ -13,6 +13,7 @@ const ROLES = [
   { value: 'admin', label: 'Admin' },
   { value: 'director', label: 'Directeur' },
   { value: 'country_manager', label: 'Country Manager' },
+  { value: 'raf', label: 'RAF (Resp. Admin. & Financier)' },
   { value: 'analyst', label: 'Analyste' },
   { value: 'observer', label: 'Observateur' },
   { value: 'partner', label: 'Partenaire' },
@@ -22,6 +23,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-destructive/15 text-destructive',
   director: 'bg-[hsl(var(--plum))]/15 text-[hsl(var(--plum))]',
   country_manager: 'bg-[hsl(var(--sky))]/15 text-[hsl(var(--sky))]',
+  raf: 'bg-[hsl(var(--terracotta))]/15 text-[hsl(var(--terracotta))]',
   analyst: 'bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]',
   observer: 'bg-muted text-muted-foreground',
   partner: 'bg-[hsl(var(--sage))]/15 text-[hsl(var(--sage))]',
@@ -40,6 +42,7 @@ export default function TeamPage() {
   const { data: myRole } = useCurrentUserRole();
   const { data: users, isLoading, refetch } = useAllUsersWithRoles();
   const updateRole = useUpdateUserRole();
+  const updateScope = useUpdateUserScope();
   const { data: tasks = [] } = useTasks();
   const { data: countries = [] } = useCountries();
   const { data: countryMembers = [] } = useQuery({
