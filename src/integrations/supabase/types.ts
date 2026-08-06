@@ -2102,25 +2102,40 @@ export type Database = {
         Row: {
           id: string
           role: Database["public"]["Enums"]["app_role"]
+          scope_country_id: string | null
           user_id: string
         }
         Insert: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          scope_country_id?: string | null
           user_id: string
         }
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          scope_country_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_scope_country_id_fkey"
+            columns: ["scope_country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_access_country: {
+        Args: { _country_id: string; _user_id: string }
+        Returns: boolean
+      }
       create_notification: {
         Args: {
           _entity_id?: string
@@ -2165,6 +2180,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      user_scope_country: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       app_role:
