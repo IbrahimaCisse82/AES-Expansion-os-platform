@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { useBudgetScenarios, useBudgetCategories, useBudgetLines, useCreateBudgetLine, BudgetCategory } from '@/hooks/useBudgetData';
 import { useIntercompanyEliminations } from '@/hooks/useBudgetConsolidation';
 import { useCountries } from '@/hooks/useExpansionData';
-import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useCurrentUserRole, useMyCountryScope } from '@/hooks/useUserRoles';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -52,13 +52,14 @@ const ViewFallback = () => (
   <div className="text-muted-foreground text-sm p-8">Chargement du module…</div>
 );
 
-const CAN_WRITE = ['admin', 'director', 'analyst'];
+const CAN_WRITE = ['admin', 'director', 'analyst', 'raf'];
 const currentYear = new Date().getFullYear();
 
 type ViewMode = 'spreadsheet' | 'actuals' | 'vs_actual' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'workflow_dashboard' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
+  const { data: myScope } = useMyCountryScope();
   const canWrite = CAN_WRITE.includes(myRole ?? '');
   const isAdmin = myRole === 'admin' || myRole === 'director';
 
@@ -73,8 +74,12 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
 
   const { data: scenarios = [], isLoading: loadingScenarios } = useBudgetScenarios(fiscalYear);
   const { data: categories = [] } = useBudgetCategories();
-  const { data: countries = [] } = useCountries();
-  const { data: lines = [], isLoading: loadingLines } = useBudgetLines(activeScenarioId ?? undefined);
+  const { data: allCountries = [] } = useCountries();
+  const { data: allLines = [], isLoading: loadingLines } = useBudgetLines(activeScenarioId ?? undefined);
+
+  // Périmètre pays : un profil rattaché à un pays ne voit que ce pays (+ lignes globales)
+  const countries = myScope ? allCountries.filter(c => c.id === myScope) : allCountries;
+  const lines = myScope ? allLines.filter(l => !l.country_id || l.country_id === myScope) : allLines;
   const { data: eliminations = [] } = useIntercompanyEliminations(activeScenarioId ?? undefined);
   const createLine = useCreateBudgetLine();
 

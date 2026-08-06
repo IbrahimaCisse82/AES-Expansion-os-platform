@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole } from '@/hooks/useUserRoles';
+import { useAllUsersWithRoles, useCurrentUserRole, useUpdateUserRole, useUpdateUserScope } from '@/hooks/useUserRoles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useTasks, useCountries } from '@/hooks/useExpansionData';
@@ -13,6 +13,7 @@ const ROLES = [
   { value: 'admin', label: 'Admin' },
   { value: 'director', label: 'Directeur' },
   { value: 'country_manager', label: 'Country Manager' },
+  { value: 'raf', label: 'RAF (Resp. Admin. & Financier)' },
   { value: 'analyst', label: 'Analyste' },
   { value: 'observer', label: 'Observateur' },
   { value: 'partner', label: 'Partenaire' },
@@ -22,6 +23,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: 'bg-destructive/15 text-destructive',
   director: 'bg-[hsl(var(--plum))]/15 text-[hsl(var(--plum))]',
   country_manager: 'bg-[hsl(var(--sky))]/15 text-[hsl(var(--sky))]',
+  raf: 'bg-[hsl(var(--terracotta))]/15 text-[hsl(var(--terracotta))]',
   analyst: 'bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]',
   observer: 'bg-muted text-muted-foreground',
   partner: 'bg-[hsl(var(--sage))]/15 text-[hsl(var(--sage))]',
@@ -40,6 +42,7 @@ export default function TeamPage() {
   const { data: myRole } = useCurrentUserRole();
   const { data: users, isLoading, refetch } = useAllUsersWithRoles();
   const updateRole = useUpdateUserRole();
+  const updateScope = useUpdateUserScope();
   const { data: tasks = [] } = useTasks();
   const { data: countries = [] } = useCountries();
   const { data: countryMembers = [] } = useQuery({
@@ -266,6 +269,7 @@ export default function TeamPage() {
                 <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Utilisateur</th>
                 <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Statut</th>
                 <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Rôle</th>
+                <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Pays attribué</th>
                 {isAdmin && (
                   <th className="px-5 py-3 text-[11.5px] font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 )}
@@ -338,6 +342,44 @@ export default function TeamPage() {
                       ) : (
                         <span className={`inline-block px-2.5 py-1 rounded-full text-[11.5px] font-medium ${ROLE_COLORS[u.role] ?? ROLE_COLORS.observer}`}>
                           {ROLES.find((r) => r.value === u.role)?.label ?? u.role}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      {isAdmin ? (
+                        <Select
+                          value={u.scope_country_id ?? '_all'}
+                          onValueChange={(val) =>
+                            updateScope.mutate(
+                              { userId: u.user_id, countryId: val === '_all' ? null : val },
+                              {
+                                onSuccess: () => toast.success('Périmètre pays mis à jour'),
+                                onError: (err: Error) => toast.error(err.message),
+                              }
+                            )
+                          }
+                          disabled={updateScope.isPending}
+                        >
+                          <SelectTrigger className="w-[170px] h-8 text-[12.5px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_all" className="text-[12.5px]">🌍 Tous les pays</SelectItem>
+                            {countries.map((c) => (
+                              <SelectItem key={c.id} value={c.id} className="text-[12.5px]">
+                                {c.flag} {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-[12.5px] text-muted-foreground">
+                          {u.scope_country_id
+                            ? (() => {
+                                const c = countries.find((x) => x.id === u.scope_country_id);
+                                return c ? `${c.flag} ${c.name}` : u.scope_country_id;
+                              })()
+                            : '🌍 Tous les pays'}
                         </span>
                       )}
                     </td>
