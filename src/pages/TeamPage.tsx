@@ -345,6 +345,44 @@ export default function TeamPage() {
                         </span>
                       )}
                     </td>
+                    <td className="px-5 py-4">
+                      {isAdmin ? (
+                        <Select
+                          value={u.scope_country_id ?? '_all'}
+                          onValueChange={(val) =>
+                            updateScope.mutate(
+                              { userId: u.user_id, countryId: val === '_all' ? null : val },
+                              {
+                                onSuccess: () => toast.success('Périmètre pays mis à jour'),
+                                onError: (err: Error) => toast.error(err.message),
+                              }
+                            )
+                          }
+                          disabled={updateScope.isPending}
+                        >
+                          <SelectTrigger className="w-[170px] h-8 text-[12.5px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="_all" className="text-[12.5px]">🌍 Tous les pays</SelectItem>
+                            {countries.map((c) => (
+                              <SelectItem key={c.id} value={c.id} className="text-[12.5px]">
+                                {c.flag} {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-[12.5px] text-muted-foreground">
+                          {u.scope_country_id
+                            ? (() => {
+                                const c = countries.find((x) => x.id === u.scope_country_id);
+                                return c ? `${c.flag} ${c.name}` : u.scope_country_id;
+                              })()
+                            : '🌍 Tous les pays'}
+                        </span>
+                      )}
+                    </td>
                     {isAdmin && (
                       <td className="px-5 py-4">
                         {!isMe && (
