@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { useBudgetScenarios, useBudgetCategories, useBudgetLines, useCreateBudgetLine, BudgetCategory } from '@/hooks/useBudgetData';
 import { useIntercompanyEliminations } from '@/hooks/useBudgetConsolidation';
 import { useCountries } from '@/hooks/useExpansionData';
-import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { useCurrentUserRole, useMyCountryScope } from '@/hooks/useUserRoles';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
