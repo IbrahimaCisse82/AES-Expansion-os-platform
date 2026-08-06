@@ -52,13 +52,14 @@ const ViewFallback = () => (
   <div className="text-muted-foreground text-sm p-8">Chargement du module…</div>
 );
 
-const CAN_WRITE = ['admin', 'director', 'analyst'];
+const CAN_WRITE = ['admin', 'director', 'analyst', 'raf'];
 const currentYear = new Date().getFullYear();
 
 type ViewMode = 'spreadsheet' | 'actuals' | 'vs_actual' | 'pnl' | 'compare' | 'forecast' | 'dashboard' | 'statements' | 'consolidation' | 'topdown' | 'allocations' | 'capex' | 'versions' | 'approval' | 'workflow_dashboard' | 'adhoc' | 'ai' | 'segments' | 'journal' | 'close' | 'validation' | 'investments' | 'xbrl' | 'cashflow';
 
 export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?: number; searchQuery?: string }) {
   const { data: myRole } = useCurrentUserRole();
+  const { data: myScope } = useMyCountryScope();
   const canWrite = CAN_WRITE.includes(myRole ?? '');
   const isAdmin = myRole === 'admin' || myRole === 'director';
 
