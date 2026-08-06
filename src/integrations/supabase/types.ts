@@ -2174,6 +2174,7 @@ export type Database = {
         | "analyst"
         | "observer"
         | "partner"
+        | "raf"
       country_status: "active" | "planning" | "done" | "paused"
       risk_level: "high" | "medium" | "low"
       task_priority: "high" | "med" | "low"
@@ -2312,6 +2313,7 @@ export const Constants = {
         "analyst",
         "observer",
         "partner",
+        "raf",
       ],
       country_status: ["active", "planning", "done", "paused"],
       risk_level: ["high", "medium", "low"],
