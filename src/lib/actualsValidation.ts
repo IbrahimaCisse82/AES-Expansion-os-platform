@@ -1,7 +1,9 @@
 import { BudgetLine, MONTH_KEYS, MONTHS } from '@/hooks/useBudgetData';
 
 export const MAX_AMOUNT_FCFA = 1_000_000_000_000; // 10^12
-export const VARIANCE_WARNING_RATIO = 3; // écart > 300 %
+/** Écart significatif vs prévisionnel : > 20 % → avertissement non bloquant (§5.9.3) */
+export const VARIANCE_WARNING_PCT = 20;
+export const VARIANCE_WARNING_RATIO = 1 + VARIANCE_WARNING_PCT / 100;
 
 export type ActualIssueLevel = 'error' | 'warning';
 
@@ -62,15 +64,38 @@ export function validateActualInput({
     });
   }
 
-  // Cohérence budget vs réalisé (warning uniquement)
-  if (budgetValue > 0 && value > budgetValue * VARIANCE_WARNING_RATIO) {
-    issues.push({
-      level: 'warning',
-      message: `Écart important : ${Math.round((value / budgetValue) * 100)} % du prévu — vérifiez la saisie`,
-    });
+  // Cohérence budget vs réalisé (avertissement non bloquant, appelle un commentaire)
+  if (budgetValue > 0) {
+    const ecart = Math.abs(value - budgetValue) / budgetValue * 100;
+    if (ecart > VARIANCE_WARNING_PCT) {
+      issues.push({
+        level: 'warning',
+        message: `Écart significatif de ${Math.round(ecart)} % vs prévisionnel — justifiez par un commentaire`,
+      });
+    }
   }
 
   return { value, issues };
+}
+
+/**
+ * Contrôle de cohérence des totaux : la somme des 12 mois saisis doit
+ * correspondre au total annuel saisi (tolérance d'arrondi 1 K FCFA).
+ * Une divergence est bloquante (§5.9.3).
+ */
+export function validateRowTotal(
+  monthlyValues: number[],
+  declaredTotal: number | null | undefined,
+): ActualIssue[] {
+  if (declaredTotal === null || declaredTotal === undefined || !Number.isFinite(declaredTotal)) return [];
+  const sum = monthlyValues.reduce((s, v) => s + (Number.isFinite(v) ? v : 0), 0);
+  if (Math.abs(sum - declaredTotal) > 1) {
+    return [{
+      level: 'error',
+      message: `Incohérence des totaux : somme des 12 mois = ${sum.toLocaleString('fr-FR')} K FCFA, total saisi = ${declaredTotal.toLocaleString('fr-FR')} K FCFA`,
+    }];
+  }
+  return [];
 }
 
 /** Vrai si le mois est strictement futur par rapport à aujourd'hui pour l'exercice donné. */

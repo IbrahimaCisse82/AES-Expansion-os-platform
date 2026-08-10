@@ -118,10 +118,10 @@ function RiskCategoriesSection() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#6B7280');
+  const [color, setColor] = useState('sage');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const openCreate = () => { setName(''); setColor('#6B7280'); setEditId(null); setDialogOpen(true); };
+  const openCreate = () => { setName(''); setColor('sage'); setEditId(null); setDialogOpen(true); };
   const openEdit = (c: { id: string; name: string; color: string }) => { setName(c.name); setColor(c.color); setEditId(c.id); setDialogOpen(true); };
 
   const handleSubmit = () => {
@@ -144,14 +144,17 @@ function RiskCategoriesSection() {
       </div>
       {categories.length === 0 ? <p className="text-sm text-muted-foreground">Aucune catégorie</p> : (
         <div className="space-y-1.5">
-          {categories.map(c => (
+          {categories.map(c => {
+            const opt = COLOR_OPTIONS.find(o => o.value === c.color);
+            return (
             <div key={c.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+              <div className={`w-3 h-3 rounded-full flex-shrink-0 ${opt?.css ?? 'bg-muted-foreground'}`} />
               <span className="text-[13px] font-medium text-foreground flex-1">{c.name}</span>
               <button onClick={() => openEdit(c)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded transition-opacity"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>
               <button onClick={() => setDeleteId(c.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity"><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -159,7 +162,19 @@ function RiskCategoriesSection() {
           <DialogHeader><DialogTitle className="font-display text-lg">{editId ? 'Modifier' : 'Nouvelle catégorie'}</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div><Label className="text-[12.5px]">Nom *</Label><Input value={name} onChange={e => setName(e.target.value)} maxLength={50} className="mt-1" /></div>
-            <div><Label className="text-[12.5px]">Couleur</Label><Input type="color" value={color} onChange={e => setColor(e.target.value)} className="mt-1 h-10 w-20" /></div>
+            <div>
+              <Label className="text-[12.5px]">Couleur</Label>
+              <Select value={color} onValueChange={setColor}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {COLOR_OPTIONS.map(o => (
+                    <SelectItem key={o.value} value={o.value}>
+                      <span className="flex items-center gap-2"><span className={`w-3 h-3 rounded-full ${o.css}`} />{o.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Annuler</Button>
               <Button size="sm" onClick={handleSubmit}>{editId ? 'Enregistrer' : 'Créer'}</Button>

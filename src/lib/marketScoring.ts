@@ -58,13 +58,13 @@ export function computeMarketScoreDetailed(c: CountryData, inputs: ScoreInputs =
 
   // 2. Jalons complétés
   const ms = inputs.milestones ?? [];
-  const milestones = ms.length === 0 ? 0 : (ms.filter(m => m.is_done).length / ms.length) * 100;
+  const milestones = ms.length === 0 ? 0 : clamp((ms.filter(m => m.is_done).length / ms.length) * 100);
 
   // 3. KPIs verts (≥ 80% cible)
   let kpis = 0;
   if (inputs.kpis && inputs.kpis.length > 0) {
     const greens = inputs.kpis.filter(k => k.target > 0 && k.value / k.target >= 0.8).length;
-    kpis = (greens / inputs.kpis.length) * 100;
+    kpis = clamp((greens / inputs.kpis.length) * 100);
   } else {
     // Fallback sur les snapshots de pays si aucun KPI structuré
     const fallback = [
@@ -73,7 +73,7 @@ export function computeMarketScoreDetailed(c: CountryData, inputs: ScoreInputs =
       ratio(parseNumeric(c.kpi_nps), 100),
       ratio(parseNumeric(c.kpi_retention), 100),
     ].filter((v): v is number => v !== null);
-    kpis = fallback.length === 0 ? 0 : (fallback.reduce((a, b) => a + b, 0) / fallback.length) * 100;
+    kpis = fallback.length === 0 ? 0 : clamp((fallback.reduce((a, b) => a + b, 0) / fallback.length) * 100);
   }
 
   // 4. Exposition risque (100 = pas de risque)
@@ -123,7 +123,7 @@ function clamp(n: number): number {
 
 function ratio(val: number | null, max: number): number | null {
   if (val === null) return null;
-  return Math.min(val / max, 1);
+  return Math.max(0, Math.min(val / max, 1));
 }
 
 export function getScoreColor(score: number): string {
