@@ -71,6 +71,53 @@ describe('computeMarketScoreDetailed', () => {
   });
 });
 
+describe('cas de recette du cahier des charges (§6.2)', () => {
+  it('marché parfait : score 100', () => {
+    const r = computeMarketScoreDetailed({ ...baseCountry, pct: 100 }, {
+      milestones: [{ is_done: true }, { is_done: true }],
+      kpis: [{ value: 100, target: 100 }, { value: 90, target: 100 }],
+      risks: [],
+      budget: { allocated_k: 1000, spent_k: 1000 },
+    });
+    expect(r).toEqual({ score: 100, checklist: 100, milestones: 100, kpis: 100, risks: 100, budget: 100 });
+  });
+
+  it('marché dégradé : toutes composantes faibles', () => {
+    const r = computeMarketScoreDetailed({ ...baseCountry, pct: 20 }, {
+      milestones: [{ is_done: false }, { is_done: false }],
+      kpis: [{ value: 10, target: 100 }, { value: 20, target: 100 }],
+      risks: [{ level: 'high' }, { level: 'high' }],
+      budget: { allocated_k: 1000, spent_k: 1800 },
+    });
+    expect(r.checklist).toBe(20);
+    expect(r.milestones).toBe(0);
+    expect(r.kpis).toBe(0);
+    expect(r.risks).toBe(40);
+    expect(r.budget).toBe(20);
+    // 0.25*20 + 0.20*0 + 0.25*0 + 0.20*40 + 0.10*20 = 15
+    expect(r.score).toBe(15);
+  });
+
+  it('absence totale de données : score plafonné aux composantes neutres', () => {
+    const r = computeMarketScoreDetailed(baseCountry, {});
+    // 0.25*0 + 0.20*0 + 0.25*0 + 0.20*100 + 0.10*100 = 30
+    expect(r.score).toBe(30);
+  });
+
+  it('valeurs négatives : aucune composante ne descend sous 0', () => {
+    const r = computeMarketScoreDetailed({ ...baseCountry, pct: -50, risk_count: -3, kpi_ca: '-5000' }, {
+      kpis: [{ value: -100, target: 100 }],
+      budget: { allocated_k: 1000, spent_k: -500 },
+    });
+    expect(r.checklist).toBe(0);
+    expect(r.kpis).toBe(0);
+    expect(r.risks).toBeGreaterThanOrEqual(0);
+    expect(r.budget).toBeGreaterThanOrEqual(0);
+    expect(r.score).toBeGreaterThanOrEqual(0);
+    expect(r.score).toBeLessThanOrEqual(100);
+  });
+});
+
 describe('getScoreLabel', () => {
   it('labels scores by tier', () => {
     expect(getScoreLabel(90)).toBe('Excellent');

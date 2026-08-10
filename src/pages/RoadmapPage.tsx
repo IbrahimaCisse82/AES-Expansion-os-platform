@@ -169,7 +169,7 @@ export default function RoadmapPage({ addSignal, searchQuery = '' }: { addSignal
                   {isToday && <div className="absolute w-0.5 bg-destructive top-0 bottom-0 z-10 left-1/2 -translate-x-1/2" />}
                   {bar && (
                     <div
-                      className={`absolute h-6 top-1.5 ${colorMap[bar.color] || 'bg-accent'} rounded-md flex items-center px-2 text-[10px] font-medium text-white whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:brightness-110 transition-all z-[1] group`}
+                      className={`absolute h-6 top-1.5 ${colorMap[bar.color] || 'bg-accent'} rounded-md flex items-center px-2 text-[10px] font-medium text-primary-foreground whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer hover:brightness-110 transition-all z-[1] group`}
                       style={{ left: '2px', width: `calc(${bar.end_month - bar.start_month} * 100% - 4px)` }}
                       onClick={() => canWrite && openEdit(bar)}
                     >
