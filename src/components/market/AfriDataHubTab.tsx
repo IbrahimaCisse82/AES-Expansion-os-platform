@@ -496,7 +496,7 @@ function AnalyseIA() {
           <button
             onClick={handleAnalyze}
             disabled={(!selectedCountry && !description) || isLoading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white text-[13px] font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-accent-foreground text-[13px] font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
           >
             {isLoading ? <><Loader2 size={14} className="animate-spin" />Analyse en cours...</> : <><Sparkles size={14} />Lancer l'analyse IA</>}
           </button>
@@ -693,7 +693,7 @@ export default function AfriDataHubTab() {
               <tab.icon size={13} />{tab.label}
             </TabsTrigger>
           ))}
-          <TabsTrigger value="analyse-ia" className="flex items-center gap-1.5 text-[12px] px-3 py-2 data-[state=active]:bg-accent data-[state=active]:text-white">
+          <TabsTrigger value="analyse-ia" className="flex items-center gap-1.5 text-[12px] px-3 py-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
             <Sparkles size={13} />Analyse IA
           </TabsTrigger>
         </TabsList>

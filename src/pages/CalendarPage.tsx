@@ -196,7 +196,7 @@ export default function CalendarPage() {
                         {h === 9 && dayTasks.map((t, j) => {
                           const colorMap: Record<string, string> = { high: 'bg-destructive', med: 'bg-[hsl(var(--gold))]', low: 'bg-accent' };
                           return (
-                            <div key={j} className={`text-[9px] font-medium text-white px-1 py-0.5 rounded mb-0.5 truncate ${colorMap[t.priority] || 'bg-accent'}`}>
+                            <div key={j} className={`text-[9px] font-medium text-primary-foreground px-1 py-0.5 rounded mb-0.5 truncate ${colorMap[t.priority] || 'bg-accent'}`}>
                               {t.title.slice(0, 20)}
                             </div>
                           );
@@ -261,7 +261,7 @@ export default function CalendarPage() {
                         draggable={canWrite}
                         onDragStart={e => { e.stopPropagation(); setDragTaskId(ev.id); e.dataTransfer.effectAllowed = 'move'; }}
                         onDragEnd={() => setDragTaskId(null)}
-                        className={`text-[10px] font-medium text-white px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color} ${canWrite ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                        className={`text-[10px] font-medium text-primary-foreground px-1.5 py-0.5 rounded mb-0.5 truncate ${ev.color} ${canWrite ? 'cursor-grab active:cursor-grabbing' : ''}`}
                       >
                         {ev.label}
                       </div>
