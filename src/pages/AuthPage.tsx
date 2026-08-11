@@ -9,6 +9,41 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [demoLoading, setDemoLoading] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
+
+  /** Vérifie si un second facteur est requis après la saisie du mot de passe. */
+  const checkMfaRequired = async () => {
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (data?.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
+      const { data: list } = await supabase.auth.mfa.listFactors();
+      const factor = (list?.totp ?? []).find(f => f.status === 'verified');
+      if (factor) setMfaFactorId(factor.id);
+    }
+  };
+
+  const handleVerifyMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaFactorId) return;
+    setError('');
+    setLoading(true);
+    try {
+      const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+      if (chErr) throw chErr;
+      const { error: vErr } = await supabase.auth.mfa.verify({
+        factorId: mfaFactorId,
+        challengeId: ch.id,
+        code: mfaCode.trim(),
+      });
+      if (vErr) throw vErr;
+      setMfaFactorId(null);
+      setMfaCode('');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Code de vérification invalide');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDemo = async () => {
     setError('');
@@ -34,6 +69,7 @@ export default function AuthPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      await checkMfaRequired();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
@@ -60,6 +96,37 @@ export default function AuthPage() {
             Connectez-vous à votre plateforme d'expansion
           </p>
 
+          {mfaFactorId ? (
+          <form onSubmit={handleVerifyMfa} className="text-left space-y-3.5">
+            <div>
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
+                Code de vérification (2FA)
+              </label>
+              <input
+                value={mfaCode}
+                onChange={e => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                inputMode="numeric"
+                autoFocus
+                className="w-full px-3 py-2.5 border-[1.5px] border-border rounded-lg text-[13.5px] bg-cream outline-none focus:border-sage focus:bg-card transition-colors font-mono tracking-widest"
+                placeholder="123456"
+                required
+              />
+              <p className="text-[11.5px] text-muted-foreground mt-1.5">
+                Saisissez le code affiché dans votre application d'authentification.
+              </p>
+            </div>
+            {error && (
+              <div className="text-[12.5px] text-terracotta bg-terracotta-light rounded-lg px-3 py-2">{error}</div>
+            )}
+            <button
+              type="submit"
+              disabled={loading || mfaCode.length < 6}
+              className="w-full py-2.5 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-navy-mid transition-all disabled:opacity-50"
+            >
+              {loading ? '...' : 'Vérifier →'}
+            </button>
+          </form>
+          ) : (
           <form onSubmit={handleSubmit} className="text-left space-y-3.5">
             <div>
               <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
@@ -101,6 +168,7 @@ export default function AuthPage() {
               {loading ? '...' : 'Se connecter →'}
             </button>
           </form>
+          )}
 
           <div className="mt-5 flex flex-col items-center gap-1.5">
             <a href="/forgot-password" className="text-[12px] text-primary hover:underline">
