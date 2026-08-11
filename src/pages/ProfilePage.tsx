@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import MfaSettings from '@/components/MfaSettings';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -156,6 +157,8 @@ export default function ProfilePage() {
           </Button>
         </div>
       </div>
+
+      <MfaSettings />
     </div>
   );
 }
