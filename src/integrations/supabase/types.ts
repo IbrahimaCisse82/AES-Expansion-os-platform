@@ -2132,6 +2132,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approver_user_ids: {
+        Args: never
+        Returns: {
+          user_id: string
+        }[]
+      }
       can_access_country: {
         Args: { _country_id: string; _user_id: string }
         Returns: boolean
