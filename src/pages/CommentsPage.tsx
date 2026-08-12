@@ -31,8 +31,17 @@ function CommentAttachments({ commentId }: { commentId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase.from('comment_attachments').select('*').eq('comment_id', commentId).order('created_at');
       if (error) throw error;
-      return data;
+      const signed = await Promise.all(
+        data.map(async (a) => {
+          const { data: s } = await supabase.storage
+            .from('comment-attachments')
+            .createSignedUrl(a.file_path, 3600);
+          return { ...a, url: s?.signedUrl ?? '' };
+        })
+      );
+      return signed;
     },
+    staleTime: 30 * 60_000,
   });
   if (attachments.length === 0) return null;
 
@@ -40,7 +49,7 @@ function CommentAttachments({ commentId }: { commentId: string }) {
     <div className="flex flex-wrap gap-2 mt-2">
       {attachments.map(a => {
         const isImage = a.mime_type.startsWith('image/');
-        const url = supabase.storage.from('comment-attachments').getPublicUrl(a.file_path).data.publicUrl;
+        const url = a.url;
         return isImage ? (
           <a key={a.id} href={url} target="_blank" rel="noopener noreferrer" className="block">
             <img src={url} alt={a.file_name} className="max-h-[120px] rounded-lg border border-border object-cover hover:opacity-80 transition-opacity" />
