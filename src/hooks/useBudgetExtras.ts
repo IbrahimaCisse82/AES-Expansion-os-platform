@@ -157,11 +157,8 @@ export async function notifyBudgetStatusChange(params: {
   };
   const message = `Le scénario "${params.scenarioName}" a été ${statusLabels[params.newStatus] || params.newStatus}`;
 
-  // Get all users with admin/director roles
-  const { data: roles } = await supabase
-    .from('user_roles')
-    .select('user_id')
-    .in('role', ['admin', 'director']);
+  // Get all approvers (admin/director) without exposing the full role table
+  const { data: roles } = await supabase.rpc('approver_user_ids');
 
   if (!roles || roles.length === 0) return;
 
