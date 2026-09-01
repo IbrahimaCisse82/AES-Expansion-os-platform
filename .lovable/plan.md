@@ -24,6 +24,16 @@ Une page `/app/bi` avec 6 onglets :
 4. **Constructeur de rapports** — dimensions (pays, pôle, projet, catégorie, mois, statut, assignataire) et mesures (budget, réalisé, écart, %, marge, nombre de tâches/risques), rendu en tableau croisé + graphique au choix, filtres et tri. Rapports sauvegardables, renommables, partageables (privé / équipe).
 5. **Diffusion** — export Excel et PDF de tout rapport, plus planification d'envoi par email (quotidien / hebdomadaire / mensuel) vers des destinataires internes, en réutilisant l'infrastructure email existante.
 6. **Analyse IA** — synthèse en français des écarts et tendances du rapport courant, détection d'anomalies (dérive d'un sous-budget projet, sur-consommation) et recommandations, via Lovable AI.
+7. **Rapports opérationnels** — les 12 modèles de rapports du classeur AES reproduits en formulaires numériques pré-remplis depuis les données de la plateforme (tâches, jalons, budget, risques, KPIs), exportables en Excel/PDF et envoyables par email selon leur fréquence et leurs destinataires :
+   - **A1 — Flash hebdomadaire** (chaque lundi 10h, DG) : chiffres clés, alertes, décisions requises.
+   - **A2 à A5 — Rapports mensuels par pôle** (avant le 5 du mois) : COMM, TECH, ADM, RH — exécution du sous-budget, activités, incidents, besoins.
+   - **A6 — Fiche d'évaluation individuelle** (mensuelle/semestrielle/annuelle/probatoire).
+   - **A7 — Plan de Progrès Individuel 90 jours** (déclenché si note ≤ 2/4, suivi mensuel).
+   - **A8 — Rapport de formation** (par session).
+   - **A9 — Compte rendu Task Force** (hebdo, diffusé sous 24h, confidentiel Direction).
+   - **A10 — Rapport trimestriel de pilotage DG** (comité de direction / actionnaires) : consolidé global, écarts, risques, décisions.
+   - **A11 — Fiche de poste** (modèle par poste).
+   - **A12 — Fiche d'intervention** (suivi technique/terrain).
 
 
 Tout est en français, montants en FCFA, couleurs issues des tokens du thème existant.
@@ -42,6 +52,7 @@ Tout est en français, montants en FCFA, couleurs issues des tokens du thème ex
 - `bi_projects` : sous-budgets — nom, code, `country_id`, `pole_id`, dates début/fin, `budget_total` (FCFA), statut, responsable, notes.
 - `bi_saved_reports` : nom, description, `config` jsonb (dimensions, mesures, filtres, type de graphique), `owner_id`, `visibility` (`private` | `team`), `scope_country_id`.
 - `bi_report_schedules` : `report_id`, fréquence, heure, destinataires, actif, `last_sent_at`.
+- `bi_report_instances` : un exemplaire généré d'un modèle A1–A12 — `template_code` (A1…A12), pays/pôle, période, `data` jsonb (sections du rapport), `author_id`, statut (brouillon / soumis / validé), `sent_at`.
 - Ajout de colonnes nullables `pole_id` et `project_id` sur `budget_lines` (rattachement d'une ligne à un pôle et à un sous-budget projet) ; les lignes sans projet remontent au niveau « non affecté » du budget global.
 - Rattachement optionnel `project_id` sur `tasks` et `risks` pour croiser l'exécution opérationnelle avec les sous-budgets.
 - Vues SQL d'agrégation (`bi_budget_facts` par pays/pôle/projet/mois, `bi_activity_facts`) pour éviter le calcul lourd côté client, exposées en lecture seule et soumises aux mêmes règles de périmètre.
@@ -55,7 +66,8 @@ Tout est en français, montants en FCFA, couleurs issues des tokens du thème ex
 
 **Backend**
 - Edge function `bi-ai-insights` : appel Lovable AI (modèle Gemini Flash récent) sur l'agrégat du rapport, sortie structurée (synthèse, anomalies, recommandations), gestion explicite des erreurs 402/429.
-- Edge function `bi-report-scheduler` déclenchée par le cron quotidien existant : génère les rapports dus et les envoie via `send-transactional-email` avec un nouveau template FR `bi-report`.
+- Edge function `bi-report-scheduler` déclenchée par le cron quotidien existant : génère les rapports dus (rapports sauvegardés planifiés ET rapports opérationnels A1–A10 à échéance, ex. A1 le lundi, A2–A5 le 5 du mois, A10 en fin de trimestre) et les envoie via `send-transactional-email` avec un nouveau template FR `bi-report`.
+- `src/components/bi/BiOperationalReports.tsx` : catalogue des 12 modèles A1–A12, génération d'un exemplaire (pré-remplissage automatique des chiffres : sous-budget pôle, tâches, jalons, risques, KPIs de la période), édition des sections, validation et envoi ; historique des exemplaires par période.
 
 **Qualité**
 - Typage strict, aucun `any`, tokens sémantiques uniquement.
