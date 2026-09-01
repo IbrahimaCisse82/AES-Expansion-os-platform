@@ -24,6 +24,16 @@ Une page `/app/bi` avec 6 onglets :
 4. **Constructeur de rapports** — dimensions (pays, pôle, projet, catégorie, mois, statut, assignataire) et mesures (budget, réalisé, écart, %, marge, nombre de tâches/risques), rendu en tableau croisé + graphique au choix, filtres et tri. Rapports sauvegardables, renommables, partageables (privé / équipe).
 5. **Diffusion** — export Excel et PDF de tout rapport, plus planification d'envoi par email (quotidien / hebdomadaire / mensuel) vers des destinataires internes, en réutilisant l'infrastructure email existante.
 6. **Analyse IA** — synthèse en français des écarts et tendances du rapport courant, détection d'anomalies (dérive d'un sous-budget projet, sur-consommation) et recommandations, via Lovable AI.
+7. **Rapports opérationnels** — les 12 modèles de rapports du classeur AES reproduits en formulaires numériques pré-remplis depuis les données de la plateforme (tâches, jalons, budget, risques, KPIs), exportables en Excel/PDF et envoyables par email selon leur fréquence et leurs destinataires :
+   - **A1 — Flash hebdomadaire** (chaque lundi 10h, DG) : chiffres clés, alertes, décisions requises.
+   - **A2 à A5 — Rapports mensuels par pôle** (avant le 5 du mois) : COMM, TECH, ADM, RH — exécution du sous-budget, activités, incidents, besoins.
+   - **A6 — Fiche d'évaluation individuelle** (mensuelle/semestrielle/annuelle/probatoire).
+   - **A7 — Plan de Progrès Individuel 90 jours** (déclenché si note ≤ 2/4, suivi mensuel).
+   - **A8 — Rapport de formation** (par session).
+   - **A9 — Compte rendu Task Force** (hebdo, diffusé sous 24h, confidentiel Direction).
+   - **A10 — Rapport trimestriel de pilotage DG** (comité de direction / actionnaires) : consolidé global, écarts, risques, décisions.
+   - **A11 — Fiche de poste** (modèle par poste).
+   - **A12 — Fiche d'intervention** (suivi technique/terrain).
 
 
 Tout est en français, montants en FCFA, couleurs issues des tokens du thème existant.
