@@ -48,9 +48,9 @@ Tout est en français, montants en FCFA, couleurs issues des tokens du thème ex
 
 **Frontend**
 - `src/pages/BiPage.tsx` + route lazy dans `src/pages/Index.tsx`, entrée dans `AppSidebar` (section ANALYSE).
-- `src/components/bi/` : `BiFilters.tsx`, `BiOverview.tsx`, `BiPoleAnalysis.tsx`, `BiReportBuilder.tsx`, `BiDistribution.tsx`, `BiAiInsights.tsx`.
-- `src/hooks/useBiData.ts` (agrégats via TanStack Query, `staleTime` 60s) et `src/hooks/useBiReports.ts` (CRUD rapports + planifications).
-- `src/lib/biAggregate.ts` : pivot dimensions/mesures, calcul d'écarts, formatage FCFA — couvert par des tests Vitest.
+- `src/components/bi/` : `BiFilters.tsx`, `BiOverview.tsx`, `BiProjectBudgets.tsx` (liste + fiche sous-budget), `BiPoleAnalysis.tsx`, `BiReportBuilder.tsx`, `BiDistribution.tsx`, `BiAiInsights.tsx`.
+- `src/hooks/useBiData.ts` (agrégats hiérarchiques via TanStack Query, `staleTime` 60s), `src/hooks/useBiProjects.ts` (CRUD sous-budgets) et `src/hooks/useBiReports.ts` (CRUD rapports + planifications).
+- `src/lib/biAggregate.ts` : roll-up global → pays → pôle → projet → catégorie, pivot dimensions/mesures, calcul d'écarts et de marge, formatage FCFA — couvert par des tests Vitest.
 - Exports en imports dynamiques (`xlsx`, `jspdf`) comme dans le module Budget, pour ne pas alourdir le bundle ; onglets en `React.lazy`.
 
 **Backend**
