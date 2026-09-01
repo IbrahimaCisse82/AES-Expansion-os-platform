@@ -68,6 +68,259 @@ export type Database = {
         }
         Relationships: []
       }
+      bi_poles: {
+        Row: {
+          code: string
+          color: string
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          color?: string
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          color?: string
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bi_projects: {
+        Row: {
+          budget_total: number
+          code: string
+          country_id: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string | null
+          owner_name: string | null
+          pole_id: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget_total?: number
+          code: string
+          country_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id?: string | null
+          owner_name?: string | null
+          pole_id?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget_total?: number
+          code?: string
+          country_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string | null
+          owner_name?: string | null
+          pole_id?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_projects_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bi_projects_pole_id_fkey"
+            columns: ["pole_id"]
+            isOneToOne: false
+            referencedRelation: "bi_poles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_report_instances: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          country_id: string | null
+          created_at: string
+          data: Json
+          id: string
+          period: string
+          pole_id: string | null
+          sent_at: string | null
+          status: string
+          template_code: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          country_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          period?: string
+          pole_id?: string | null
+          sent_at?: string | null
+          status?: string
+          template_code: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          country_id?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          period?: string
+          pole_id?: string | null
+          sent_at?: string | null
+          status?: string
+          template_code?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_report_instances_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bi_report_instances_pole_id_fkey"
+            columns: ["pole_id"]
+            isOneToOne: false
+            referencedRelation: "bi_poles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_report_schedules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          frequency: string
+          hour: number
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          recipients: Json
+          report_id: string | null
+          template_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          frequency?: string
+          hour?: number
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          recipients?: Json
+          report_id?: string | null
+          template_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          frequency?: string
+          hour?: number
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          recipients?: Json
+          report_id?: string | null
+          template_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_report_schedules_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "bi_saved_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_saved_reports: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string | null
+          scope_country_id: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id?: string | null
+          scope_country_id?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string | null
+          scope_country_id?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_saved_reports_scope_country_id_fkey"
+            columns: ["scope_country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_audit_log: {
         Row: {
           budget_line_id: string
@@ -640,6 +893,8 @@ export type Database = {
           m8: number
           m9: number
           notes: string | null
+          pole_id: string | null
+          project_id: string | null
           scenario_id: string
           updated_at: string
         }
@@ -663,6 +918,8 @@ export type Database = {
           m8?: number
           m9?: number
           notes?: string | null
+          pole_id?: string | null
+          project_id?: string | null
           scenario_id: string
           updated_at?: string
         }
@@ -686,6 +943,8 @@ export type Database = {
           m8?: number
           m9?: number
           notes?: string | null
+          pole_id?: string | null
+          project_id?: string | null
           scenario_id?: string
           updated_at?: string
         }
@@ -702,6 +961,20 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_pole_id_fkey"
+            columns: ["pole_id"]
+            isOneToOne: false
+            referencedRelation: "bi_poles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "bi_projects"
             referencedColumns: ["id"]
           },
           {
@@ -1835,6 +2108,7 @@ export type Database = {
           owner_id: string | null
           owner_name: string | null
           probability: number
+          project_id: string | null
           review_date: string | null
           risk_status: string
           title: string
@@ -1855,6 +2129,7 @@ export type Database = {
           owner_id?: string | null
           owner_name?: string | null
           probability?: number
+          project_id?: string | null
           review_date?: string | null
           risk_status?: string
           title: string
@@ -1875,6 +2150,7 @@ export type Database = {
           owner_id?: string | null
           owner_name?: string | null
           probability?: number
+          project_id?: string | null
           review_date?: string | null
           risk_status?: string
           title?: string
@@ -1893,6 +2169,13 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "bi_projects"
             referencedColumns: ["id"]
           },
         ]
@@ -2038,6 +2321,7 @@ export type Database = {
           milestone_id: string | null
           owner_name: string | null
           priority: Database["public"]["Enums"]["task_priority"]
+          project_id: string | null
           recurrence: string
           recurrence_interval: number
           recurrence_next_date: string | null
@@ -2056,6 +2340,7 @@ export type Database = {
           milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
+          project_id?: string | null
           recurrence?: string
           recurrence_interval?: number
           recurrence_next_date?: string | null
@@ -2074,6 +2359,7 @@ export type Database = {
           milestone_id?: string | null
           owner_name?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
+          project_id?: string | null
           recurrence?: string
           recurrence_interval?: number
           recurrence_next_date?: string | null
@@ -2094,6 +2380,13 @@ export type Database = {
             columns: ["milestone_id"]
             isOneToOne: false
             referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "bi_projects"
             referencedColumns: ["id"]
           },
         ]
@@ -2129,7 +2422,85 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      bi_activity_facts: {
+        Row: {
+          country_id: string | null
+          country_label: string | null
+          created_at: string | null
+          id: string | null
+          item_type: string | null
+          project_id: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
+      bi_budget_facts: {
+        Row: {
+          category_id: string | null
+          category_name: string | null
+          category_type: string | null
+          country_id: string | null
+          country_label: string | null
+          id: string | null
+          line_type: string | null
+          m1: number | null
+          m10: number | null
+          m11: number | null
+          m12: number | null
+          m2: number | null
+          m3: number | null
+          m4: number | null
+          m5: number | null
+          m6: number | null
+          m7: number | null
+          m8: number | null
+          m9: number | null
+          pole_code: string | null
+          pole_id: string | null
+          pole_label: string | null
+          project_id: string | null
+          project_name: string | null
+          scenario_id: string | null
+          total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_lines_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_pole_id_fkey"
+            columns: ["pole_id"]
+            isOneToOne: false
+            referencedRelation: "bi_poles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "bi_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_lines_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "budget_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approver_user_ids: {
