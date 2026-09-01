@@ -38,11 +38,13 @@ Tout est en français, montants en FCFA, couleurs issues des tokens du thème ex
 ## Détails techniques
 
 **Base de données (nouvelles tables, avec GRANT + RLS scopées par `can_access_country` / `has_role`)**
-- `bi_pole` (enum ou table de référence) : COMM, TECH, ADM, RH, DG, BOBO — configurable.
+- `bi_poles` : table de référence des pôles (code, libellé, couleur, ordre) — pré-remplie avec COMM, TECH, ADM, RH, DG, BOBO, modifiable par un admin.
+- `bi_projects` : sous-budgets — nom, code, `country_id`, `pole_id`, dates début/fin, `budget_total` (FCFA), statut, responsable, notes.
 - `bi_saved_reports` : nom, description, `config` jsonb (dimensions, mesures, filtres, type de graphique), `owner_id`, `visibility` (`private` | `team`), `scope_country_id`.
 - `bi_report_schedules` : `report_id`, fréquence, heure, destinataires, actif, `last_sent_at`.
-- Ajout d'une colonne `pole` (nullable) sur `budget_lines` pour l'axe pôle, avec valeur par défaut nulle et mapping depuis la catégorie quand absent.
-- Vues SQL d'agrégation (`bi_budget_facts`, `bi_activity_facts`) pour éviter le calcul lourd côté client, exposées en lecture seule et soumises aux mêmes règles de périmètre.
+- Ajout de colonnes nullables `pole_id` et `project_id` sur `budget_lines` (rattachement d'une ligne à un pôle et à un sous-budget projet) ; les lignes sans projet remontent au niveau « non affecté » du budget global.
+- Rattachement optionnel `project_id` sur `tasks` et `risks` pour croiser l'exécution opérationnelle avec les sous-budgets.
+- Vues SQL d'agrégation (`bi_budget_facts` par pays/pôle/projet/mois, `bi_activity_facts`) pour éviter le calcul lourd côté client, exposées en lecture seule et soumises aux mêmes règles de périmètre.
 
 **Frontend**
 - `src/pages/BiPage.tsx` + route lazy dans `src/pages/Index.tsx`, entrée dans `AppSidebar` (section ANALYSE).
