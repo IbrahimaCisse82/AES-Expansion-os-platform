@@ -52,6 +52,7 @@ Tout est en français, montants en FCFA, couleurs issues des tokens du thème ex
 - `bi_projects` : sous-budgets — nom, code, `country_id`, `pole_id`, dates début/fin, `budget_total` (FCFA), statut, responsable, notes.
 - `bi_saved_reports` : nom, description, `config` jsonb (dimensions, mesures, filtres, type de graphique), `owner_id`, `visibility` (`private` | `team`), `scope_country_id`.
 - `bi_report_schedules` : `report_id`, fréquence, heure, destinataires, actif, `last_sent_at`.
+- `bi_report_instances` : un exemplaire généré d'un modèle A1–A12 — `template_code` (A1…A12), pays/pôle, période, `data` jsonb (sections du rapport), `author_id`, statut (brouillon / soumis / validé), `sent_at`.
 - Ajout de colonnes nullables `pole_id` et `project_id` sur `budget_lines` (rattachement d'une ligne à un pôle et à un sous-budget projet) ; les lignes sans projet remontent au niveau « non affecté » du budget global.
 - Rattachement optionnel `project_id` sur `tasks` et `risks` pour croiser l'exécution opérationnelle avec les sous-budgets.
 - Vues SQL d'agrégation (`bi_budget_facts` par pays/pôle/projet/mois, `bi_activity_facts`) pour éviter le calcul lourd côté client, exposées en lecture seule et soumises aux mêmes règles de périmètre.
