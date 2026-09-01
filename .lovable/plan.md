@@ -1,16 +1,30 @@
 # Module Business Intelligence (BI) pour ExpansionOS
 
-Nouveau module transversal « Business Intelligence », accessible depuis la barre latérale (section ANALYSE), qui agrège toutes les données de la plateforme (pays, tâches, risques, jalons, KPIs, budget FP&A) et reprend la logique du classeur financier AES Burkina (pôles COMM / TECH / ADM / RH / DG / BOBO, trésorerie, compte de résultat, marge projet, KPI dashboard) — en modèle de structure uniquement, sans importer les chiffres du fichier.
+Nouveau module transversal « Business Intelligence », accessible depuis la barre latérale (section ANALYSE). Le BI **désagrège** les données de la plateforme ExpansionOS (pays, tâches, risques, jalons, KPIs, budget FP&A) selon une hiérarchie budgétaire à plusieurs niveaux, et reprend la logique du classeur financier AES Burkina (pôles COMM / TECH / ADM / RH / DG / BOBO, trésorerie, compte de résultat, marge projet, KPI dashboard) — en modèle de structure uniquement, sans importer les chiffres du fichier.
+
+## Hiérarchie budgétaire
+
+```text
+Budget global (consolidé, tous pays)
+ └── Pays (BE, BJ, BF, CI, UG, SN)
+      └── Pôle (COMM, TECH, ADM, RH, DG, BOBO)
+           └── Projet  ← sous-budget
+                └── Catégorie / ligne budgétaire (mensuel M1..M12)
+```
+
+Chaque niveau affiche budget, réalisé, écart, % d'exécution, en FCFA. Le budget global est la somme des sous-budgets projets ; un projet peut être rattaché à un pays et à un pôle. Drill-down et remontée (roll-up) à tous les niveaux.
 
 ## Ce que l'utilisateur obtient
 
-Une page `/app/bi` avec 5 onglets :
+Une page `/app/bi` avec 6 onglets :
 
-1. **Vue d'ensemble** — dashboards interactifs : exécution budgétaire, résultat par pôle, tendance trésorerie, avancement pays, top risques, KPIs clés. Filtres globaux persistants : pays, pôle, période (mois/trimestre/année), scénario, devise d'affichage (FCFA pivot).
-2. **Analyse par pôle** — restitution type classeur AES : budget vs réalisé par pôle et par mois, consolidation multi-pôles, marge par projet, avec drill-down (pôle → catégorie → ligne).
-3. **Constructeur de rapports** — sélection de dimensions (pays, pôle, catégorie, mois, statut, assignataire) et de mesures (budget, réalisé, écart, %, nombre de tâches/risques), rendu en tableau croisé + graphique au choix, filtres et tri. Rapports sauvegardables, renommables, partageables (privé / équipe).
-4. **Diffusion** — export Excel et PDF de tout rapport, plus planification d'envoi par email (quotidien / hebdomadaire / mensuel) vers des destinataires internes, en réutilisant l'infrastructure email existante.
-5. **Analyse IA** — synthèse en français des écarts et tendances du rapport courant, détection d'anomalies et recommandations, via Lovable AI.
+1. **Vue d'ensemble** — budget global consolidé : exécution budgétaire, résultat par pôle, tendance trésorerie, avancement pays, top risques, KPIs clés. Filtres globaux persistants : pays, pôle, projet, période (mois/trimestre/année), scénario, devise d'affichage (FCFA pivot).
+2. **Sous-budgets par projet** — liste des projets avec leur enveloppe, consommé, reste, % et alerte de dépassement ; fiche projet détaillée (mensuel budget vs réalisé, marge, tâches et risques rattachés, jalons).
+3. **Analyse par pôle** — restitution type classeur AES : budget vs réalisé par pôle et par mois, consolidation multi-pôles, marge par projet, drill-down pôle → projet → catégorie → ligne.
+4. **Constructeur de rapports** — dimensions (pays, pôle, projet, catégorie, mois, statut, assignataire) et mesures (budget, réalisé, écart, %, marge, nombre de tâches/risques), rendu en tableau croisé + graphique au choix, filtres et tri. Rapports sauvegardables, renommables, partageables (privé / équipe).
+5. **Diffusion** — export Excel et PDF de tout rapport, plus planification d'envoi par email (quotidien / hebdomadaire / mensuel) vers des destinataires internes, en réutilisant l'infrastructure email existante.
+6. **Analyse IA** — synthèse en français des écarts et tendances du rapport courant, détection d'anomalies (dérive d'un sous-budget projet, sur-consommation) et recommandations, via Lovable AI.
+
 
 Tout est en français, montants en FCFA, couleurs issues des tokens du thème existant.
 
