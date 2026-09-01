@@ -66,7 +66,8 @@ Tout est en français, montants en FCFA, couleurs issues des tokens du thème ex
 
 **Backend**
 - Edge function `bi-ai-insights` : appel Lovable AI (modèle Gemini Flash récent) sur l'agrégat du rapport, sortie structurée (synthèse, anomalies, recommandations), gestion explicite des erreurs 402/429.
-- Edge function `bi-report-scheduler` déclenchée par le cron quotidien existant : génère les rapports dus et les envoie via `send-transactional-email` avec un nouveau template FR `bi-report`.
+- Edge function `bi-report-scheduler` déclenchée par le cron quotidien existant : génère les rapports dus (rapports sauvegardés planifiés ET rapports opérationnels A1–A10 à échéance, ex. A1 le lundi, A2–A5 le 5 du mois, A10 en fin de trimestre) et les envoie via `send-transactional-email` avec un nouveau template FR `bi-report`.
+- `src/components/bi/BiOperationalReports.tsx` : catalogue des 12 modèles A1–A12, génération d'un exemplaire (pré-remplissage automatique des chiffres : sous-budget pôle, tâches, jalons, risques, KPIs de la période), édition des sections, validation et envoi ; historique des exemplaires par période.
 
 **Qualité**
 - Typage strict, aucun `any`, tokens sémantiques uniquement.
