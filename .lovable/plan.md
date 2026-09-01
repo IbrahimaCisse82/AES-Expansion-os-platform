@@ -1,107 +1,46 @@
-# Plan de mise en conformité ExpansionOS
+# Module Business Intelligence (BI) pour ExpansionOS
 
-Livraison en **4 phases successives**. Chaque phase est validée par un build vert avant la suivante. Je commence dès ton OK et je te rends la main entre chaque phase pour QA.
+Nouveau module transversal « Business Intelligence », accessible depuis la barre latérale (section ANALYSE), qui agrège toutes les données de la plateforme (pays, tâches, risques, jalons, KPIs, budget FP&A) et reprend la logique du classeur financier AES Burkina (pôles COMM / TECH / ADM / RH / DG / BOBO, trésorerie, compte de résultat, marge projet, KPI dashboard) — en modèle de structure uniquement, sans importer les chiffres du fichier.
 
----
+## Ce que l'utilisateur obtient
 
-## Phase 1 — Typage strict (suppression de tous les `any`)
+Une page `/app/bi` avec 5 onglets :
 
-**Objectif** : 0 occurrence de `any` dans `src/`.
+1. **Vue d'ensemble** — dashboards interactifs : exécution budgétaire, résultat par pôle, tendance trésorerie, avancement pays, top risques, KPIs clés. Filtres globaux persistants : pays, pôle, période (mois/trimestre/année), scénario, devise d'affichage (FCFA pivot).
+2. **Analyse par pôle** — restitution type classeur AES : budget vs réalisé par pôle et par mois, consolidation multi-pôles, marge par projet, avec drill-down (pôle → catégorie → ligne).
+3. **Constructeur de rapports** — sélection de dimensions (pays, pôle, catégorie, mois, statut, assignataire) et de mesures (budget, réalisé, écart, %, nombre de tâches/risques), rendu en tableau croisé + graphique au choix, filtres et tri. Rapports sauvegardables, renommables, partageables (privé / équipe).
+4. **Diffusion** — export Excel et PDF de tout rapport, plus planification d'envoi par email (quotidien / hebdomadaire / mensuel) vers des destinataires internes, en réutilisant l'infrastructure email existante.
+5. **Analyse IA** — synthèse en français des écarts et tendances du rapport courant, détection d'anomalies et recommandations, via Lovable AI.
 
-### Fichiers refactorés
-| Fichier | Approche |
-|---|---|
-| `src/hooks/useRealtimeNotifications.ts` | Créer types `TaskRow`, `RiskRow`, `CommentRow`, `MentionRow` à partir de `Database['public']['Tables'][...]['Row']`. Typer les payloads `RealtimePostgresChangesPayload<T>`. |
-| `src/pages/TasksPage.tsx` | Étendre type `Task` avec `recurrence?: 'none' \| 'daily' \| 'weekly' \| 'monthly'`. Supprimer les `(task as any)`. |
-| `src/components/GanttChart.tsx` | Étendre type `Milestone` avec `start_date?: string \| null; end_date?: string \| null`. |
-| `src/hooks/useBudgetData.ts` | Typer la jointure `budget_lines + budget_categories` via interface `BudgetLineWithCategory`. |
-| `src/components/AppSidebar.tsx` | Typer `tasks: Task[]`, `risks: Risk[]` dans le composant. |
-| `src/components/MentionInput.tsx` | Typer `allUsers: Profile[]`. |
-| `src/pages/CommentsPage.tsx` | Créer `CommentTreeProps` typé, `Profile`, `Reaction`, `CommentPayload`. Plus gros chantier (~15 occurrences). |
+Tout est en français, montants en FCFA, couleurs issues des tokens du thème existant.
 
-### Règle ESLint
-Ajouter `"@typescript-eslint/no-explicit-any": "error"` dans `eslint.config.js` pour bloquer les régressions.
+## Règles d'accès
 
----
+- Admin / Directeur : toutes les données, tous les pays.
+- RAF et rôles avec périmètre pays : BI limité automatiquement à leur pays (les filtres n'exposent pas les autres).
+- Observateur / partenaire : lecture seule, pas de création ni de planification de rapports.
+- Les rapports sauvegardés sont visibles par leur auteur ; le partage « équipe » les rend visibles aux utilisateurs du même périmètre pays.
 
-## Phase 2 — Multi-devises & FCFA
+## Détails techniques
 
-### Migration SQL
-```text
-table public.exchange_rates
-  ├─ currency_code  text       (FCFA, EUR, USD, GBP, NGN, KES, ZAR, MAD, EGP, GHS)
-  ├─ rate_to_fcfa   numeric    (ex: 1 EUR = 655.957 FCFA)
-  ├─ effective_date date
-  ├─ source         text       (ECB, BCEAO, manual)
-  └─ unique(currency_code, effective_date)
+**Base de données (nouvelles tables, avec GRANT + RLS scopées par `can_access_country` / `has_role`)**
+- `bi_pole` (enum ou table de référence) : COMM, TECH, ADM, RH, DG, BOBO — configurable.
+- `bi_saved_reports` : nom, description, `config` jsonb (dimensions, mesures, filtres, type de graphique), `owner_id`, `visibility` (`private` | `team`), `scope_country_id`.
+- `bi_report_schedules` : `report_id`, fréquence, heure, destinataires, actif, `last_sent_at`.
+- Ajout d'une colonne `pole` (nullable) sur `budget_lines` pour l'axe pôle, avec valeur par défaut nulle et mapping depuis la catégorie quand absent.
+- Vues SQL d'agrégation (`bi_budget_facts`, `bi_activity_facts`) pour éviter le calcul lourd côté client, exposées en lecture seule et soumises aux mêmes règles de périmètre.
 
-policies : lecture authentifiée ; écriture admin/director uniquement
-```
-Seed initial avec taux pivot BCEAO du jour.
+**Frontend**
+- `src/pages/BiPage.tsx` + route lazy dans `src/pages/Index.tsx`, entrée dans `AppSidebar` (section ANALYSE).
+- `src/components/bi/` : `BiFilters.tsx`, `BiOverview.tsx`, `BiPoleAnalysis.tsx`, `BiReportBuilder.tsx`, `BiDistribution.tsx`, `BiAiInsights.tsx`.
+- `src/hooks/useBiData.ts` (agrégats via TanStack Query, `staleTime` 60s) et `src/hooks/useBiReports.ts` (CRUD rapports + planifications).
+- `src/lib/biAggregate.ts` : pivot dimensions/mesures, calcul d'écarts, formatage FCFA — couvert par des tests Vitest.
+- Exports en imports dynamiques (`xlsx`, `jspdf`) comme dans le module Budget, pour ne pas alourdir le bundle ; onglets en `React.lazy`.
 
-### Code
-- `src/hooks/useExchangeRates.ts` — TanStack Query, cache 1 h
-- `src/lib/currency.ts` — helpers :
-  - `toFCFA(amount, currency, date?)`
-  - `formatFCFA(amount)` → `"1 250 000 FCFA"` (espaces insécables, pas de décimales)
-  - `parseFCFA(text)` → `number`
-- `src/components/ExchangeRatesSettings.tsx` — table éditable dans Paramètres (admin)
-- Remplacer `"Unité (%, €, pts)"` → `"Unité (%, FCFA, pts)"` dans `KpisPage.tsx`
-- `marketIntelData.ts` : conserver USD/EUR (données externes, contexte continental) mais ajouter conversion FCFA en tooltip
+**Backend**
+- Edge function `bi-ai-insights` : appel Lovable AI (modèle Gemini Flash récent) sur l'agrégat du rapport, sortie structurée (synthèse, anomalies, recommandations), gestion explicite des erreurs 402/429.
+- Edge function `bi-report-scheduler` déclenchée par le cron quotidien existant : génère les rapports dus et les envoie via `send-transactional-email` avec un nouveau template FR `bi-report`.
 
----
-
-## Phase 3 — Score de marché (formule officielle)
-
-Réécriture de `src/lib/marketScoring.ts` :
-
-```text
-Score = 0.25 × checklistCompletionPct
-      + 0.20 × milestonesCompletedPct
-      + 0.25 × kpisGreenPct        (KPIs ≥ 80 % de leur cible)
-      + 0.20 × (100 − riskExposurePct)
-      + 0.10 × budgetAdherencePct  (100 − |spent − allocated| / allocated)
-```
-
-- Signature : `computeMarketScore(country, milestones, kpis, risks, budget): { score: number; breakdown: ... }`
-- Badge couleur : ≥ 75 = sage, 50-74 = gold, < 50 = coral
-- Tests unitaires Vitest sur 4 cas (parfait / dégradé / sans données / négatif)
-- Mise à jour des composants consommateurs : `Dashboard`, `MarketDetail`, `AfricaMap`
-
----
-
-## Phase 4 — 7 notifications manquantes
-
-| # | Type | Trigger | Canal |
-|---|---|---|---|
-| 1 | Jalon J-7 | Edge function CRON quotidien | toast + email |
-| 2 | Nouveau membre invité | Trigger DB `auth.users` insert → notify admins | toast + email admin |
-| 3 | Rôle modifié | Trigger DB `user_roles` update | toast + email user concerné |
-| 4 | Document uploadé sur pays suivi | Trigger DB `country_documents` insert + check `country_members` | toast |
-| 5 | Changement statut marché | Trigger DB `countries` update si `status` change | toast tous |
-| 6 | Rapport clôture mensuelle | CRON 1er du mois | email résumé KPIs + budget |
-| 7 | Alerte budget > 90 % | Trigger sur `budget_entries` UPDATE | toast + email finance |
-
-### Implémentation
-- Edge function planifiée `notifications-cron` (jalons J-7, rapport mensuel)
-- Triggers DB `notify_*` SECURITY DEFINER qui inserent dans `budget_notifications` (renommé en `notifications` générique) ou queue email via `enqueue_email`
-- Page `Paramètres > Notifications` : toggles par type × canal (in-app / email) sauvegardés dans `profiles.notification_preferences` (jsonb)
-
----
-
-## Détails techniques globaux
-- Aucune mutation sans `useMutation` + invalidation TanStack Query
-- Toutes les Edge Functions : `corsHeaders` + validation Zod + JWT vérifié manuellement
-- Toute table modifiée → RLS revue
-- Pas de couleur en dur introduite (utiliser tokens `sage`, `coral`, `gold`, `navy`, `cream`)
-- Activity log alimenté pour chaque changement structurel
-
----
-
-## Ordre & livraison
-1. Phase 1 (~30 min) — refacto typage seul, zéro impact métier
-2. Phase 2 (~40 min) — migration + helper + UI Settings
-3. Phase 3 (~20 min) — pure logique + tests
-4. Phase 4 (~50 min) — la plus lourde (DB triggers + edge function CRON + UI préférences)
-
-Total ≈ 2 h de build effectif, livré phase par phase pour que tu valides à chaque étape.
+**Qualité**
+- Typage strict, aucun `any`, tokens sémantiques uniquement.
+- Tests unitaires sur l'agrégation et le calcul d'écarts ; passage E2E Playwright sur la nouvelle route.
