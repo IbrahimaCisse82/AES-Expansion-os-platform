@@ -9,6 +9,7 @@ const CountriesPage = lazy(() => import('@/pages/CountriesPage'));
 const CountryDetailPage = lazy(() => import('@/pages/CountryDetailPage'));
 const TasksPage = lazy(() => import('@/pages/TasksPage'));
 const BudgetPage = lazy(() => import('@/pages/BudgetPage'));
+const BiPage = lazy(() => import('@/pages/BiPage'));
 const RisksPage = lazy(() => import('@/pages/RisksPage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
 const TeamPage = lazy(() => import('@/pages/TeamPage'));
