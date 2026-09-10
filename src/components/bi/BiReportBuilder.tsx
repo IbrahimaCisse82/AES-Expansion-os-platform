@@ -49,24 +49,34 @@ export function BiReportBuilder({ facts, activity, filters }: Props) {
   const isAmount = ['budget', 'actual', 'variance', 'margin'].includes(cfg.measure);
   const chartData = rows.slice(0, 20).map(r => ({ name: r.label, value: r.value }));
 
-  const exportExcel = async () => {
-    const { exportToExcel } = await import('@/lib/xlsxExport');
-    await exportToExcel({
-      sheetName: 'Rapport BI',
-      title: `${DIMENSIONS.find(d => d.v === cfg.dimension)?.l} × ${MEASURES.find(m => m.v === cfg.measure)?.l}`,
-      headers: [DIMENSIONS.find(d => d.v === cfg.dimension)?.l ?? 'Dimension', MEASURES.find(m => m.v === cfg.measure)?.l ?? 'Valeur'],
-      rows: rows.map(r => [r.label, r.value]),
-    });
-    toast.success('Export Excel généré');
+  const title = `${DIMENSIONS.find(d => d.v === cfg.dimension)?.l} × ${MEASURES.find(m => m.v === cfg.measure)?.l}`;
+  const dimLabel = DIMENSIONS.find(d => d.v === cfg.dimension)?.l ?? 'Dimension';
+  const measureLabel = MEASURES.find(m => m.v === cfg.measure)?.l ?? 'Valeur';
+  const cellValue = (v: number) => isAmount ? formatFcfa(v) : cfg.measure === 'variancePct' ? `${v.toFixed(1)} %` : String(Math.round(v));
+
+  const exportExcel = () => {
+    const { exportToCSV } = require('@/lib/csvExport') as typeof import('@/lib/csvExport');
+    exportToCSV(rows.map(r => ({ [dimLabel]: r.label, [measureLabel]: cellValue(r.value) })), `rapport-bi-${Date.now()}.csv`);
+    toast.success('Export CSV généré');
   };
 
   const exportPdf = async () => {
-    const { exportBudgetPdf } = await import('@/lib/budgetPdf');
-    await exportBudgetPdf({
-      title: `Rapport BI — ${DIMENSIONS.find(d => d.v === cfg.dimension)?.l} × ${MEASURES.find(m => m.v === cfg.measure)?.l}`,
-      columns: [DIMENSIONS.find(d => d.v === cfg.dimension)?.l ?? 'Dimension', MEASURES.find(m => m.v === cfg.measure)?.l ?? 'Valeur'],
-      rows: rows.map(r => [r.label, isAmount ? formatFcfa(r.value) : cfg.measure === 'variancePct' ? `${r.value.toFixed(1)} %` : String(Math.round(r.value))]),
+    const [{ default: JsPDF }, autoTable] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
+    const doc = new JsPDF();
+    doc.setFontSize(14);
+    doc.text(`Rapport BI — ${title}`, 14, 16);
+    doc.setFontSize(9);
+    doc.text(`ExpansionOS · ${new Date().toLocaleDateString('fr-FR')} · Montants en FCFA`, 14, 23);
+    autoTable.default(doc, {
+      head: [[dimLabel, measureLabel]],
+      body: rows.map(r => [r.label, cellValue(r.value)]),
+      startY: 28,
+      styles: { fontSize: 8 },
     });
+    doc.save(`rapport-bi-${Date.now()}.pdf`);
     toast.success('Export PDF généré');
   };
 
