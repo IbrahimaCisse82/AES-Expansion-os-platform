@@ -1,4 +1,4 @@
-import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X } from 'lucide-react';
+import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X, PieChart } from 'lucide-react';
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
 
 interface NavItem {
@@ -18,6 +18,7 @@ const navItems: NavItem[] = [
   { id: 'kpis', label: 'KPIs', icon: <BarChart3 size={16} />, section: 'ANALYSE' },
   { id: 'market-analysis', label: 'Analyse Marché', icon: <Globe size={16} /> },
   { id: 'budget', label: 'Budget', icon: <Wallet size={16} /> },
+  { id: 'bi', label: 'Business Intelligence', icon: <PieChart size={16} /> },
   { id: 'risks', label: 'Risques', icon: <AlertTriangle size={16} />, badgeKey: 'risks' },
   { id: 'comments', label: 'Commentaires', icon: <MessageSquare size={16} />, section: 'ÉQUIPE' },
   { id: 'history', label: 'Historique', icon: <Clock size={16} /> },
