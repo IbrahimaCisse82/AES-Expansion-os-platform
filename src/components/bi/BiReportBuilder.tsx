@@ -17,6 +17,7 @@ import {
 } from '@/lib/biAggregate';
 import { useSavedReports, useBiReportMutations } from '@/hooks/useBiReports';
 import { useAuth } from '@/hooks/useAuth';
+import { exportToCSV } from '@/lib/csvExport';
 
 const DIMENSIONS: { v: ReportDimension; l: string }[] = [
   { v: 'country', l: 'Pays' }, { v: 'pole', l: 'Pôle' }, { v: 'project', l: 'Projet' },
@@ -55,7 +56,6 @@ export function BiReportBuilder({ facts, activity, filters }: Props) {
   const cellValue = (v: number) => isAmount ? formatFcfa(v) : cfg.measure === 'variancePct' ? `${v.toFixed(1)} %` : String(Math.round(v));
 
   const exportExcel = () => {
-    const { exportToCSV } = require('@/lib/csvExport') as typeof import('@/lib/csvExport');
     exportToCSV(rows.map(r => ({ [dimLabel]: r.label, [measureLabel]: cellValue(r.value) })), `rapport-bi-${Date.now()}.csv`);
     toast.success('Export CSV généré');
   };
