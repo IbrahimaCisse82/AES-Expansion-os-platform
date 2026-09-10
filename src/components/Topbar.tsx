@@ -19,6 +19,7 @@ const pageNames: Record<string, string> = {
   profile: 'Mon profil',
   settings: 'Paramètres',
   'country-detail': 'Fiche Pays',
+  bi: 'Business Intelligence',
 };
 
 const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries', 'roadmap'];
