@@ -79,6 +79,7 @@ const Index = () => {
             <Route path="/countries/:countryId" element={<CountryDetailPage onBack={handleBackFromCountry} />} />
             <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/bi" element={<BiPage />} />
             <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />
             <Route path="/team" element={<TeamPage />} />
