@@ -179,6 +179,7 @@ export default function TeamPage() {
       setInviteEmail('');
       setInviteName('');
       setInviteRole('observer');
+      setInviteScope('');
       setShowInvite(false);
       refetch();
       fetchStatuses();
