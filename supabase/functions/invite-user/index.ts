@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { email, full_name, role } = await req.json();
+    const { email, full_name, role, scope_country_id } = await req.json();
     if (!email) {
       return new Response(JSON.stringify({ error: "Email requis" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -88,6 +88,13 @@ Deno.serve(async (req: Request) => {
       });
       if (roleErr) throw roleErr;
     }
+
+    // Country scope: a specific country id, or null = global access (all countries)
+    const { error: scopeErr } = await admin
+      .from("user_roles")
+      .update({ scope_country_id: scope_country_id ?? null })
+      .eq("user_id", createData.user.id);
+    if (scopeErr) throw scopeErr;
 
     // Send invitation email with credentials
     const roleName = ROLE_LABELS[role] || role || 'Observateur';
