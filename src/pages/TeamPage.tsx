@@ -62,6 +62,7 @@ export default function TeamPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteRole, setInviteRole] = useState('observer');
+  const [inviteScope, setInviteScope] = useState('');
   const [inviting, setInviting] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
 
@@ -149,10 +150,19 @@ export default function TeamPage() {
 
   const handleInvite = async () => {
     if (!inviteEmail) return;
+    if (!inviteScope) {
+      toast.error('Sélectionnez un pays attribué ou l\'accès global');
+      return;
+    }
     setInviting(true);
     try {
       const { data, error } = await supabase.functions.invoke('invite-user', {
-        body: { email: inviteEmail, full_name: inviteName || inviteEmail, role: inviteRole },
+        body: {
+          email: inviteEmail,
+          full_name: inviteName || inviteEmail,
+          role: inviteRole,
+          scope_country_id: inviteScope === '_all' ? null : inviteScope,
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -169,6 +179,7 @@ export default function TeamPage() {
       setInviteEmail('');
       setInviteName('');
       setInviteRole('observer');
+      setInviteScope('');
       setShowInvite(false);
       refetch();
       fetchStatuses();
@@ -215,7 +226,7 @@ export default function TeamPage() {
       {showInvite && isAdmin && (
         <div className="bg-card border border-border rounded-lg p-5 mb-6 space-y-3">
           <h3 className="text-[14px] font-semibold text-primary">Inviter un nouveau membre</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <input
               type="email"
               value={inviteEmail}
@@ -240,11 +251,25 @@ export default function TeamPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={inviteScope} onValueChange={setInviteScope}>
+              <SelectTrigger className="h-[38px] text-[13px]">
+                <SelectValue placeholder="Pays attribué *" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all" className="text-[13px]">🌍 Accès global (tous les pays)</SelectItem>
+                {countries.map(c => (
+                  <SelectItem key={c.id} value={c.id} className="text-[13px]">{c.flag} {c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          <p className="text-[11.5px] text-muted-foreground">
+            Chaque membre doit être rattaché à un pays précis ou disposer d'un accès global.
+          </p>
           <div className="flex gap-2">
             <button
               onClick={handleInvite}
-              disabled={inviting || !inviteEmail}
+              disabled={inviting || !inviteEmail || !inviteScope}
               className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {inviting ? 'Envoi…' : 'Envoyer l\'invitation'}
