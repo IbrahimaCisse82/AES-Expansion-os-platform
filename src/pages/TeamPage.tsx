@@ -150,10 +150,19 @@ export default function TeamPage() {
 
   const handleInvite = async () => {
     if (!inviteEmail) return;
+    if (!inviteScope) {
+      toast.error('Sélectionnez un pays attribué ou l\'accès global');
+      return;
+    }
     setInviting(true);
     try {
       const { data, error } = await supabase.functions.invoke('invite-user', {
-        body: { email: inviteEmail, full_name: inviteName || inviteEmail, role: inviteRole },
+        body: {
+          email: inviteEmail,
+          full_name: inviteName || inviteEmail,
+          role: inviteRole,
+          scope_country_id: inviteScope === '_all' ? null : inviteScope,
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
