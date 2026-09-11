@@ -5,6 +5,7 @@ const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrateur',
   director: 'Directeur',
   country_manager: 'Country Manager',
+  raf: 'RAF (Resp. Admin. & Financier)',
   analyst: 'Analyste',
   observer: 'Observateur',
   partner: 'Partenaire',

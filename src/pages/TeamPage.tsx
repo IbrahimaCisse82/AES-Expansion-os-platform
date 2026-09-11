@@ -62,6 +62,7 @@ export default function TeamPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteRole, setInviteRole] = useState('observer');
+  const [inviteScope, setInviteScope] = useState('');
   const [inviting, setInviting] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
 
