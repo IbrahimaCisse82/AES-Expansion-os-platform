@@ -226,7 +226,7 @@ export default function TeamPage() {
       {showInvite && isAdmin && (
         <div className="bg-card border border-border rounded-lg p-5 mb-6 space-y-3">
           <h3 className="text-[14px] font-semibold text-primary">Inviter un nouveau membre</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <input
               type="email"
               value={inviteEmail}
