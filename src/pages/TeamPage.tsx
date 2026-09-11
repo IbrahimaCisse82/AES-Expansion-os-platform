@@ -251,11 +251,25 @@ export default function TeamPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={inviteScope} onValueChange={setInviteScope}>
+              <SelectTrigger className="h-[38px] text-[13px]">
+                <SelectValue placeholder="Pays attribué *" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_all" className="text-[13px]">🌍 Accès global (tous les pays)</SelectItem>
+                {countries.map(c => (
+                  <SelectItem key={c.id} value={c.id} className="text-[13px]">{c.flag} {c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          <p className="text-[11.5px] text-muted-foreground">
+            Chaque membre doit être rattaché à un pays précis ou disposer d'un accès global.
+          </p>
           <div className="flex gap-2">
             <button
               onClick={handleInvite}
-              disabled={inviting || !inviteEmail}
+              disabled={inviting || !inviteEmail || !inviteScope}
               className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {inviting ? 'Envoi…' : 'Envoyer l\'invitation'}
