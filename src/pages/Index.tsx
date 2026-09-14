@@ -1,8 +1,16 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
-import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
+import { useState, useCallback, lazy, Suspense, type ReactNode } from 'react';
+import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
 import Topbar from '@/components/Topbar';
 import { useCountries } from '@/hooks/useExpansionData';
+import { useCurrentUserRole } from '@/hooks/useUserRoles';
+
+function RequireRole({ deny, children }: { deny: string[]; children: ReactNode }) {
+  const { data: role, isLoading } = useCurrentUserRole();
+  if (isLoading) return <div className="text-muted-foreground text-sm">Chargement…</div>;
+  if (deny.includes(role ?? 'observer')) return <Navigate to="/app/dashboard" replace />;
+  return <>{children}</>;
+}
 
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const CountriesPage = lazy(() => import('@/pages/CountriesPage'));
@@ -80,7 +88,7 @@ const Index = () => {
             <Route path="/countries/:countryId" element={<CountryDetailPage onBack={handleBackFromCountry} />} />
             <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
-            <Route path="/bi" element={<BiPage />} />
+            <Route path="/bi" element={<RequireRole deny={['partner', 'observer']}><BiPage /></RequireRole>} />
             <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />
             <Route path="/team" element={<TeamPage />} />

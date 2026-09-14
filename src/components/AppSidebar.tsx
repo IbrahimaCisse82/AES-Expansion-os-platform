@@ -1,5 +1,6 @@
 import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X, PieChart } from 'lucide-react';
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
+import { useCurrentUserRole } from '@/hooks/useUserRoles';
 
 interface NavItem {
   id: string;
@@ -7,6 +8,7 @@ interface NavItem {
   icon: React.ReactNode;
   badgeKey?: 'countries' | 'tasks' | 'risks';
   section?: string;
+  hideForRoles?: string[];
 }
 
 const navItems: NavItem[] = [
@@ -18,7 +20,7 @@ const navItems: NavItem[] = [
   { id: 'kpis', label: 'KPIs', icon: <BarChart3 size={16} />, section: 'ANALYSE' },
   { id: 'market-analysis', label: 'Analyse Marché', icon: <Globe size={16} /> },
   { id: 'budget', label: 'Budget', icon: <Wallet size={16} /> },
-  { id: 'bi', label: 'Business Intelligence', icon: <PieChart size={16} /> },
+  { id: 'bi', label: 'Business Intelligence', icon: <PieChart size={16} />, hideForRoles: ['partner', 'observer'] },
   { id: 'risks', label: 'Risques', icon: <AlertTriangle size={16} />, badgeKey: 'risks' },
   { id: 'comments', label: 'Commentaires', icon: <MessageSquare size={16} />, section: 'ÉQUIPE' },
   { id: 'history', label: 'Historique', icon: <Clock size={16} /> },
@@ -40,6 +42,8 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
   const { data: countries = [] } = useCountries();
   const { data: tasks = [] } = useTasks();
   const { data: risks = [] } = useRisks();
+  const { data: myRole } = useCurrentUserRole();
+  const visibleNavItems = navItems.filter((item) => !item.hideForRoles?.includes(myRole ?? 'observer'));
 
   const badgeCounts: Record<string, number> = {
     countries: countries.length,
@@ -75,7 +79,7 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-3">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const showSection = item.section && item.section !== currentSection;
           if (item.section) currentSection = item.section;
 
