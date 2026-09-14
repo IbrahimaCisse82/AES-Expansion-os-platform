@@ -1,5 +1,6 @@
 import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X, PieChart } from 'lucide-react';
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
+import { useCurrentUserRole } from '@/hooks/useUserRoles';
 
 interface NavItem {
   id: string;
@@ -41,6 +42,8 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
   const { data: countries = [] } = useCountries();
   const { data: tasks = [] } = useTasks();
   const { data: risks = [] } = useRisks();
+  const { data: myRole } = useCurrentUserRole();
+  const visibleNavItems = navItems.filter((item) => !item.hideForRoles?.includes(myRole ?? 'observer'));
 
   const badgeCounts: Record<string, number> = {
     countries: countries.length,
