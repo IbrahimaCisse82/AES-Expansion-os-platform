@@ -7,6 +7,7 @@ interface NavItem {
   icon: React.ReactNode;
   badgeKey?: 'countries' | 'tasks' | 'risks';
   section?: string;
+  hideForRoles?: string[];
 }
 
 const navItems: NavItem[] = [
@@ -18,7 +19,7 @@ const navItems: NavItem[] = [
   { id: 'kpis', label: 'KPIs', icon: <BarChart3 size={16} />, section: 'ANALYSE' },
   { id: 'market-analysis', label: 'Analyse Marché', icon: <Globe size={16} /> },
   { id: 'budget', label: 'Budget', icon: <Wallet size={16} /> },
-  { id: 'bi', label: 'Business Intelligence', icon: <PieChart size={16} /> },
+  { id: 'bi', label: 'Business Intelligence', icon: <PieChart size={16} />, hideForRoles: ['partner', 'observer'] },
   { id: 'risks', label: 'Risques', icon: <AlertTriangle size={16} />, badgeKey: 'risks' },
   { id: 'comments', label: 'Commentaires', icon: <MessageSquare size={16} />, section: 'ÉQUIPE' },
   { id: 'history', label: 'Historique', icon: <Clock size={16} /> },
