@@ -1,8 +1,16 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
-import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
+import { useState, useCallback, lazy, Suspense, type ReactNode } from 'react';
+import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
 import Topbar from '@/components/Topbar';
 import { useCountries } from '@/hooks/useExpansionData';
+import { useCurrentUserRole } from '@/hooks/useUserRoles';
+
+function RequireRole({ deny, children }: { deny: string[]; children: ReactNode }) {
+  const { data: role, isLoading } = useCurrentUserRole();
+  if (isLoading) return <div className="text-muted-foreground text-sm">Chargement…</div>;
+  if (deny.includes(role ?? 'observer')) return <Navigate to="/app/dashboard" replace />;
+  return <>{children}</>;
+}
 
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const CountriesPage = lazy(() => import('@/pages/CountriesPage'));
