@@ -79,7 +79,7 @@ export default function AppSidebar({ activePage, onNavigate, globalProgress = 0,
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-3">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const showSection = item.section && item.section !== currentSection;
           if (item.section) currentSection = item.section;
 
