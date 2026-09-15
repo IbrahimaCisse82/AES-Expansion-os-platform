@@ -4,11 +4,12 @@ import AppSidebar from '@/components/AppSidebar';
 import Topbar from '@/components/Topbar';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { canAccessBi } from '@/lib/biAccess';
 
-function RequireRole({ deny, children }: { deny: string[]; children: ReactNode }) {
+function RequireBiAccess({ children }: { children: ReactNode }) {
   const { data: role, isLoading } = useCurrentUserRole();
   if (isLoading) return <div className="text-muted-foreground text-sm">Chargement…</div>;
-  if (deny.includes(role ?? 'observer')) return <Navigate to="/app/dashboard" replace />;
+  if (!canAccessBi(role)) return <Navigate to="/app/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -88,7 +89,7 @@ const Index = () => {
             <Route path="/countries/:countryId" element={<CountryDetailPage onBack={handleBackFromCountry} />} />
             <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
-            <Route path="/bi" element={<RequireRole deny={['partner', 'observer']}><BiPage /></RequireRole>} />
+            <Route path="/bi" element={<RequireBiAccess><BiPage /></RequireBiAccess>} />
             <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />
             <Route path="/team" element={<TeamPage />} />
