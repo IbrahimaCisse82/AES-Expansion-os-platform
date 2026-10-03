@@ -7,8 +7,8 @@ import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { canAccessBi } from '@/lib/biAccess';
 
 function RequireBiAccess({ children }: { children: ReactNode }) {
-  const { data: role, isLoading } = useCurrentUserRole();
-  if (isLoading) return <div className="text-muted-foreground text-sm">Chargement…</div>;
+  const { data: role, isPending } = useCurrentUserRole();
+  if (isPending) return <div className="text-muted-foreground text-sm">Chargement…</div>;
   if (!canAccessBi(role)) return <Navigate to="/app/dashboard" replace />;
   return <>{children}</>;
 }
