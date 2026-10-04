@@ -7,6 +7,7 @@ import { BiPoleAnalysis } from '@/components/bi/BiPoleAnalysis';
 import { BiReportBuilder } from '@/components/bi/BiReportBuilder';
 import { BiDistribution } from '@/components/bi/BiDistribution';
 import { BiAiInsights } from '@/components/bi/BiAiInsights';
+import { BiAskAssistant } from '@/components/bi/BiAskAssistant';
 import { BiOperationalReports } from '@/components/bi/BiOperationalReports';
 import { useBiFacts, useBiActivity, useBiScope } from '@/hooks/useBiData';
 import { emptyFilters, type BiFilters as Filters } from '@/lib/biAggregate';
@@ -54,7 +55,7 @@ export default function BiPage() {
           <TabsContent value="builder" className="mt-4"><BiReportBuilder facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
           <TabsContent value="reports" className="mt-4"><BiOperationalReports /></TabsContent>
           <TabsContent value="distribution" className="mt-4"><BiDistribution /></TabsContent>
-          <TabsContent value="ai" className="mt-4"><BiAiInsights facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
+          <TabsContent value="ai" className="mt-4 space-y-4"><BiAskAssistant facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /><BiAiInsights facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
         </Tabs>
       )}
     </div>
