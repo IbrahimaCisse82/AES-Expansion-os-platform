@@ -54,7 +54,7 @@ export default function BiPage() {
           <TabsContent value="builder" className="mt-4"><BiReportBuilder facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
           <TabsContent value="reports" className="mt-4"><BiOperationalReports /></TabsContent>
           <TabsContent value="distribution" className="mt-4"><BiDistribution /></TabsContent>
-          <TabsContent value="ai" className="mt-4"><BiAiInsights facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
+          <TabsContent value="ai" className="mt-4 space-y-4"><BiAskAssistant facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /><BiAiInsights facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
         </Tabs>
       )}
     </div>
