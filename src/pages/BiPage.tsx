@@ -7,6 +7,7 @@ import { BiPoleAnalysis } from '@/components/bi/BiPoleAnalysis';
 import { BiReportBuilder } from '@/components/bi/BiReportBuilder';
 import { BiDistribution } from '@/components/bi/BiDistribution';
 import { BiAiInsights } from '@/components/bi/BiAiInsights';
+import { BiAskAssistant } from '@/components/bi/BiAskAssistant';
 import { BiOperationalReports } from '@/components/bi/BiOperationalReports';
 import { useBiFacts, useBiActivity, useBiScope } from '@/hooks/useBiData';
 import { emptyFilters, type BiFilters as Filters } from '@/lib/biAggregate';
