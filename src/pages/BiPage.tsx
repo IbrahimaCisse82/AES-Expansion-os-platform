@@ -8,6 +8,7 @@ import { BiReportBuilder } from '@/components/bi/BiReportBuilder';
 import { BiDistribution } from '@/components/bi/BiDistribution';
 import { BiAiInsights } from '@/components/bi/BiAiInsights';
 import { BiAskAssistant } from '@/components/bi/BiAskAssistant';
+import { BiYearOverYear } from '@/components/bi/BiYearOverYear';
 import { BiOperationalReports } from '@/components/bi/BiOperationalReports';
 import { useBiFacts, useBiActivity, useBiScope } from '@/hooks/useBiData';
 import { emptyFilters, type BiFilters as Filters } from '@/lib/biAggregate';
@@ -41,6 +42,7 @@ export default function BiPage() {
         <Tabs defaultValue="overview">
           <TabsList className="flex flex-wrap h-auto gap-1">
             <TabsTrigger value="overview" className="text-xs">Vue d'ensemble</TabsTrigger>
+            <TabsTrigger value="yoy" className="text-xs">Comparaison N-1</TabsTrigger>
             <TabsTrigger value="projects" className="text-xs">Sous-budgets projets</TabsTrigger>
             <TabsTrigger value="poles" className="text-xs">Analyse par pôle</TabsTrigger>
             <TabsTrigger value="builder" className="text-xs">Constructeur</TabsTrigger>
@@ -50,6 +52,7 @@ export default function BiPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-4"><BiOverview facts={facts ?? []} filters={effectiveFilters} /></TabsContent>
+          <TabsContent value="yoy" className="mt-4"><BiYearOverYear facts={facts ?? []} filters={effectiveFilters} /></TabsContent>
           <TabsContent value="projects" className="mt-4"><BiProjectBudgets facts={facts ?? []} filters={effectiveFilters} /></TabsContent>
           <TabsContent value="poles" className="mt-4"><BiPoleAnalysis facts={facts ?? []} filters={effectiveFilters} /></TabsContent>
           <TabsContent value="builder" className="mt-4"><BiReportBuilder facts={facts ?? []} activity={activity ?? []} filters={effectiveFilters} /></TabsContent>
