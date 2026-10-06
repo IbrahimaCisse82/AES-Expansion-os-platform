@@ -2549,6 +2549,18 @@ export type Database = {
         }
         Returns: number
       }
+      notify_alert_recipients: {
+        Args: {
+          _country_id: string
+          _entity_id: string
+          _entity_type: string
+          _link: string
+          _message: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
