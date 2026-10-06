@@ -8,6 +8,13 @@
       "when": 1790977642766,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791248873749,
+      "tag": "0001_bi_auto_alerts",
+      "breakpoints": true
     }
   ]
 }

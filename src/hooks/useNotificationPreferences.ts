@@ -16,6 +16,8 @@ const NOTIF_TYPES = [
   { key: 'document_uploaded', label: 'Document ajouté (pays suivi)' },
   { key: 'market_status_changed', label: 'Statut marché modifié' },
   { key: 'budget_threshold', label: 'Budget > 90 %' },
+  { key: 'budget_overrun', label: 'Dépassement budgétaire (BI)' },
+  { key: 'kpi_drop', label: 'Chute de KPI' },
   { key: 'monthly_report', label: 'Rapport mensuel' },
 ] as const;
 
