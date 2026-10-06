@@ -15,6 +15,13 @@
       "when": 1791248873749,
       "tag": "0001_bi_auto_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791249306663,
+      "tag": "0002_revoke_trigger_function_execute",
+      "breakpoints": true
     }
   ]
 }
