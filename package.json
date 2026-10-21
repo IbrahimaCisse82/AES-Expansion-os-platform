@@ -11,9 +11,6 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pages:build": "npm run build",
-    "pages:deploy": "npm run build && wrangler pages deploy dist",
-    "pages:dev": "wrangler pages dev dist",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test:db": "bash scripts/db-test/run.sh"
   },

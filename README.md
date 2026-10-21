@@ -81,7 +81,10 @@ SELECT public.set_user_role('<uuid du compte>', 'admin');
 
 ## Déploiement
 
-Le front est un site statique (`dist/`). Les en-têtes de sécurité (CSP, HSTS…)
-sont définis à l'identique dans `_headers` (Cloudflare Pages, voir
-`CLOUDFLARE_DEPLOYMENT.md`) et `vercel.json` (Vercel). Une seule cible devrait
-être conservée.
+Hébergement : **Vercel** (déploiement automatique de `main`, prévisualisation
+pour chaque demande de fusion). Le front est un site statique (`dist/`) ; la
+réécriture SPA et les en-têtes de sécurité (CSP, HSTS, X-Frame-Options…) sont
+dans `vercel.json`. Si un nouveau domaine externe doit être appelé depuis le
+navigateur, l'ajouter à la directive `connect-src` de la CSP.
+
+Les fonctions edge et les migrations se déploient sur Supabase, séparément.
