@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { BudgetCategory, MONTH_KEYS, useCreateBudgetLine } from '@/hooks/useBudgetData';
-import * as XLSX from 'xlsx';
+import { readFirstSheetAsObjects } from '@/lib/spreadsheet';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -39,13 +39,9 @@ export default function BudgetImport({ scenarioId, categories, countries, onComp
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (ev) => {
+    void (async () => {
       try {
-        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
-        const wb = XLSX.read(data, { type: 'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws);
+        const json = await readFirstSheetAsObjects(file);
 
         const lines: ParsedLine[] = json.map(row => {
           const catName = String(row['Catégorie'] || row['Category'] || row['categorie'] || '').trim();
@@ -81,10 +77,9 @@ export default function BudgetImport({ scenarioId, categories, countries, onComp
         setParsedLines(lines);
         toast.success(`${lines.length} lignes détectées`);
       } catch (err) {
-        toast.error('Erreur de lecture du fichier Excel');
+        toast.error('Erreur de lecture du fichier Excel (format .xlsx attendu)');
       }
-    };
-    reader.readAsArrayBuffer(file);
+    })();
   };
 
   const handleImport = async () => {
@@ -160,7 +155,7 @@ export default function BudgetImport({ scenarioId, categories, countries, onComp
               <div>
                 <Label className="text-[12px]">Fichier Excel *</Label>
                 <div className="mt-1">
-                  <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleFile} className="hidden" />
+                  <input ref={fileRef} type="file" accept=".xlsx" onChange={handleFile} className="hidden" />
                   <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} className="gap-1.5 w-full">
                     <FileSpreadsheet size={14} /> Sélectionner fichier
                   </Button>

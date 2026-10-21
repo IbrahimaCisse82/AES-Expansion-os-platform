@@ -1,5 +1,5 @@
 import { BudgetLine, BudgetCategory, MONTHS, MONTH_KEYS, getLineTotal } from '@/hooks/useBudgetData';
-import * as XLSX from 'xlsx';
+import { downloadXlsx } from '@/lib/spreadsheet';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -10,9 +10,7 @@ interface ExportParams {
   fiscalYear: number;
 }
 
-export function exportBudgetXLSX({ lines, categories, scenarioName, fiscalYear }: ExportParams) {
-  const wb = XLSX.utils.book_new();
-
+export async function exportBudgetXLSX({ lines, categories, scenarioName, fiscalYear }: ExportParams) {
   // P&L Sheet
   const revenueCategories = categories.filter(c => c.type === 'revenue');
   const expenseCategories = categories.filter(c => c.type === 'expense');
@@ -48,12 +46,6 @@ export function exportBudgetXLSX({ lines, categories, scenarioName, fiscalYear }
   const netByMonth = revByMonth.map((r, i) => r - expByMonth[i]);
   pnlData.push(['RÉSULTAT NET', '', ...netByMonth, netByMonth.reduce((a, b) => a + b, 0)]);
 
-  const ws1 = XLSX.utils.aoa_to_sheet(pnlData);
-
-  // Set column widths
-  ws1['!cols'] = [{ wch: 25 }, { wch: 5 }, ...MONTHS.map(() => ({ wch: 10 })), { wch: 12 }];
-  XLSX.utils.book_append_sheet(wb, ws1, 'P&L');
-
   // Detail Sheet
   const detailData: (string | number)[][] = [];
   detailData.push(['Catégorie', 'Type', 'Marché', 'Type ligne', ...MONTHS, 'TOTAL', 'Notes']);
@@ -65,11 +57,13 @@ export function exportBudgetXLSX({ lines, categories, scenarioName, fiscalYear }
       ...values, getLineTotal(l), l.notes || '',
     ]);
   });
-  const ws2 = XLSX.utils.aoa_to_sheet(detailData);
-  ws2['!cols'] = [{ wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 10 }, ...MONTHS.map(() => ({ wch: 10 })), { wch: 12 }, { wch: 30 }];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Détail');
-
-  XLSX.writeFile(wb, `Budget_${scenarioName}_${fiscalYear}.xlsx`);
+  await downloadXlsx(
+    [
+      { name: 'P&L', rows: pnlData, widths: [25, 5, ...MONTHS.map(() => 10), 12] },
+      { name: 'Détail', rows: detailData, widths: [20, 10, 15, 10, ...MONTHS.map(() => 10), 12, 30] },
+    ],
+    `Budget_${scenarioName}_${fiscalYear}.xlsx`,
+  );
 }
 
 export function exportBudgetPDF({ lines, categories, scenarioName, fiscalYear }: ExportParams) {
