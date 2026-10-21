@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
       .from("tasks")
       .select("id, title, due_date, status, owner_name, country_label, assigned_to")
       .not("due_date", "is", null)
-      .neq("due_date", "")
       .lt("due_date", today)
       .not("status", "in", '("done","late")');
 

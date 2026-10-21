@@ -209,7 +209,7 @@ export function useCapExItems(scenarioId?: string) {
 export function useCreateCapExItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<CapExItem, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (payload: Omit<CapExItem, 'id' | 'created_at' | 'updated_at' | 'acquisition_date'> & { acquisition_date?: string }) => {
       const { data, error } = await supabase.from('budget_capex_items').insert(payload).select().single();
       if (error) throw error;
       return data;

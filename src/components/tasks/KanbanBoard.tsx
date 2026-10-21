@@ -3,6 +3,7 @@ import StatusPill from '@/components/StatusPill';
 import { useTasks, useCountries, useMilestones } from '@/hooks/useExpansionData';
 import { useUpdateTask } from '@/hooks/useTaskMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
+import { formatDateFr } from '@/lib/dates';
 
 const COLUMNS = [
   { key: 'open', label: 'À faire', color: 'border-[hsl(var(--sky))]' },
@@ -62,7 +63,7 @@ export default function KanbanBoard({ searchQuery = '' }: { searchQuery?: string
                       <span className="text-[10px] text-muted-foreground">{task.country_label}</span>
                     )}
                     {task.due_date && (
-                      <span className="text-[10px] text-muted-foreground">📅 {task.due_date}</span>
+                      <span className="text-[10px] text-muted-foreground">📅 {formatDateFr(task.due_date)}</span>
                     )}
                   </div>
                   <div className="flex items-center justify-between mt-2">

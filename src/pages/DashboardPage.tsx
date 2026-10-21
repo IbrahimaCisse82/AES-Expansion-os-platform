@@ -6,6 +6,7 @@ import AfricaMap from '@/components/dashboard/AfricaMap';
 import BurndownChart from '@/components/dashboard/BurndownChart';
 import RadarComparison from '@/components/dashboard/RadarComparison';
 import { computeMarketScore } from '@/lib/marketScoring';
+import { formatDateFr } from '@/lib/dates';
 
 export default function DashboardPage() {
   const { data: countries = [] } = useCountries();
@@ -136,7 +137,7 @@ export default function DashboardPage() {
                     <div className="text-[13px] font-medium">{task.title}</div>
                     <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap">
                       {task.country_label && <span>{task.country_label}</span>}
-                      {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
+                      {task.due_date && <><span>·</span><span>📅 {formatDateFr(task.due_date)}</span></>}
                       {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
                     </div>
                   </div>

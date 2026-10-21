@@ -36,6 +36,13 @@
       "when": 1792591749978,
       "tag": "0004_country_isolation",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792592478182,
+      "tag": "0005_typed_dates_and_integrity",
+      "breakpoints": true
     }
   ]
 }

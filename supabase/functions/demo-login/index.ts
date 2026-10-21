@@ -141,11 +141,11 @@ async function seedDemoData(admin: ReturnType<typeof createClient>, demoUserId: 
   await admin.from("countries").upsert(countries, { onConflict: "id" });
 
   await admin.from("tasks").insert([
-    { title: "Déposer la marque en Allemagne", country_id: "demo_de", country_label: "🇩🇪 Allemagne", due_date: "30 Juil 2025", priority: "high", status: "done", owner_name: "Marc Richter" },
-    { title: "Finaliser contrat partenaire Tokyo", country_id: "demo_jp", country_label: "🇯🇵 Japon", due_date: "5 Août 2025", priority: "high", status: "done", owner_name: "Yuki Tanaka" },
-    { title: "Rédiger plan de communication Brésil", country_id: "demo_br", country_label: "🇧🇷 Brésil", due_date: "15 Août 2025", priority: "med", status: "open", owner_name: "Carlos Silva" },
-    { title: "Recruter directeur pays Australie", country_id: "demo_au", country_label: "🇦🇺 Australie", due_date: "1 Sep 2025", priority: "high", status: "open", owner_name: "Yuki Tanaka" },
-    { title: "Analyser cadre réglementaire Nigeria", country_id: "demo_ng", country_label: "🇳🇬 Nigeria", due_date: "20 Juil 2025", priority: "high", status: "late", owner_name: "Amara Okafor" },
+    { title: "Déposer la marque en Allemagne", country_id: "demo_de", country_label: "🇩🇪 Allemagne", due_date: "2025-07-30", priority: "high", status: "done", owner_name: "Marc Richter" },
+    { title: "Finaliser contrat partenaire Tokyo", country_id: "demo_jp", country_label: "🇯🇵 Japon", due_date: "2025-08-05", priority: "high", status: "done", owner_name: "Yuki Tanaka" },
+    { title: "Rédiger plan de communication Brésil", country_id: "demo_br", country_label: "🇧🇷 Brésil", due_date: "2025-08-15", priority: "med", status: "open", owner_name: "Carlos Silva" },
+    { title: "Recruter directeur pays Australie", country_id: "demo_au", country_label: "🇦🇺 Australie", due_date: "2025-09-01", priority: "high", status: "open", owner_name: "Yuki Tanaka" },
+    { title: "Analyser cadre réglementaire Nigeria", country_id: "demo_ng", country_label: "🇳🇬 Nigeria", due_date: "2025-07-20", priority: "high", status: "late", owner_name: "Amara Okafor" },
   ]);
 
   await admin.from("risks").insert([
@@ -163,12 +163,12 @@ async function seedDemoData(admin: ReturnType<typeof createClient>, demoUserId: 
   ]);
 
   await admin.from("milestones").insert([
-    { country_id: "demo_de", icon: "📋", title: "Étude de marché complète", target_date: "Mars 2025", is_done: true, sort_order: 0 },
-    { country_id: "demo_de", icon: "⚖️", title: "Dépôt de marque", target_date: "Mai 2025", is_done: true, sort_order: 1 },
-    { country_id: "demo_de", icon: "🏢", title: "Ouverture bureau Berlin", target_date: "Juil 2025", is_done: false, sort_order: 2 },
-    { country_id: "demo_jp", icon: "🤝", title: "Contrat partenaire Tokyo", target_date: "Fév 2025", is_done: true, sort_order: 0 },
-    { country_id: "demo_jp", icon: "🏢", title: "Bureau Tokyo opérationnel", target_date: "Avr 2025", is_done: true, sort_order: 1 },
-    { country_id: "demo_jp", icon: "🚀", title: "Lancement grand public", target_date: "Sep 2025", is_done: false, sort_order: 2 },
+    { country_id: "demo_de", icon: "📋", title: "Étude de marché complète", target_date: "2025-03-01", is_done: true, sort_order: 0 },
+    { country_id: "demo_de", icon: "⚖️", title: "Dépôt de marque", target_date: "2025-05-01", is_done: true, sort_order: 1 },
+    { country_id: "demo_de", icon: "🏢", title: "Ouverture bureau Berlin", target_date: "2025-07-01", is_done: false, sort_order: 2 },
+    { country_id: "demo_jp", icon: "🤝", title: "Contrat partenaire Tokyo", target_date: "2025-02-01", is_done: true, sort_order: 0 },
+    { country_id: "demo_jp", icon: "🏢", title: "Bureau Tokyo opérationnel", target_date: "2025-04-01", is_done: true, sort_order: 1 },
+    { country_id: "demo_jp", icon: "🚀", title: "Lancement grand public", target_date: "2025-09-01", is_done: false, sort_order: 2 },
   ]);
 
   await admin.from("comments").insert([

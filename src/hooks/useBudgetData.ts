@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/lib/fetchAll';
 
 // Types
 export interface BudgetScenario {
@@ -76,13 +77,13 @@ export function useBudgetLines(scenarioId?: string) {
     queryKey: ['budget_lines', scenarioId],
     enabled: !!scenarioId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const ordered = supabase
         .from('budget_lines')
         .select('*')
         .eq('scenario_id', scenarioId!)
-        .order('created_at');
-      if (error) throw error;
-      return data as BudgetLine[];
+        .order('created_at')
+        .order('id');
+      return (await fetchAllRows((from, to) => ordered.range(from, to))) as BudgetLine[];
     },
   });
 }

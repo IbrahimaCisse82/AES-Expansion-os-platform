@@ -1,6 +1,8 @@
 // Static data for AfriDataHub sections, filtered for target countries
 // Belgique, Bénin, Burkina Faso, Côte d'Ivoire, Ouganda, Sénégal
-// ENRICHI : 250+ entrées réalistes basées sur des données réelles
+// ATTENTION : jeu d'exemples statique (illustratif), non synchronisé avec les
+// sources officielles. Signalé comme tel dans l'interface (AfriDataHubTab).
+// À terme : alimenter la table market_intel_items depuis une source vérifiée.
 
 export interface DealItem {
   id: string;

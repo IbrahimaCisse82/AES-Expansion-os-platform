@@ -14,6 +14,7 @@ const CHART_COLORS = [
 ];
 
 import type { LucideIcon } from 'lucide-react';
+import { formatDateFr } from '@/lib/dates';
 function KpiBox({ icon: Icon, label, value, sub }: { icon: LucideIcon; label: string; value: string; sub?: string }) {
   return (
     <div className="bg-card border border-border rounded-lg p-4 flex items-start gap-3">
@@ -290,7 +291,7 @@ export default function CountryAnalysisTab() {
               <div key={m.id} className="flex items-center gap-3 text-[12.5px] py-2 px-3 rounded-lg bg-muted/30">
                 <span>{m.icon || '📌'}</span>
                 <span className="flex-1 font-medium text-foreground">{m.title}</span>
-                {m.target_date && <span className="text-muted-foreground text-[11px]">{m.target_date}</span>}
+                {m.target_date && <span className="text-muted-foreground text-[11px]">{formatDateFr(m.target_date)}</span>}
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${m.is_done ? 'bg-sage/10 text-sage dark:bg-sage/20 dark:text-sage' : 'bg-gold/10 text-gold dark:bg-gold/20 dark:text-gold'}`}>
                   {m.is_done ? 'Terminé' : 'En cours'}
                 </span>

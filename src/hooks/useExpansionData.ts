@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMyCountryScope } from './useUserRoles';
+import { fetchAllRows } from '@/lib/fetchAll';
 
 export function useCountries() {
   const { data: scope } = useMyCountryScope();
@@ -12,9 +13,8 @@ export function useCountries() {
         .select('*')
         .order('pct', { ascending: false });
       if (scope) query = query.eq('id', scope);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const ordered = query.order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
@@ -25,9 +25,8 @@ export function useMilestones(countryId?: string | null) {
     queryFn: async () => {
       let query = supabase.from('milestones').select('*').order('sort_order');
       if (countryId) query = query.eq('country_id', countryId);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const ordered = query.order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
@@ -42,9 +41,8 @@ export function useTasks() {
         .select('*')
         .order('created_at', { ascending: false });
       if (scope) query = query.eq('country_id', scope);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const ordered = query.order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
@@ -59,9 +57,8 @@ export function useRisks() {
         .select('*')
         .order('level');
       if (scope) query = query.eq('country_id', scope);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const ordered = query.order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
@@ -75,9 +72,8 @@ export function useBudgetEntries() {
         .from('budget_entries')
         .select('*');
       if (scope) query = query.eq('country_id', scope);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const ordered = query.order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
@@ -101,12 +97,12 @@ export function useComments() {
   return useQuery({
     queryKey: ['comments'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const ordered = supabase
         .from('comments')
         .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
+        .order('created_at', { ascending: false })
+        .order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
@@ -115,12 +111,12 @@ export function useRoadmapBars() {
   return useQuery({
     queryKey: ['roadmap_bars'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const ordered = supabase
         .from('roadmap_bars')
         .select('*')
-        .order('sort_order');
-      if (error) throw error;
-      return data;
+        .order('sort_order')
+        .order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 }
