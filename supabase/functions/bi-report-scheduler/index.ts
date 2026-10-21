@@ -1,5 +1,6 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { requireServiceCaller } from '../_shared/service-auth.ts'
 
 // Planificateur de diffusion BI : appelé chaque heure par pg_cron.
 // Envoie par email les rapports planifiés échus (quotidien / hebdo / mensuel).
@@ -23,6 +24,9 @@ function isDue(frequency: string, lastSent: string | null, now: Date): boolean {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const denied = requireServiceCaller(req, corsHeaders)
+  if (denied) return denied
+
   try {
     const url = Deno.env.get('SUPABASE_URL')!
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

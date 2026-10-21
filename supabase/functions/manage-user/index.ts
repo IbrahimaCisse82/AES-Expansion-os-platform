@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { generateTemporaryCredential } from '../_shared/temp-credentials.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,7 +94,7 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      const tempPassword = `Temp${Math.random().toString(36).slice(2, 10)}!`;
+      const tempPassword = generateTemporaryCredential();
       const { error: updateErr } = await admin.auth.admin.updateUserById(user_id, { password: tempPassword });
       if (updateErr) throw updateErr;
 

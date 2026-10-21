@@ -1,5 +1,6 @@
 // notifications-cron — runs daily. Generates J-7 milestone reminders + monthly KPI/budget summary.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { requireServiceCaller } from '../_shared/service-auth.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,9 @@ function isoPlusDays(days: number): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const denied = requireServiceCaller(req, corsHeaders)
+  if (denied) return denied
+
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
   const summary: Record<string, number> = { milestones_j7: 0, monthly_report: 0 }

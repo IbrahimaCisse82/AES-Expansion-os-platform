@@ -1,81 +1,125 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ---------------------------------------------------------------------
+// Compte de démonstration.
+//
+// SÉCURITÉ : cette fonction crée un compte et renvoie ses identifiants à
+// n'importe quel visiteur. Elle ne doit donc tourner QUE dans un projet
+// Supabase dédié à la démo, jamais à côté de données réelles :
+//   - désactivée par défaut (secret DEMO_MODE=true requis) ;
+//   - rôle "director" (lecture/écriture métier) et non "admin" (gestion
+//     des utilisateurs) ;
+//   - mot de passe aléatoire régénéré à chaque connexion, jamais en dur ;
+//   - le nettoyage exige la session du compte démo et ne supprime que les
+//     données marquées démo (pays demo_*, activité créée par le compte).
+// ---------------------------------------------------------------------
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const DEMO_EMAIL = "demo@expansionos.app";
-const DEMO_PASSWORD = "demo1234";
+const DEMO_ROLE = "director";
 
 // Prefixed IDs to avoid collision with real user data
 const DEMO_COUNTRY_IDS = ["demo_jp", "demo_de", "demo_br", "demo_au", "demo_ng", "demo_sa"];
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+function randomPassword(): string {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  return "Demo-" + btoa(String.fromCharCode(...bytes)).replace(/[^A-Za-z0-9]/g, "").slice(0, 20);
+}
+
+async function findUserByEmail(admin: ReturnType<typeof createClient>, email: string) {
+  for (let page = 1; page <= 50; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw error;
+    const hit = data.users.find((u: { email?: string }) => u.email?.toLowerCase() === email);
+    if (hit) return hit;
+    if (data.users.length < 200) return null;
+  }
+  return null;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  if (Deno.env.get("DEMO_MODE") !== "true") {
+    return json({ error: "Le mode démonstration est désactivé sur cet environnement." }, 403);
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Check if this is a cleanup request
     const body = await req.json().catch(() => ({}));
+
+    // Nettoyage : uniquement par le compte démo lui-même.
     if (body?.action === "cleanup") {
-      await cleanDemoData(admin);
-      return new Response(
-        JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      const caller = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      const { data: { user } } = await caller.auth.getUser();
+      if (!user || user.email?.toLowerCase() !== DEMO_EMAIL) {
+        return json({ error: "Non autorisé" }, 403);
+      }
+      await cleanDemoData(admin, user.id);
+      return json({ success: true });
     }
 
-    // Ensure demo user exists
-    const { data: existingUsers } = await admin.auth.admin.listUsers();
-    const demoUser = existingUsers?.users?.find((u: { email?: string }) => u.email === DEMO_EMAIL);
+    const password = randomPassword();
+    let demoUser = await findUserByEmail(admin, DEMO_EMAIL);
 
     if (!demoUser) {
-      const { error: createErr } = await admin.auth.admin.createUser({
+      const { data, error } = await admin.auth.admin.createUser({
         email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
+        password,
         email_confirm: true,
         user_metadata: { full_name: "Utilisateur Démo" },
       });
-      if (createErr) throw createErr;
-
-      await new Promise((r) => setTimeout(r, 500));
-      const { data: users2 } = await admin.auth.admin.listUsers();
-      const newUser = users2?.users?.find((u: { email?: string }) => u.email === DEMO_EMAIL);
-      if (newUser) {
-        // Use SECURITY DEFINER function to bypass RLS
-        await admin.rpc('set_user_role', {
-          target_user_id: newUser.id,
-          new_role: 'admin'
-        });
-      }
+      if (error) throw error;
+      demoUser = data.user;
+    } else {
+      const { error } = await admin.auth.admin.updateUserById(demoUser.id, { password });
+      if (error) throw error;
     }
+    if (!demoUser) throw new Error("Création du compte démo impossible");
+
+    const { error: roleErr } = await admin.rpc("set_user_role", {
+      target_user_id: demoUser.id,
+      new_role: DEMO_ROLE,
+    });
+    if (roleErr) throw roleErr;
 
     // Clean previous demo data then reseed fresh
-    await cleanDemoData(admin);
-    await seedDemoData(admin);
+    await cleanDemoData(admin, demoUser.id);
+    await seedDemoData(admin, demoUser.id);
 
-    return new Response(
-      JSON.stringify({ email: DEMO_EMAIL, password: DEMO_PASSWORD }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return json({ email: DEMO_EMAIL, password });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("demo-login", err);
+    return json({ error: "Impossible de préparer le compte démo" }, 500);
   }
 });
 
-async function cleanDemoData(admin: ReturnType<typeof createClient>) {
-  await admin.from("activity_log").delete().in("market_flag", ["🇯🇵", "🇩🇪", "🇧🇷", "🇦🇺", "🇳🇬", "🇸🇦"]);
+async function cleanDemoData(admin: ReturnType<typeof createClient>, demoUserId: string) {
+  // L'activité démo est rattachée au compte démo : on ne touche jamais à
+  // l'historique réel des pays partageant le même drapeau.
+  await admin.from("activity_log").delete().eq("user_id", demoUserId);
   await admin.from("comments").delete().in("market_id", DEMO_COUNTRY_IDS);
   await admin.from("budget_entries").delete().in("country_id", DEMO_COUNTRY_IDS);
   await admin.from("milestones").delete().in("country_id", DEMO_COUNTRY_IDS);
@@ -85,7 +129,7 @@ async function cleanDemoData(admin: ReturnType<typeof createClient>) {
   await admin.from("countries").delete().in("id", DEMO_COUNTRY_IDS);
 }
 
-async function seedDemoData(admin: ReturnType<typeof createClient>) {
+async function seedDemoData(admin: ReturnType<typeof createClient>, demoUserId: string) {
   const countries = [
     { id: "demo_jp", flag: "🇯🇵", name: "Japon", region: "Asie-Pacifique", phase: 3, pct: 88, status: "active", color: "sky", budget: "2.0M€", team_size: 12, risk_count: 1, population: "125M", gdp: "4,940 Mds$", language: "Japonais", local_contact: "Yuki Tanaka", description: "Marché le plus avancé. Bureau Tokyo opérationnel.", kpi_ca: "284K€", kpi_clients: "1,240", kpi_nps: "72", kpi_retention: "89%" },
     { id: "demo_de", flag: "🇩🇪", name: "Allemagne", region: "Europe", phase: 2, pct: 75, status: "active", color: "sage", budget: "1.8M€", team_size: 8, risk_count: 1, population: "83M", gdp: "4,200 Mds$", language: "Allemand", local_contact: "Marc Richter", description: "Marché prioritaire avec fort potentiel B2B.", kpi_ca: "156K€", kpi_clients: "580", kpi_nps: "68", kpi_retention: "91%" },
@@ -135,11 +179,11 @@ async function seedDemoData(admin: ReturnType<typeof createClient>) {
   ]);
 
   await admin.from("activity_log").insert([
-    { user_name: "Marc Richter", action: "a mis à jour l'avancement Allemagne à 75%", entity_type: "country", market_flag: "🇩🇪", color: "sage" },
-    { user_name: "Yuki Tanaka", action: "a terminé \"Finaliser contrat Tokyo\"", entity_type: "task", market_flag: "🇯🇵", color: "sky" },
-    { user_name: "Alice Dupont", action: "a commenté le marché Japon", entity_type: "comment", market_flag: "🇯🇵", color: "navy" },
-    { user_name: "Amara Okafor", action: "a créé une alerte risque Nigeria", entity_type: "risk", market_flag: "🇳🇬", color: "terracotta" },
-    { user_name: "Carlos Silva", action: "a fait passer le Brésil en Phase 1", entity_type: "country", market_flag: "🇧🇷", color: "gold" },
-    { user_name: "Alice Dupont", action: "a approuvé le budget Q3 Australie", entity_type: "budget", market_flag: "🇦🇺", color: "plum" },
+    { user_id: demoUserId, user_name: "Marc Richter", action: "a mis à jour l'avancement Allemagne à 75%", entity_type: "country", market_flag: "🇩🇪", color: "sage" },
+    { user_id: demoUserId, user_name: "Yuki Tanaka", action: "a terminé \"Finaliser contrat Tokyo\"", entity_type: "task", market_flag: "🇯🇵", color: "sky" },
+    { user_id: demoUserId, user_name: "Alice Dupont", action: "a commenté le marché Japon", entity_type: "comment", market_flag: "🇯🇵", color: "navy" },
+    { user_id: demoUserId, user_name: "Amara Okafor", action: "a créé une alerte risque Nigeria", entity_type: "risk", market_flag: "🇳🇬", color: "terracotta" },
+    { user_id: demoUserId, user_name: "Carlos Silva", action: "a fait passer le Brésil en Phase 1", entity_type: "country", market_flag: "🇧🇷", color: "gold" },
+    { user_id: demoUserId, user_name: "Alice Dupont", action: "a approuvé le budget Q3 Australie", entity_type: "budget", market_flag: "🇦🇺", color: "plum" },
   ]);
 }

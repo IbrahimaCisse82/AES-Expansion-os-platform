@@ -3,6 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChevronRight, Play } from 'lucide-react';
 import authIllustration from '@/assets/auth-illustration.jpg';
 
+// Le compte démo n'est proposé que sur un déploiement dédié (VITE_DEMO_MODE=true).
+const DEMO_ENABLED = import.meta.env.VITE_DEMO_MODE === 'true';
+
 export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -179,6 +182,7 @@ export default function AuthPage() {
             </p>
           </div>
 
+          {DEMO_ENABLED && (
           <div className="mt-5 pt-5 border-t border-border">
             <button
               onClick={handleDemo}
@@ -190,6 +194,7 @@ export default function AuthPage() {
             </button>
             <p className="text-[11px] text-muted-foreground mt-2">Explorez la plateforme avec des données de test</p>
           </div>
+          )}
         </div>
       </div>
 
