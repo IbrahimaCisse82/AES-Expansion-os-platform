@@ -1,11 +1,12 @@
 import KpiCard from '@/components/KpiCard';
 import StatusPill from '@/components/StatusPill';
-import { useCountries, useTasks, useActivityLog, useRisks, useMilestones } from '@/hooks/useExpansionData';
+import { useCountries, useTasks, useActivityLog, useRisks, useMilestones, useBudgetEntries } from '@/hooks/useExpansionData';
+import { useKpiHistory } from '@/hooks/useKpiHistory';
 import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard, KpiTrendChart, NvsN1Card } from '@/components/dashboard/DashboardCharts';
 import AfricaMap from '@/components/dashboard/AfricaMap';
 import BurndownChart from '@/components/dashboard/BurndownChart';
 import RadarComparison from '@/components/dashboard/RadarComparison';
-import { computeMarketScore } from '@/lib/marketScoring';
+import { computeMarketScore, buildScoreInputs } from '@/lib/marketScoring';
 import { formatDateFr } from '@/lib/dates';
 
 export default function DashboardPage() {
@@ -14,6 +15,8 @@ export default function DashboardPage() {
   const { data: activity = [] } = useActivityLog();
   const { data: risks = [] } = useRisks();
   const { data: milestones = [] } = useMilestones(null);
+  const { data: kpiHistory = [] } = useKpiHistory();
+  const { data: budgetEntries = [] } = useBudgetEntries();
 
   const lateTasks = tasks.filter(t => t.status === 'late').length;
   const totalTeam = countries.reduce((s, c) => s + (c.team_size || 0), 0);
@@ -22,7 +25,7 @@ export default function DashboardPage() {
   const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
   const dotColors: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]', navy: 'bg-primary' };
 
-  const scores = countries.map(c => ({ name: c.name, flag: c.flag, score: computeMarketScore(c) }));
+  const scores = countries.map(c => ({ name: c.name, flag: c.flag, score: computeMarketScore(c, buildScoreInputs(c.id, { milestones, risks, kpiHistory, budgetEntries })) }));
 
   const isEmpty = countries.length === 0 && tasks.length === 0;
 
