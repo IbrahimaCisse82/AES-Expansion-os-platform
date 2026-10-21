@@ -61,7 +61,7 @@ const BudgetWorkflowEmail = ({ scenarioName, newStatus, changedBy, rejectionReas
 export const template = {
   component: BudgetWorkflowEmail,
   subject: (data: Record<string, unknown>) => {
-    const status = STATUS_LABELS[data.newStatus || ''] || data.newStatus || 'Mis à jour'
+    const status = STATUS_LABELS[String(data.newStatus ?? '')] || data.newStatus || 'Mis à jour'
     const emoji = data.newStatus === 'rejected' ? '❌' : '💰'
     return `${emoji} Budget "${data.scenarioName || 'Scénario'}" — ${status}`
   },

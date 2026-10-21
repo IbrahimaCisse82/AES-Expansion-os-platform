@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
         
         if (actual < target * threshold) {
           consecutive++
-          underMonths.push(row.month)
+          underMonths.push(String(row.month))
           if (consecutive === 1) latestPct = pct
         } else {
           break // streak broken

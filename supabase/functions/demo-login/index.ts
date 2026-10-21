@@ -1,4 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+type AdminClient = SupabaseClient;
 
 // ---------------------------------------------------------------------
 // Compte de démonstration.
@@ -37,7 +39,7 @@ function randomPassword(): string {
   return "Demo-" + btoa(String.fromCharCode(...bytes)).replace(/[^A-Za-z0-9]/g, "").slice(0, 20);
 }
 
-async function findUserByEmail(admin: ReturnType<typeof createClient>, email: string) {
+async function findUserByEmail(admin: AdminClient, email: string) {
   for (let page = 1; page <= 50; page++) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
     if (error) throw error;
@@ -116,7 +118,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function cleanDemoData(admin: ReturnType<typeof createClient>, demoUserId: string) {
+async function cleanDemoData(admin: AdminClient, demoUserId: string) {
   // L'activité démo est rattachée au compte démo : on ne touche jamais à
   // l'historique réel des pays partageant le même drapeau.
   await admin.from("activity_log").delete().eq("user_id", demoUserId);
@@ -129,7 +131,7 @@ async function cleanDemoData(admin: ReturnType<typeof createClient>, demoUserId:
   await admin.from("countries").delete().in("id", DEMO_COUNTRY_IDS);
 }
 
-async function seedDemoData(admin: ReturnType<typeof createClient>, demoUserId: string) {
+async function seedDemoData(admin: AdminClient, demoUserId: string) {
   const countries = [
     { id: "demo_jp", flag: "🇯🇵", name: "Japon", region: "Asie-Pacifique", phase: 3, pct: 88, status: "active", color: "sky", budget: "2.0M€", team_size: 12, risk_count: 1, population: "125M", gdp: "4,940 Mds$", language: "Japonais", local_contact: "Yuki Tanaka", description: "Marché le plus avancé. Bureau Tokyo opérationnel.", kpi_ca: "284K€", kpi_clients: "1,240", kpi_nps: "72", kpi_retention: "89%" },
     { id: "demo_de", flag: "🇩🇪", name: "Allemagne", region: "Europe", phase: 2, pct: 75, status: "active", color: "sage", budget: "1.8M€", team_size: 8, risk_count: 1, population: "83M", gdp: "4,200 Mds$", language: "Allemand", local_contact: "Marc Richter", description: "Marché prioritaire avec fort potentiel B2B.", kpi_ca: "156K€", kpi_clients: "580", kpi_nps: "68", kpi_retention: "91%" },
