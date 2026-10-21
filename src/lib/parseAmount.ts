@@ -23,7 +23,7 @@ export function parseAmount(raw: string | number | null | undefined): number | n
     mult = u.startsWith('md') || u.startsWith('mrd') || u.startsWith('milliard') || u === 'b' || u === 'bn' ? 1e9 : u.startsWith('m') ? 1e6 : 1e3;
   }
 
-  s = s.replace(/[\s  ]/g, '');
+  s = s.replace(/\s/g, ''); // \s couvre aussi les espaces insécables
   const num = /-?[\d.,]+/.exec(s)?.[0];
   if (!num) return null;
 
