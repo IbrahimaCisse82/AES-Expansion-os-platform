@@ -134,9 +134,14 @@ export function envForPath(path: string): EnvId | null {
   return 'expansion';
 }
 
-export function allowedEnvs(role: string | null | undefined): Environment[] {
+/** Matrice rôle → environnements ouverts (table environment_access) ; à défaut, la configuration par défaut ci-dessus. */
+export type EnvAccess = Record<string, EnvId[]>;
+
+export function allowedEnvs(role: string | null | undefined, access?: EnvAccess | null): Environment[] {
   if (!role) return [];
-  return ENVIRONMENTS.filter(e => e.roles.includes(role));
+  if (role === 'admin') return ENVIRONMENTS;
+  const fromDb = access?.[role];
+  return ENVIRONMENTS.filter(e => (fromDb ? fromDb.includes(e.id) : e.roles.includes(role)));
 }
 
 /** Environnement d'arrivée : le dernier utilisé s'il est autorisé, sinon celui qui correspond le mieux au rôle. */
@@ -144,8 +149,8 @@ const ROLE_HOME: Record<string, EnvId> = {
   sales_rep: 'tc', technician: 'tc', logistics: 'tc', commercial_director: 'tc', technical_director: 'tc',
   raf: 'finance', dhr: 'reporting', country_manager: 'expansion', partner: 'expansion',
 };
-export function defaultEnv(role: string | null | undefined, last: string | null): Environment | null {
-  const allowed = allowedEnvs(role);
+export function defaultEnv(role: string | null | undefined, last: string | null, access?: EnvAccess | null): Environment | null {
+  const allowed = allowedEnvs(role, access);
   if (!allowed.length) return null;
   return allowed.find(e => e.id === last) ?? allowed.find(e => e.id === ROLE_HOME[role ?? '']) ?? allowed[0];
 }
@@ -153,3 +158,10 @@ export function defaultEnv(role: string | null | undefined, last: string | null)
 export const LAST_ENV_KEY = 'expansionos:last-env';
 export function readLastEnv(): string | null { try { return localStorage.getItem(LAST_ENV_KEY); } catch { return null; } }
 export function writeLastEnv(id: EnvId) { try { localStorage.setItem(LAST_ENV_KEY, id); } catch { /* stockage indisponible */ } }
+
+/** Environnement visé par le lien d'une notification (« /reporting » ou « /app/reporting/… »). */
+export function envForLink(link: string | null | undefined): EnvId | 'common' | null {
+  if (!link) return null;
+  const path = link.startsWith('/app') ? link : `/app${link.startsWith('/') ? '' : '/'}${link}`;
+  return envForPath(path.split('?')[0]) ?? 'common';
+}

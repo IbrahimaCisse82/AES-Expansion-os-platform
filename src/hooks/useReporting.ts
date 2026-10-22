@@ -34,8 +34,9 @@ export function canReview(role: string | null | undefined, template: string) {
   return ['A5', 'A6', 'A7', 'A8', 'A11'].includes(template) && role === 'dhr';
 }
 
-export function useReports() {
+export function useReports(opts: { enabled?: boolean } = {}) {
   return useQuery({
+    enabled: opts.enabled ?? true,
     queryKey: ['bi_report_instances'],
     staleTime: 30_000,
     queryFn: async () => {

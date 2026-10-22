@@ -3,7 +3,10 @@ import { ChevronRight, MessageSquare, Settings, User, Users, X } from 'lucide-re
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { canAccessBi } from '@/lib/biAccess';
-import { allowedEnvs, envById, writeLastEnv, type EnvId, type Environment } from '@/lib/environments';
+import { envById, writeLastEnv, type EnvId, type Environment } from '@/lib/environments';
+import { useMyEnvironments } from '@/hooks/useEnvironments';
+import { useMyNotifications } from '@/hooks/useMyNotifications';
+import { envForLink } from '@/lib/environments';
 
 interface AppSidebarProps {
   env: EnvId;
@@ -19,7 +22,7 @@ const COMMON = [
   { path: '/app/profile', label: 'Mon profil', icon: User },
 ];
 
-function EnvSwitcher({ envs, current, onPick }: { envs: Environment[]; current: EnvId; onPick: (e: Environment) => void }) {
+function EnvSwitcher({ envs, current, onPick, unread }: { envs: Environment[]; current: EnvId; onPick: (e: Environment) => void; unread: Record<string, number> }) {
   if (envs.length <= 1) return null;
   return (
     <div className="px-2.5 pt-3">
@@ -35,6 +38,9 @@ function EnvSwitcher({ envs, current, onPick }: { envs: Environment[]; current: 
               <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${e.accent}`} />
               <Icon size={13} className="shrink-0" />
               <span className="leading-tight">{e.short}</span>
+              {unread[e.id] > 0 && !active && (
+                <span aria-label={`${unread[e.id]} notification(s) non lue(s)`} className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9.5px] font-bold flex items-center justify-center border-[1.5px] border-card">{unread[e.id] > 9 ? '9+' : unread[e.id]}</span>
+              )}
             </button>
           );
         })}
@@ -47,7 +53,10 @@ export default function AppSidebar({ env, globalProgress = 0, mobileOpen, onMobi
   const navigate = useNavigate();
   const location = useLocation();
   const { data: myRole } = useCurrentUserRole();
-  const envs = allowedEnvs(myRole);
+  const { envs } = useMyEnvironments();
+  const { data: notifs = [] } = useMyNotifications();
+  const unread: Record<string, number> = {};
+  for (const n of notifs) if (!n.is_read) { const k = envForLink(n.link) ?? 'common'; unread[k] = (unread[k] ?? 0) + 1; }
   const current = envById(env);
   // Les données Expansion ne sont chargées que dans l'environnement Expansion
   const inExpansion = env === 'expansion';
@@ -88,7 +97,7 @@ export default function AppSidebar({ env, globalProgress = 0, mobileOpen, onMobi
         </button>
       </div>
 
-      <EnvSwitcher envs={envs} current={env} onPick={pick} />
+      <EnvSwitcher envs={envs} current={env} onPick={pick} unread={unread} />
 
       <nav aria-label={current.label} className="flex-1 overflow-y-auto px-2.5 py-2">
         {current.nav.map(group => {
@@ -121,6 +130,7 @@ export default function AppSidebar({ env, globalProgress = 0, mobileOpen, onMobi
           return (
             <NavLink key={item.path} to={item.path} onClick={() => onMobileClose?.()} className={linkCls(isActive(item.path))}>
               <Icon size={16} /><span>{item.label}</span>
+              {item.path === '/app/comments' && unread.common > 0 && <span className="ml-auto text-[9.5px] font-bold px-1.5 rounded-full bg-destructive text-destructive-foreground">{unread.common}</span>}
             </NavLink>
           );
         })}

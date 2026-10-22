@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Bell, Plus, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ENVIRONMENTS, envForPath, envById } from '@/lib/environments';
+import { ENVIRONMENTS, envForLink, envForPath, envById } from '@/lib/environments';
+import GlobalSearch, { GlobalSearchButton } from '@/components/GlobalSearch';
 import { useMarkNotificationsRead, useMyNotifications } from '@/hooks/useMyNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityLog } from '@/hooks/useExpansionData';
@@ -43,6 +44,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
   const { data: activity = [] } = useActivityLog();
   const { isDark, toggleTheme } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [notifTab, setNotifTab] = useState<'mine' | 'activity'>('mine');
   const { data: mine = [] } = useMyNotifications();
   const markRead = useMarkNotificationsRead();
@@ -83,7 +85,8 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
         {title}
       </h1>
 
-      <div className="relative hidden sm:block">
+      {envForPath(pathname) === 'expansion' && (
+        <div className="relative hidden lg:block">
         <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
@@ -92,7 +95,10 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
           placeholder="Rechercher…"
           className="pl-8 pr-3 py-2 border-[1.5px] border-border rounded-lg text-[13px] w-[160px] lg:w-[200px] bg-card outline-none focus:border-accent focus:w-[200px] lg:focus:w-[240px] transition-all font-sans"
         />
-      </div>
+        </div>
+      )}
+      <GlobalSearchButton onClick={() => setSearchOpen(true)} />
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
       {showAdd && (
         <button
@@ -143,7 +149,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
                       <div className="min-w-0">
                         <div className="text-[12px] font-medium text-primary leading-snug">{n.title}</div>
                         {n.message && <div className="text-[11.5px] text-muted-foreground line-clamp-2">{n.message}</div>}
-                        <div className="text-[10px] text-muted-foreground mt-0.5">{new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{(() => { const e = envForLink(n.link); return e && e !== 'common' ? <span className="inline-flex items-center gap-1 mr-1.5"><span className={`h-1.5 w-1.5 rounded-full ${envById(e).accent}`} />{envById(e).label} ·</span> : null; })()}{new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
                     </div>
                   </button>

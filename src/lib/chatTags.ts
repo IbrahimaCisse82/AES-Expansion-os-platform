@@ -20,3 +20,14 @@ export function buildTags(channel: string, text: string): string[] {
 
 export const channelOf = (tags: string[] | null | undefined): string =>
   (tags ?? []).find(t => (CHANNELS as readonly string[]).includes(t)) ?? 'Général';
+
+/** Tag de discussion d'un objet métier : « a2-2026-10 » pour un rapport, « dev-2026-0003 » pour un devis. */
+export const objectTag = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}_-]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+
+/** Lien vers la discussion d'un objet, dans le bon canal, message prérempli avec son tag. */
+export function discussionLink(channel: string, tag: string, prefill = '') {
+  const p = new URLSearchParams({ canal: channel, tag, texte: `#${tag} ${prefill}`.trim() + ' ' });
+  return `/app/comments?${p.toString()}`;
+}
+
+export const ENV_CHANNEL: Record<string, string> = { expansion: 'Général', tc: 'Technico-commercial', finance: 'Finance', reporting: 'Reporting' };

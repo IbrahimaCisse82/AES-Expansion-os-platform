@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow as UiRow } from '@/components/ui/table';
-import { ArrowLeft, Check, FileDown, Plus, Send, Trash2, Undo2, Wand2, X } from 'lucide-react';
+import { ArrowLeft, Check, FileDown, MessageSquare, Plus, Send, Trash2, Undo2, Wand2, X } from 'lucide-react';
+import { discussionLink, objectTag } from '@/lib/chatTags';
+import { useDiscussionCount } from '@/hooks/useDiscussion';
 import { toast } from 'sonner';
 import { Section } from '@/components/tc/tcUi';
 import { useTcEngine } from '@/hooks/useTc';
@@ -194,6 +196,8 @@ export function ReportEditor({ template: t, report, initialPeriod }: { template:
     } catch (e) { toast.error((e as Error).message); }
   };
 
+  const tag = report ? objectTag(`${t.code}-${report.period}`) : null;
+  const { data: discussionCount } = useDiscussionCount(tag);
   const firmSales = (tc.engine?.sales ?? []).filter(s => s.isFirm).sort((a, b) => (b.sale.sale_date ?? '').localeCompare(a.sale.sale_date ?? ''));
 
   return (
@@ -213,6 +217,7 @@ export function ReportEditor({ template: t, report, initialPeriod }: { template:
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Période</span>
           <PeriodInput kind={t.period} value={period} disabled={!editable} onChange={v => { setPeriod(v); setDirty(true); }} />
+          {tag && <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => navigate(discussionLink('Reporting', tag, `${t.code} ${periodLabel(report!.period)} :`))}><MessageSquare className="h-3.5 w-3.5" />Discussion{discussionCount ? ` (${discussionCount})` : ''}</Button>}
           <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => void exportReportPdf(t, { period, data, author_name: report?.author_name ?? me.userName, status, review_comment: report?.review_comment }, STATUS_LABEL[status])}><FileDown className="h-3.5 w-3.5" />PDF</Button>
         </div>
       </div>

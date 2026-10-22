@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Download, Plus, Search, Trash2 } from 'lucide-react';
+import { Download, MessageSquare, Plus, Search, Trash2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { discussionLink, objectTag } from '@/lib/chatTags';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
@@ -98,7 +100,11 @@ export default function TcSalesJournal({ engine }: { engine: TcEngine }) {
   const { data: role } = useCurrentUserRole();
   const save = useSaveSale();
   const { remove } = useTcMutations('tc_sales');
-  const [search, setSearch] = useState('');
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState(() => params.get('q') ?? '');
+  const qParam = params.get('q');
+  useEffect(() => { if (qParam !== null) setSearch(qParam); }, [qParam]);
   const [status, setStatus] = useState<string>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -214,12 +220,13 @@ export default function TcSalesJournal({ engine }: { engine: TcEngine }) {
                 <TableHead className="text-xs text-right">Reste dû</TableHead>
                 <TableHead className="text-xs text-right">Retard</TableHead>
                 <TableHead className="text-xs text-right">Marge nette</TableHead>
+                <TableHead className="w-10"><span className="sr-only">Discussion</span></TableHead>
                 {canDelete && <TableHead className="w-10" />}
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.length === 0 && (
-                <TableRow><TableCell colSpan={13} className="text-center text-sm text-muted-foreground py-8">
+                <TableRow><TableCell colSpan={14} className="text-center text-sm text-muted-foreground py-8">
                   {sales.length === 0 ? 'Aucun devis saisi pour le moment.' : 'Aucune ligne ne correspond aux filtres.'}
                 </TableCell></TableRow>
               )}
@@ -237,6 +244,10 @@ export default function TcSalesJournal({ engine }: { engine: TcEngine }) {
                   <TableCell className="text-xs py-1.5 text-right tabular-nums whitespace-nowrap">{s.remaining === null ? '—' : money(Math.max(0, s.remaining))}</TableCell>
                   <TableCell className={`text-xs py-1.5 text-right tabular-nums ${(s.daysLate ?? 0) > 0 ? 'text-destructive font-semibold' : ''}`}>{s.daysLate ? `${s.daysLate} j` : '—'}</TableCell>
                   <TableCell className={`text-xs py-1.5 text-right tabular-nums whitespace-nowrap ${s.netMargin < 0 ? 'text-destructive' : ''}`}>{s.amountHT ? money(s.netMargin) : '—'}</TableCell>
+                  <TableCell className="py-1.5" onClick={e => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Discuter du devis ${s.sale.quote_no}`} title="Discuter de ce devis"
+                      onClick={() => navigate(discussionLink('Technico-commercial', objectTag(s.sale.quote_no), `${s.sale.client} :`))}><MessageSquare className="h-3.5 w-3.5 text-muted-foreground" /></Button>
+                  </TableCell>
                   {canDelete && (
                     <TableCell className="py-1.5" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Supprimer" onClick={() => setToDelete(s)}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>

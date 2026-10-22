@@ -5,7 +5,8 @@ import Topbar from '@/components/Topbar';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { canAccessBi } from '@/lib/biAccess';
-import { allowedEnvs, defaultEnv, envForPath, readLastEnv, writeLastEnv, type EnvId } from '@/lib/environments';
+import { envForPath, readLastEnv, writeLastEnv, type EnvId } from '@/lib/environments';
+import { useMyEnvironments } from '@/hooks/useEnvironments';
 
 function RequireBiAccess({ children }: { children: ReactNode }) {
   const { data: role, isPending } = useCurrentUserRole();
@@ -16,18 +17,18 @@ function RequireBiAccess({ children }: { children: ReactNode }) {
 
 /** /app : arrivée dans l'environnement par défaut du rôle (ou le dernier utilisé). */
 function EnvHome() {
-  const { data: role, isPending } = useCurrentUserRole();
+  const { isPending, defaultEnv } = useMyEnvironments();
   if (isPending) return <div className="text-muted-foreground text-sm">Chargement…</div>;
-  const env = defaultEnv(role, readLastEnv());
+  const env = defaultEnv(readLastEnv());
   if (!env) return <p className="text-sm text-muted-foreground py-10 text-center">Aucun environnement n'est ouvert pour votre profil. Contactez l'administrateur.</p>;
   return <Navigate to={env.home} replace />;
 }
 
 /** Un environnement non autorisé pour le rôle renvoie vers l'environnement par défaut. */
 function RequireEnv({ env, children }: { env: EnvId; children: ReactNode }) {
-  const { data: role, isPending } = useCurrentUserRole();
+  const { isPending, envs } = useMyEnvironments();
   if (isPending) return <div className="text-muted-foreground text-sm">Chargement…</div>;
-  if (!allowedEnvs(role).some(e => e.id === env)) return <Navigate to="/app" replace />;
+  if (!envs.some(e => e.id === env)) return <Navigate to="/app" replace />;
   return <>{children}</>;
 }
 
@@ -57,7 +58,7 @@ const Index = () => {
   const [addSignal, setAddSignal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { data: role } = useCurrentUserRole();
+  const myEnvs = useMyEnvironments();
   const pathEnv = envForPath(location.pathname);
   const [env, setEnv] = useState<EnvId>(() => {
     const last = readLastEnv();
@@ -65,8 +66,8 @@ const Index = () => {
   });
   useEffect(() => {
     if (pathEnv) { setEnv(pathEnv); writeLastEnv(pathEnv); }
-    else if (role) { const d = defaultEnv(role, readLastEnv()); if (d && !allowedEnvs(role).some(e => e.id === env)) setEnv(d.id); }
-  }, [pathEnv, role, env]);
+    else if (!myEnvs.isPending) { const d = myEnvs.defaultEnv(readLastEnv()); if (d && !myEnvs.envs.some(e => e.id === env)) setEnv(d.id); }
+  }, [pathEnv, myEnvs, env]);
   const { data: countries = [] } = useCountries({ enabled: env === 'expansion' });
 
   const getActivePage = () => {

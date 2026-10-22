@@ -1,5 +1,7 @@
 import { ROLE_LABEL } from '@/lib/roles';
-import { CHANNELS, buildTags, channelOf } from '@/lib/chatTags';
+import { CHANNELS, ENV_CHANNEL, buildTags, channelOf } from '@/lib/chatTags';
+import { useSearchParams } from 'react-router-dom';
+import { readLastEnv } from '@/lib/environments';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useComments, useCountries } from '@/hooks/useExpansionData';
 import { useCreateComment, useUpdateComment, useDeleteComment } from '@/hooks/useCommentMutations';
@@ -303,11 +305,15 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
 
   const isAdmin = myRole === 'admin';
 
-  const [content, setContent] = useState('');
+  const [params] = useSearchParams();
+  const [content, setContent] = useState(() => params.get('texte') ?? '');
   const [marketId, setMarketId] = useState('');
   const [filterMarket, setFilterMarket] = useState('all');
-  const [channel, setChannel] = useState<string>('Général');
-  const [filterTag, setFilterTag] = useState<string>('all');
+  const [channel, setChannel] = useState<string>(() => {
+    const c = params.get('canal');
+    return c && (CHANNELS as readonly string[]).includes(c) ? c : ENV_CHANNEL[readLastEnv() ?? ''] ?? 'Général';
+  });
+  const [filterTag, setFilterTag] = useState<string>(() => params.get('tag') ?? 'all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
@@ -336,6 +342,13 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     return [...n.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t);
   }, [comments]);
   const filtered = searchQuery ? marketFiltered.filter(c => c.content.toLowerCase().includes(searchQuery.toLowerCase()) || c.author_name.toLowerCase().includes(searchQuery.toLowerCase())) : marketFiltered;
+
+  useEffect(() => {
+    if (params.get('texte')) {
+      const el = document.querySelector<HTMLTextAreaElement>('#comment-input');
+      if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    }
+  }, [params]);
 
   useEffect(() => {
     if (addSignal && addSignal > 0) {
@@ -585,7 +598,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-sm font-semibold text-primary mb-3">Canaux & tags</h3>
           <div className="flex flex-wrap gap-1.5">
-            {['all', ...CHANNELS, ...topHashtags].map(t => (
+            {['all', ...CHANNELS, ...topHashtags, ...(filterTag !== 'all' && !(CHANNELS as readonly string[]).includes(filterTag) && !topHashtags.includes(filterTag) ? [filterTag] : [])].map(t => (
               <button key={t} type="button" onClick={() => setFilterTag(t)}
                 className={`px-2.5 py-1 rounded-full border text-[12px] transition-colors ${filterTag === t ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border hover:bg-secondary'}`}>
                 {t === 'all' ? 'Tous' : `#${t}`}
