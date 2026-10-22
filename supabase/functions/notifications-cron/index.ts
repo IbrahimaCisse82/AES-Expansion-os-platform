@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
             type: 'milestone_j7',
             title: '⏰ Jalon dans 7 jours',
             message: `${country?.flag ?? ''} ${country?.name ?? m.country_id} — « ${m.title} » est attendu le ${m.target_date}`,
-            link: `/pays/${m.country_id}`,
+            link: `/app/countries/${m.country_id}`,
             entity_type: 'milestone',
             entity_id: m.id,
           })
@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
         type: 'monthly_report',
         title: '📊 Rapport mensuel ExpansionOS',
         message: summaryMsg,
-        link: '/tableau-de-bord',
+        link: '/app/dashboard',
         entity_type: 'report',
         entity_id: today.toISOString().slice(0, 7),
       }))

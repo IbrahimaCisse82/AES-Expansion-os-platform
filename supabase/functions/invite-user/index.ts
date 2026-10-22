@@ -4,9 +4,15 @@ import { generateTemporaryCredential } from '../_shared/temp-credentials.ts';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrateur',
-  director: 'Directeur',
-  country_manager: 'Country Manager',
+  director: 'Directeur général',
   raf: 'RAF (Resp. Admin. & Financier)',
+  commercial_director: 'Directeur commercial',
+  technical_director: 'Directeur technique',
+  dhr: 'DRH',
+  sales_rep: 'Commercial',
+  technician: 'Technicien',
+  logistics: 'Logistique / magasin',
+  country_manager: 'Country Manager',
   analyst: 'Analyste',
   observer: 'Observateur',
   partner: 'Partenaire',

@@ -7,33 +7,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { UserPlus, MailCheck, Ban, ShieldCheck, RefreshCw, Trash2, BarChart3 } from 'lucide-react';
+import { ROLES, ROLE_COLOR } from '@/lib/roles';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 
-const ROLES = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'director', label: 'Directeur' },
-  { value: 'country_manager', label: 'Country Manager' },
-  { value: 'technical_director', label: 'Directeur Technique' },
-  { value: 'commercial_director', label: 'Directeur Commercial' },
-  { value: 'dhr', label: 'DRH' },
-  { value: 'raf', label: 'RAF (Resp. Admin. & Financier)' },
-  { value: 'analyst', label: 'Analyste' },
-  { value: 'observer', label: 'Observateur' },
-  { value: 'partner', label: 'Partenaire' },
-];
-
-const ROLE_COLORS: Record<string, string> = {
-  admin: 'bg-destructive/15 text-destructive',
-  director: 'bg-[hsl(var(--plum))]/15 text-[hsl(var(--plum))]',
-  country_manager: 'bg-[hsl(var(--sky))]/15 text-[hsl(var(--sky))]',
-  technical_director: 'bg-[hsl(var(--sky))]/15 text-[hsl(var(--sky))]',
-  commercial_director: 'bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]',
-  dhr: 'bg-[hsl(var(--plum))]/15 text-[hsl(var(--plum))]',
-  raf: 'bg-[hsl(var(--terracotta))]/15 text-[hsl(var(--terracotta))]',
-  analyst: 'bg-[hsl(var(--gold))]/15 text-[hsl(var(--gold))]',
-  observer: 'bg-muted text-muted-foreground',
-  partner: 'bg-[hsl(var(--sage))]/15 text-[hsl(var(--sage))]',
-};
+const ROLE_COLORS = ROLE_COLOR;
 
 interface UserStatus {
   user_id: string;

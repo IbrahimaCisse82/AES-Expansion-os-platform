@@ -1,3 +1,5 @@
+import { ROLE_LABEL } from '@/lib/roles';
+import { CHANNELS, buildTags, channelOf } from '@/lib/chatTags';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useComments, useCountries } from '@/hooks/useExpansionData';
 import { useCreateComment, useUpdateComment, useDeleteComment } from '@/hooks/useCommentMutations';
@@ -304,6 +306,8 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
   const [content, setContent] = useState('');
   const [marketId, setMarketId] = useState('');
   const [filterMarket, setFilterMarket] = useState('all');
+  const [channel, setChannel] = useState<string>('Général');
+  const [filterTag, setFilterTag] = useState<string>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
@@ -324,7 +328,13 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
 
   // Only show top-level comments (no parent_id)
   const topLevel = comments.filter(c => !c.parent_id);
-  const marketFiltered = filterMarket === 'all' ? topLevel : topLevel.filter(c => c.market_id === filterMarket);
+  const marketFiltered = (filterMarket === 'all' ? topLevel : topLevel.filter(c => c.market_id === filterMarket))
+    .filter(c => filterTag === 'all' || (c.tags ?? []).includes(filterTag) || (filterTag === 'Général' && channelOf(c.tags) === 'Général'));
+  const topHashtags = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const c of comments) for (const t of c.tags ?? []) if (!(CHANNELS as readonly string[]).includes(t)) n.set(t, (n.get(t) ?? 0) + 1);
+    return [...n.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t);
+  }, [comments]);
   const filtered = searchQuery ? marketFiltered.filter(c => c.content.toLowerCase().includes(searchQuery.toLowerCase()) || c.author_name.toLowerCase().includes(searchQuery.toLowerCase())) : marketFiltered;
 
   useEffect(() => {
@@ -350,7 +360,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
       author_color: 'hsl(var(--primary))',
       market_id: marketId || null,
       market_label: country ? `${country.flag} ${country.name}` : null,
-      tags: [],
+      tags: buildTags(parentId ? channelOf(comments.find(c => c.id === parentId)?.tags) : channel, trimmed),
       parent_id: parentId || null,
     };
 
@@ -360,21 +370,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
         const mentions = extractMentions(trimmed, allUsers.map((u) => ({ user_id: u.user_id, full_name: u.full_name ?? '' })));
         if (mentions.length > 0 && data?.id) {
           await supabase.from('comment_mentions').insert(mentions.map(m => ({ comment_id: data.id, mentioned_user_id: m.user_id, mentioned_name: m.full_name })));
-          // Send email notifications for each mention
-          const country = countries.find(c => c.id === marketId);
-          for (const m of mentions) {
-            sendNotificationEmail({
-              templateName: 'mention-notification',
-              recipientEmail: `__user__:${m.user_id}`,
-              idempotencyKey: `mention-${data.id}-${m.user_id}`,
-              templateData: {
-                mentionedName: m.full_name,
-                authorName: fullName,
-                commentExcerpt: trimmed.substring(0, 200),
-                marketName: country ? `${country.flag} ${country.name}` : '',
-              },
-            });
-          }
+          // Notification plateforme + e-mail : déclencheur notify_comment_mention (base)
         }
         if (parentId) { setReplyContent(''); setReplyingTo(null); }
         else { setContent(''); setMarketId(''); }
@@ -397,7 +393,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
       author_color: 'hsl(var(--primary))',
       market_id: marketId || null,
       market_label: country ? `${country.flag} ${country.name}` : null,
-      tags: [],
+      tags: buildTags(channel, trimmed),
       parent_id: null,
     };
     createComment.mutate(payload, {
@@ -468,10 +464,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     toggleReaction.mutate({ commentId, emoji, userId: user.id });
   };
 
-  const ROLE_LABELS: Record<string, string> = {
-    admin: 'Administrateur', director: 'Directeur', country_manager: 'Country Manager',
-    analyst: 'Analyste', observer: 'Observateur', partner: 'Partenaire',
-  };
+  const ROLE_LABELS = ROLE_LABEL;
 
   if (isLoading) return <div className="text-muted-foreground text-sm p-8">Chargement…</div>;
 
@@ -479,7 +472,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
     <div className="animate-page-enter">
       <div className="mb-6">
         <h2 className="font-display text-[23px] font-bold text-primary mb-1">Commentaires & Discussions</h2>
-        <p className="text-[12.5px] text-muted-foreground">Échanges de l'équipe · <span className="font-semibold text-accent">@nom</span> pour mentionner · Threads pour organiser</p>
+        <p className="text-[12.5px] text-muted-foreground">Échanges de l'équipe par canal (Finance, Technico-commercial, Reporting…) · <span className="font-semibold text-accent">@nom</span> pour mentionner (notification + e-mail) · <span className="font-semibold text-accent">#mot-clé</span> pour taguer</p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
         <div className="bg-card border border-border rounded-lg p-5">
@@ -522,6 +515,13 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
 
           {user && (
             <div className="mt-4 pt-4 border-t border-border">
+              <div className="flex flex-wrap items-center gap-1.5 mb-2" role="radiogroup" aria-label="Canal">
+                <span className="text-[11px] text-muted-foreground mr-1">Canal</span>
+                {CHANNELS.map(ch => (
+                  <button key={ch} type="button" role="radio" aria-checked={channel === ch} onClick={() => setChannel(ch)}
+                    className={`px-2.5 py-1 rounded-full border text-[11.5px] transition-colors ${channel === ch ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border hover:bg-secondary'}`}>#{ch}</button>
+                ))}
+              </div>
               <MentionInput
                 id="comment-input"
                 value={content}
@@ -529,7 +529,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
                 maxLength={1000}
                 className="w-full p-3 border-[1.5px] border-border rounded-lg text-[13.5px] bg-background outline-none focus:border-accent focus:bg-card transition-colors resize-none font-sans"
                 rows={3}
-                placeholder="Ajouter un commentaire… Tapez @ pour mentionner quelqu'un"
+                placeholder="Écrire un message… @ pour mentionner, #mot-clé pour taguer"
               />
               {/* Pending attachments preview */}
               {pendingFiles.length > 0 && (
@@ -581,7 +581,19 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
           )}
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-5 h-fit">
+        <div className="space-y-4 h-fit">
+        <div className="bg-card border border-border rounded-lg p-5">
+          <h3 className="font-display text-sm font-semibold text-primary mb-3">Canaux & tags</h3>
+          <div className="flex flex-wrap gap-1.5">
+            {['all', ...CHANNELS, ...topHashtags].map(t => (
+              <button key={t} type="button" onClick={() => setFilterTag(t)}
+                className={`px-2.5 py-1 rounded-full border text-[12px] transition-colors ${filterTag === t ? 'bg-primary text-primary-foreground border-primary' : 'bg-card border-border hover:bg-secondary'}`}>
+                {t === 'all' ? 'Tous' : `#${t}`}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-sm font-semibold text-primary mb-3">Filtrer par marché</h3>
           <div className="space-y-1.5">
             <button onClick={() => setFilterMarket('all')} className={`w-full text-left px-3 py-2 rounded-lg border text-[13px] transition-colors ${filterMarket === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border hover:bg-secondary'}`}>
@@ -593,6 +605,7 @@ export default function CommentsPage({ addSignal, searchQuery = '' }: { addSigna
               </button>
             ))}
           </div>
+        </div>
         </div>
       </div>
 

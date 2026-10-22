@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
             templateData: {
               title: `📊 Rapport BI : ${label}`,
               message: `Le rapport planifié « ${label} » (${s.frequency}) est disponible sur ExpansionOS. Connectez-vous à la plateforme pour consulter les données à jour.`,
-              link: '/bi',
+              link: '/app/bi',
               type: 'bi_report',
             },
           },

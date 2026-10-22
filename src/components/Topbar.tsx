@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Bell, Plus, LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useMarkNotificationsRead, useMyNotifications } from '@/hooks/useMyNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityLog } from '@/hooks/useExpansionData';
 import { useTheme } from '@/hooks/useTheme';
@@ -40,6 +42,11 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
   const { data: activity = [] } = useActivityLog();
   const { isDark, toggleTheme } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifTab, setNotifTab] = useState<'mine' | 'activity'>('mine');
+  const { data: mine = [] } = useMyNotifications();
+  const markRead = useMarkNotificationsRead();
+  const navigate = useNavigate();
+  const unread = mine.filter(n => !n.is_read).length;
   const notifRef = useRef<HTMLDivElement>(null);
 
   const initials = user?.user_metadata?.full_name
@@ -92,19 +99,49 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
       <div className="relative" ref={notifRef}>
         <button
           onClick={() => setNotifOpen(prev => !prev)}
+          aria-label={unread ? `Notifications (${unread} non lues)` : 'Notifications'}
           className="relative w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
         >
           <Bell size={16} />
-          {activity.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border-[1.5px] border-card" />
+          {unread > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-destructive text-destructive-foreground text-[9.5px] font-bold rounded-full border-[1.5px] border-card flex items-center justify-center">{unread > 9 ? '9+' : unread}</span>
           )}
         </button>
 
         {notifOpen && (
           <div className="absolute right-0 top-[42px] w-[300px] sm:w-[340px] bg-card border border-border rounded-lg shadow-elevated z-50 overflow-hidden">
-            <div className="px-4 py-3 border-b border-border">
-              <h3 className="text-[13px] font-semibold text-primary">Activité récente</h3>
+            <div className="px-3 py-2 border-b border-border flex items-center gap-1">
+              {(['mine', 'activity'] as const).map(t => (
+                <button key={t} onClick={() => setNotifTab(t)} className={`px-2.5 py-1 rounded-md text-[12px] font-medium ${notifTab === t ? 'bg-muted text-primary' : 'text-muted-foreground hover:bg-muted/60'}`}>
+                  {t === 'mine' ? `Pour moi${unread ? ` (${unread})` : ''}` : 'Activité'}
+                </button>
+              ))}
+              {notifTab === 'mine' && unread > 0 && <button onClick={() => markRead.mutate('all')} className="ml-auto text-[11px] text-accent hover:underline">Tout marquer comme lu</button>}
             </div>
+            {notifTab === 'mine' && (
+              <div className="max-h-[360px] overflow-y-auto">
+                {mine.length === 0 && <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">Aucune notification</div>}
+                {mine.map(n => (
+                  <button key={n.id} type="button" className={`w-full text-left px-4 py-2.5 border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors ${n.is_read ? '' : 'bg-accent/5'}`}
+                    onClick={() => {
+                      if (!n.is_read) markRead.mutate([n.id]);
+                      setNotifOpen(false);
+                      const link = n.link || '';
+                      if (link) navigate(link.startsWith('/app') ? link : `/app${link.startsWith('/') ? '' : '/'}${link}`);
+                    }}>
+                    <div className="flex items-start gap-2">
+                      {!n.is_read && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />}
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-medium text-primary leading-snug">{n.title}</div>
+                        {n.message && <div className="text-[11.5px] text-muted-foreground line-clamp-2">{n.message}</div>}
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {notifTab === 'activity' && (
             <div className="max-h-[320px] overflow-y-auto">
               {activity.length === 0 && (
                 <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">Aucune activité</div>
@@ -121,6 +158,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
       </div>

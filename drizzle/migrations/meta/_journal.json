@@ -78,6 +78,13 @@
       "when": 1792691588634,
       "tag": "0010_reporting_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792692668478,
+      "tag": "0011_chat_notifications",
+      "breakpoints": true
     }
   ]
 }

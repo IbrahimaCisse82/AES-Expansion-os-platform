@@ -19,6 +19,8 @@ const NOTIF_TYPES = [
   { key: 'budget_overrun', label: 'Dépassement budgétaire (BI)' },
   { key: 'kpi_drop', label: 'Chute de KPI' },
   { key: 'monthly_report', label: 'Rapport mensuel' },
+  { key: 'report_submitted', label: 'Rapport A1–A12 à valider' },
+  { key: 'report_reviewed', label: 'Rapport A1–A12 validé / renvoyé' },
 ] as const;
 
 export { NOTIF_TYPES };
