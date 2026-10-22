@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react';
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { envById } from '@/lib/environments';
 import { useTcEngine } from '@/hooks/useTc';
 import { analysisPeriod } from '@/components/tc/tcPeriod';
 
@@ -19,63 +20,18 @@ const Capacity = lazy(() => import('@/components/tc/TcStock').then(m => ({ defau
 const Referentials = lazy(() => import('@/components/tc/TcReferentials').then(m => ({ default: m.TcReferentials })));
 const Raci = lazy(() => import('@/components/tc/TcReferentials').then(m => ({ default: m.TcRaci })));
 
-/** Organisation du classeur : pilotage · saisie commerciale · kits · stock & achats · référentiels. */
-export const TC_NAV: { group: string; items: { path: string; label: string }[] }[] = [
-  { group: 'Pilotage', items: [
-    { path: 'dg', label: 'Tableau DG' },
-    { path: 'performance', label: 'Performance équipes' },
-    { path: 'marges', label: 'Marges & encaissements' },
-    { path: 'commissions', label: 'Commissions & prévisions' },
-    { path: 'analyses', label: 'Analyses mensuelles' },
-  ] },
-  { group: 'Saisie commerciale', items: [
-    { path: 'ventes', label: 'Journal des ventes' },
-    { path: 'objectifs', label: 'Objectifs' },
-  ] },
-  { group: 'Kits', items: [
-    { path: 'kits', label: 'Modélisation des kits' },
-    { path: 'synthese', label: 'Synthèse des kits' },
-  ] },
-  { group: 'Stock & achats', items: [
-    { path: 'stock', label: 'Stock' },
-    { path: 'achats', label: 'Besoins & achats' },
-    { path: 'dormant', label: 'Stock dormant' },
-    { path: 'capacite', label: 'Capacité' },
-  ] },
-  { group: 'Référentiels', items: [
-    { path: 'referentiels', label: 'Paramètres & référentiels' },
-    { path: 'raci', label: 'Matrice RACI' },
-  ] },
-];
-
 export default function TechnicoCommercialPage() {
   const { engine, isLoading, error } = useTcEngine();
   const period = useMemo(() => (engine ? analysisPeriod(engine) : null), [engine]);
+  const { pathname } = useLocation();
+  const title = envById('tc').nav.flatMap(g => g.items).find(i => pathname.startsWith(i.path))?.label ?? 'Technico-commercial';
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold">Technico-commercial</h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          Kits, devis, ventes, encaissements, stock et achats — remplace le classeur « Tableau de bord technico-commercial ».
-        </p>
+        <h1 className="text-xl font-bold">{title}</h1>
+        <p className="text-xs text-muted-foreground mt-1">Technico-commercial — remplace le classeur « Tableau de bord technico-commercial ».</p>
       </div>
-
-      <nav aria-label="Technico-commercial" className="flex flex-wrap gap-x-6 gap-y-2 border-b border-border pb-3">
-        {TC_NAV.map(g => (
-          <div key={g.group} className="flex flex-col gap-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{g.group}</span>
-            <div className="flex flex-wrap gap-1">
-              {g.items.map(i => (
-                <NavLink key={i.path} to={i.path}
-                  className={({ isActive }) => `text-xs px-2.5 py-1 rounded-md transition-colors ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-foreground'}`}>
-                  {i.label}
-                </NavLink>
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
 
       {error ? (
         <p className="text-sm text-destructive py-10 text-center">Impossible de charger les données : {(error as Error).message}</p>

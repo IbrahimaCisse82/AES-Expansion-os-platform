@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ReferenceLine } from 'recharts';
-import { Download, Wand2 } from 'lucide-react';
+import { ArrowRight, Download, Wand2 } from 'lucide-react';
+import { envById } from '@/lib/environments';
+import { useReports, STATUS_LABEL } from '@/hooks/useReporting';
+import { periodLabel } from '@/lib/reporting/templates';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useFinCan, useFinData, useFinMutation, must, scenarioName, type FinData } from '@/hooks/useFin';
@@ -396,6 +399,72 @@ function OfficialKpis({ data, year, canEdit, auto }: { data: FinData; year: numb
 }
 
 // ---------------------------------------------------------------------
+// Vue d'ensemble (accueil de l'environnement Finance)
+// ---------------------------------------------------------------------
+function FinanceOverview({ data, year, consolidated, auto, suggestions }: {
+  data: FinData; year: number; consolidated: ReturnType<typeof poleGrid> | null;
+  auto: (month: string) => Record<string, number | null>; suggestions: { treasury: Record<string, number[]>; pnlActual: Record<string, number> };
+}) {
+  const t = useMemo(() => treasury(data.treasuryLines, data.treasuryValues, Number(data.treasuryYear?.opening_balance ?? 0), Number(data.treasuryYear?.min_threshold ?? 0)), [data]);
+  const r = useMemo(() => pnl(data.pnlLines, data.pnlValues), [data]);
+  const now = new Date();
+  const month = `${year}-${String(now.getFullYear() === year ? now.getMonth() + 1 : 12).padStart(2, '0')}-01`;
+  const computed = useMemo(() => auto(month), [auto, month]);
+  const statuses = data.kpis.map(k => {
+    const v = data.kpiValues.find(x => x.kpi_code === k.code && x.month === month);
+    const actual = v?.actual ?? computed[k.code] ?? null;
+    return { k, status: kpiStatus(k.direction as KpiDirection, v?.target == null ? null : Number(v.target), actual == null ? null : Number(actual)) };
+  });
+  const alerts = statuses.filter(s => s.status === '🔴 Alerte');
+  const lastMonth = t.encM.reduce((last, v, i) => (v || t.decM[i] ? i : last), -1);
+  const below = t.belowThreshold.filter((b, i) => b && i <= lastMonth).length;
+  const toImport = Object.values(suggestions.treasury).flat().reduce((a, b) => a + b, 0);
+  const { data: reports } = useReports();
+  const a4 = (reports ?? []).filter(x => x.template_code === 'A4').slice(0, 3);
+  const card = (to: string, label: string, value: string, hint?: string, tone?: string) => (
+    <Link to={to} className="block rounded-lg border bg-card p-4 hover:bg-muted/40 transition-colors">
+      <div className="text-[10.5px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`text-lg font-bold mt-1 ${tone ?? ''}`}>{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>}
+    </Link>
+  );
+  return (
+    <div className="space-y-4">
+      {!data.scenario && <div className="rounded-md border border-[hsl(var(--gold))]/50 bg-[hsl(var(--gold))]/10 p-3 text-xs">L'exercice {year} n'est pas encore ouvert : <Link to="/app/finance/budgets" className="underline font-medium">l'ouvrir dans Budgets par pôle</Link>.</div>}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+        {card('/app/finance/budgets', 'Exécution budgétaire', pct(consolidated?.total.rate ?? null, 1), consolidated ? `${moneyShort(consolidated.total.actual)} / ${moneyShort(consolidated.total.budget)}` : undefined, (consolidated?.total.rate ?? 0) > 1 ? 'text-destructive' : undefined)}
+        {card('/app/finance/tresorerie', 'Trésorerie fin de mois', lastMonth >= 0 ? money(t.closingM[lastMonth]) : '—', below ? `${below} mois sous le seuil` : 'au-dessus du seuil', below ? 'text-destructive' : undefined)}
+        {card('/app/finance/resultat', 'Résultat net (réalisé)', money(r.net.actual), `CA ${moneyShort(r.ca.actual)} · marge nette ${pct(r.netRate.actual, 1)}`, r.net.actual < 0 ? 'text-destructive' : undefined)}
+        {card('/app/finance/kpi', 'KPI en alerte', String(alerts.length), `${statuses.filter(s => s.status === '✅ Atteint').length} atteints · ${statuses.filter(s => s.status === '— À saisir').length} à saisir`, alerts.length ? 'text-destructive' : undefined)}
+      </div>
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Section title="KPI en alerte" description={`Mois de ${periodLabel(month.slice(0, 7))}`}>
+          {alerts.length === 0 ? <p className="text-xs text-muted-foreground">Aucun KPI en alerte.</p> : (
+            <ul className="space-y-1.5">{alerts.map(a => <li key={a.k.code} className="text-xs flex gap-2"><Badge variant="outline" className="text-[10px]">{a.k.code}</Badge>{a.k.label}</li>)}</ul>
+          )}
+        </Section>
+        <Section title="Liens avec les autres environnements">
+          <ul className="space-y-2 text-xs">
+            <li className="flex items-center justify-between gap-3">
+              <span>Encaissements du journal des ventes non encore repris en trésorerie</span>
+              <Link to="/app/finance/tresorerie" className="inline-flex items-center gap-1 font-medium text-accent whitespace-nowrap">{moneyShort(toImport)} <ArrowRight className="h-3 w-3" /></Link>
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Ventes, marges et créances clients (Technico-commercial)</span>
+              <Link to="/app/tc/marges" className="inline-flex items-center gap-1 font-medium text-accent whitespace-nowrap">Ouvrir <ArrowRight className="h-3 w-3" /></Link>
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Rapport mensuel administratif & financier (A4){a4[0] ? ` — dernier : ${periodLabel(a4[0].period)}, ${STATUS_LABEL[a4[0].status].toLowerCase()}` : ' — aucun rédigé'}</span>
+              <Link to={a4[0] ? `/app/reporting/${a4[0].id}` : '/app/reporting/nouveau/A4'} className="inline-flex items-center gap-1 font-medium text-accent whitespace-nowrap">{a4[0] ? 'Ouvrir' : 'Rédiger'} <ArrowRight className="h-3 w-3" /></Link>
+            </li>
+          </ul>
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------
 export default function FinancePage() {
@@ -404,6 +473,8 @@ export default function FinancePage() {
   const { data, isLoading, error } = useFinData(year);
   const tc = useTcEngine();
   const can = useFinCan();
+  const { pathname } = useLocation();
+  const title = [...envById('finance').nav[0].items].reverse().find(i => pathname.startsWith(i.path))?.label ?? 'Finance';
 
   const openYear = useFinMutation(async () => {
     await must(supabase.from('budget_scenarios').insert({ name: scenarioName(year), fiscal_year: year, description: 'Budget AES par pôle (plan de comptes du classeur financier)', is_baseline: true }));
@@ -421,8 +492,8 @@ export default function FinancePage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold">Finance</h1>
-          <p className="text-xs text-muted-foreground mt-1">Budgets par pôle, consolidation, trésorerie, compte de résultat et KPI officiels — remplace le classeur financier AES.</p>
+          <h1 className="text-xl font-bold">{title}</h1>
+          <p className="text-xs text-muted-foreground mt-1">Finance — remplace le classeur financier AES.</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Exercice</span>
@@ -436,26 +507,20 @@ export default function FinancePage() {
       {error ? <p className="text-sm text-destructive py-10 text-center">Impossible de charger les données : {(error as Error).message}</p>
         : isLoading || !data ? <p className="text-sm text-muted-foreground py-10 text-center">Chargement…</p>
         : (
-          <Tabs defaultValue="poles">
-            <TabsList className="flex flex-wrap h-auto gap-1">
-              <TabsTrigger value="poles" className="text-xs">Budgets par pôle</TabsTrigger>
-              <TabsTrigger value="treasury" className="text-xs">Trésorerie</TabsTrigger>
-              <TabsTrigger value="pnl" className="text-xs">Compte de résultat</TabsTrigger>
-              <TabsTrigger value="kpi" className="text-xs">KPI officiels</TabsTrigger>
-            </TabsList>
-            <TabsContent value="poles" className="mt-4">
-              {data.scenario ? <PoleBudgets data={data} year={year} canEdit={can.finance} /> : (
-                <Section title={`Exercice ${year} non ouvert`} description="Ouvrir l'exercice crée le budget de référence dans lequel chaque pôle saisit son budget et son réalisé.">
-                  {can.openYear
-                    ? <Button size="sm" className="h-8 text-xs" onClick={() => openYear.mutate(undefined, { onSuccess: () => toast.success(`Exercice ${year} ouvert`), onError: (e: Error) => toast.error(e.message) })}>Ouvrir l'exercice {year}</Button>
-                    : <p className="text-sm text-muted-foreground">Demandez à la direction ou au RAF d'ouvrir l'exercice.</p>}
-                </Section>
-              )}
-            </TabsContent>
-            <TabsContent value="treasury" className="mt-4"><Treasury data={data} year={year} canEdit={can.finance} suggestions={suggestions.treasury} /></TabsContent>
-            <TabsContent value="pnl" className="mt-4"><ProfitAndLoss data={data} year={year} canEdit={can.finance} suggestions={suggestions.pnlActual} /></TabsContent>
-            <TabsContent value="kpi" className="mt-4"><OfficialKpis data={data} year={year} canEdit={can.kpi} auto={auto} /></TabsContent>
-          </Tabs>
+          <Routes>
+            <Route index element={<FinanceOverview data={data} year={year} consolidated={consolidated} auto={auto} suggestions={suggestions} />} />
+            <Route path="budgets" element={data.scenario ? <PoleBudgets data={data} year={year} canEdit={can.finance} /> : (
+              <Section title={`Exercice ${year} non ouvert`} description="Ouvrir l'exercice crée le budget de référence dans lequel chaque pôle saisit son budget et son réalisé.">
+                {can.openYear
+                  ? <Button size="sm" className="h-8 text-xs" onClick={() => openYear.mutate(undefined, { onSuccess: () => toast.success(`Exercice ${year} ouvert`), onError: (e: Error) => toast.error(e.message) })}>Ouvrir l'exercice {year}</Button>
+                  : <p className="text-sm text-muted-foreground">Demandez à la direction ou au RAF d'ouvrir l'exercice.</p>}
+              </Section>
+            )} />
+            <Route path="tresorerie" element={<Treasury data={data} year={year} canEdit={can.finance} suggestions={suggestions.treasury} />} />
+            <Route path="resultat" element={<ProfitAndLoss data={data} year={year} canEdit={can.finance} suggestions={suggestions.pnlActual} />} />
+            <Route path="kpi" element={<OfficialKpis data={data} year={year} canEdit={can.kpi} auto={auto} />} />
+            <Route path="*" element={<Navigate to="/app/finance" replace />} />
+          </Routes>
         )}
     </div>
   );

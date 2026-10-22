@@ -3,9 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMyCountryScope } from './useUserRoles';
 import { fetchAllRows } from '@/lib/fetchAll';
 
-export function useCountries() {
+export function useCountries(opts: { enabled?: boolean } = {}) {
   const { data: scope } = useMyCountryScope();
   return useQuery({
+    enabled: opts.enabled ?? true,
     queryKey: ['countries', scope ?? 'all'],
     queryFn: async () => {
       let query = supabase
@@ -31,9 +32,10 @@ export function useMilestones(countryId?: string | null) {
   });
 }
 
-export function useTasks() {
+export function useTasks(opts: { enabled?: boolean } = {}) {
   const { data: scope } = useMyCountryScope();
   return useQuery({
+    enabled: opts.enabled ?? true,
     queryKey: ['tasks', scope ?? 'all'],
     queryFn: async () => {
       let query = supabase
@@ -47,9 +49,10 @@ export function useTasks() {
   });
 }
 
-export function useRisks() {
+export function useRisks(opts: { enabled?: boolean } = {}) {
   const { data: scope } = useMyCountryScope();
   return useQuery({
+    enabled: opts.enabled ?? true,
     queryKey: ['risks', scope ?? 'all'],
     queryFn: async () => {
       let query = supabase

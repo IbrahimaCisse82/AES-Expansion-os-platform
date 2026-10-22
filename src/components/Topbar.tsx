@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Bell, Plus, LogOut, Menu, Moon, Sun } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ENVIRONMENTS, envForPath, envById } from '@/lib/environments';
 import { useMarkNotificationsRead, useMyNotifications } from '@/hooks/useMyNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityLog } from '@/hooks/useExpansionData';
@@ -46,6 +47,14 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
   const { data: mine = [] } = useMyNotifications();
   const markRead = useMarkNotificationsRead();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const title = (() => {
+    const env = envForPath(pathname);
+    if (!env) return pageNames[activePage] || activePage;
+    const items = ENVIRONMENTS.flatMap(e => e.nav.flatMap(g => g.items)).filter(i => pathname === i.path || pathname.startsWith(`${i.path}/`)).sort((a, b) => b.path.length - a.path.length);
+    const label = items[0]?.label ?? pageNames[activePage] ?? activePage;
+    return env === 'expansion' ? label : `${envById(env).label} · ${label}`;
+  })();
   const unread = mine.filter(n => !n.is_read).length;
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +80,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
       </button>
 
       <h1 className="font-display text-base lg:text-lg font-semibold text-primary flex-1 truncate">
-        {pageNames[activePage] || activePage}
+        {title}
       </h1>
 
       <div className="relative hidden sm:block">

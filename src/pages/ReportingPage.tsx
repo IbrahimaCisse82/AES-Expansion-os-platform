@@ -17,11 +17,14 @@ function expected() {
   }));
 }
 
-export function ReportingHome({ embedded = false }: { embedded?: boolean }) {
+type View = 'overview' | 'review' | 'mine' | 'templates';
+const VIEW_TITLE: Record<View, string> = { overview: "Reporting — vue d'ensemble", review: 'Rapports à valider', mine: 'Mes rapports', templates: 'Nouveau rapport (A1–A12)' };
+
+export function ReportingHome({ embedded = false, view = 'overview' }: { embedded?: boolean; view?: View }) {
   const navigate = useNavigate();
   const me = useReportingRole();
   const { data: reports, isLoading, error } = useReports();
-  const [tab, setTab] = useState<'mine' | 'review' | 'all'>('all');
+  const tab = view === 'review' ? 'review' : view === 'mine' ? 'mine' : 'all';
   const toReview = (reports ?? []).filter(r => r.status === 'submitted' && canReview(me.role, r.template_code));
   const shown = useMemo(() => (reports ?? []).filter(r => tab === 'all' || (tab === 'mine' ? r.author_id === me.userId : r.status === 'submitted' && canReview(me.role, r.template_code))), [reports, tab, me]);
   const open = (r: Report) => navigate(`/app/reporting/${r.id}`);
@@ -30,11 +33,11 @@ export function ReportingHome({ embedded = false }: { embedded?: boolean }) {
     <div className="space-y-4">
       {!embedded && (
         <div>
-          <h1 className="text-xl font-bold">Reporting</h1>
+          <h1 className="text-xl font-bold">{VIEW_TITLE[view]}</h1>
           <p className="text-xs text-muted-foreground mt-1">Les 12 rapports normalisés du classeur AES (A1–A12) : rédaction, pré-remplissage depuis la plateforme, validation par la direction et export PDF.</p>
         </div>
       )}
-      <Section title="À produire" description="Rapports périodiques attendus pour la dernière période écoulée.">
+      {view === 'overview' && <Section title="À produire" description="Rapports périodiques attendus pour la dernière période écoulée.">
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-2">
           {expected().map(({ t, period }) => {
             const existing = (reports ?? []).find(r => r.template_code === t.code && r.period === period);
@@ -48,17 +51,9 @@ export function ReportingHome({ embedded = false }: { embedded?: boolean }) {
             );
           })}
         </div>
-      </Section>
+      </Section>}
 
-      <Section title="Rapports" actions={
-        <Tabs value={tab} onValueChange={v => setTab(v as typeof tab)}>
-          <TabsList className="h-8">
-            <TabsTrigger value="all" className="text-xs">Tous</TabsTrigger>
-            <TabsTrigger value="mine" className="text-xs">Mes rapports</TabsTrigger>
-            <TabsTrigger value="review" className="text-xs">À valider{toReview.length ? ` (${toReview.length})` : ''}</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      }>
+      {view !== 'templates' && <Section title={view === 'review' ? `À valider (${toReview.length})` : view === 'mine' ? 'Rapports que j\'ai rédigés' : 'Tous les rapports'}>
         {error ? <p className="text-sm text-destructive">{(error as Error).message}</p> : (
           <div className="overflow-x-auto">
             <Table>
@@ -75,14 +70,14 @@ export function ReportingHome({ embedded = false }: { embedded?: boolean }) {
                     <TableCell className="text-xs whitespace-nowrap">{new Date(r.updated_at).toLocaleDateString('fr-FR')}</TableCell>
                   </TableRow>
                 ))}
-                {!isLoading && shown.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-8">Aucun rapport.</TableCell></TableRow>}
+                {!isLoading && shown.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-8">{view === 'review' ? 'Aucun rapport en attente de validation.' : 'Aucun rapport.'}</TableCell></TableRow>}
               </TableBody>
             </Table>
           </div>
         )}
-      </Section>
+      </Section>}
 
-      <Section title="Modèles A1–A12" description="Reprise fidèle des onglets du classeur financier AES.">
+      {(view === 'templates' || embedded) && <Section title="Modèles A1–A12" description="Reprise fidèle des onglets du classeur financier AES.">
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-2">
           {REPORT_TEMPLATES.map(t => (
             <div key={t.code} className="rounded-md border p-3 flex flex-col">
@@ -95,7 +90,7 @@ export function ReportingHome({ embedded = false }: { embedded?: boolean }) {
             </div>
           ))}
         </div>
-      </Section>
+      </Section>}
     </div>
   );
 }
@@ -124,6 +119,9 @@ export default function ReportingPage() {
   return (
     <Routes>
       <Route index element={<ReportingHome />} />
+      <Route path="a-valider" element={<ReportingHome view="review" />} />
+      <Route path="mes-rapports" element={<ReportingHome view="mine" />} />
+      <Route path="modeles" element={<ReportingHome view="templates" />} />
       <Route path="nouveau/:code" element={<NewReport />} />
       <Route path=":id" element={<ExistingReport />} />
     </Routes>
