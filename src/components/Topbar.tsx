@@ -22,6 +22,7 @@ const pageNames: Record<string, string> = {
   bi: 'Business Intelligence',
   tc: 'Technico-commercial',
   finance: 'Finance AES',
+  reporting: 'Reporting AES',
 };
 
 const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries', 'roadmap'];

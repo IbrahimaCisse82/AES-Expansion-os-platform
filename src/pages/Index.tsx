@@ -31,6 +31,7 @@ const MarketAnalysisPage = lazy(() => import('@/pages/MarketAnalysisPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const TechnicoCommercialPage = lazy(() => import('@/pages/TechnicoCommercialPage'));
 const FinancePage = lazy(() => import('@/pages/FinancePage'));
+const ReportingPage = lazy(() => import('@/pages/ReportingPage'));
 
 const Index = () => {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ const Index = () => {
         mobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
       />
-      <main className="lg:ml-[248px] flex-1 flex flex-col min-h-screen">
+      <main className="lg:ml-[248px] flex-1 min-w-0 flex flex-col min-h-screen">
         <Topbar
           activePage={activePage}
           onAdd={handleAdd}
@@ -82,7 +83,7 @@ const Index = () => {
           onSearchChange={setSearchQuery}
           onMenuToggle={() => setMobileMenuOpen(prev => !prev)}
         />
-        <div className="p-4 lg:p-8 flex-1">
+        <div className="p-4 lg:p-8 flex-1 min-w-0">
           <Suspense fallback={<div className="text-muted-foreground text-sm">Chargement…</div>}>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
@@ -93,6 +94,7 @@ const Index = () => {
             <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/tc/*" element={<TechnicoCommercialPage />} />
             <Route path="/finance" element={<FinancePage />} />
+            <Route path="/reporting/*" element={<ReportingPage />} />
             <Route path="/bi" element={<RequireBiAccess><BiPage /></RequireBiAccess>} />
             <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />

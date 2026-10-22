@@ -1,4 +1,4 @@
-import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X, PieChart, Zap, Landmark } from 'lucide-react';
+import { LayoutDashboard, Map, Globe, ListTodo, Calendar, ChartBar as BarChart3, Wallet, TriangleAlert as AlertTriangle, MessageSquare, Clock, Users, ChevronRight, Settings, User, X, PieChart, Zap, Landmark, FileText } from 'lucide-react';
 import { useCountries, useTasks, useRisks } from '@/hooks/useExpansionData';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { canAccessBi } from '@/lib/biAccess';
@@ -18,6 +18,7 @@ const navItems: NavItem[] = [
   { id: 'countries', label: 'Pays Cibles', icon: <Globe size={16} />, badgeKey: 'countries' },
   { id: 'tc', label: 'Technico-commercial', icon: <Zap size={16} />, section: 'AES — OPÉRATIONS' },
   { id: 'finance', label: 'Finance', icon: <Landmark size={16} /> },
+  { id: 'reporting', label: 'Reporting', icon: <FileText size={16} /> },
   { id: 'tasks', label: 'Tâches', icon: <ListTodo size={16} />, badgeKey: 'tasks', section: 'OPÉRATIONS' },
   { id: 'calendar', label: 'Calendrier', icon: <Calendar size={16} /> },
   { id: 'kpis', label: 'KPIs', icon: <BarChart3 size={16} />, section: 'ANALYSE' },

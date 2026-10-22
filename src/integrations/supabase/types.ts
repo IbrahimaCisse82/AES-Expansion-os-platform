@@ -174,8 +174,12 @@ export type Database = {
           id: string
           period: string
           pole_id: string | null
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           sent_at: string | null
           status: string
+          submitted_at: string | null
           template_code: string
           title: string
           updated_at: string
@@ -189,8 +193,12 @@ export type Database = {
           id?: string
           period?: string
           pole_id?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sent_at?: string | null
           status?: string
+          submitted_at?: string | null
           template_code: string
           title: string
           updated_at?: string
@@ -204,8 +212,12 @@ export type Database = {
           id?: string
           period?: string
           pole_id?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sent_at?: string | null
           status?: string
+          submitted_at?: string | null
           template_code?: string
           title?: string
           updated_at?: string
@@ -3506,6 +3518,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      report_can_review: {
+        Args: { _template: string; _uid: string }
+        Returns: boolean
       }
       user_scope_country: { Args: { _user_id: string }; Returns: string }
     }
