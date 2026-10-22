@@ -30,6 +30,7 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const MarketAnalysisPage = lazy(() => import('@/pages/MarketAnalysisPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const TechnicoCommercialPage = lazy(() => import('@/pages/TechnicoCommercialPage'));
+const FinancePage = lazy(() => import('@/pages/FinancePage'));
 
 const Index = () => {
   const navigate = useNavigate();
@@ -91,6 +92,7 @@ const Index = () => {
             <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/tc/*" element={<TechnicoCommercialPage />} />
+            <Route path="/finance" element={<FinancePage />} />
             <Route path="/bi" element={<RequireBiAccess><BiPage /></RequireBiAccess>} />
             <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />

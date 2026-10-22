@@ -11,7 +11,7 @@ def q(sql):
     return [json.loads(l) for l in out.splitlines() if l.strip()]
 
 TS = {'text': 'string', 'uuid': 'string', 'date': 'string', 'timestamp with time zone': 'string',
-      'numeric': 'number', 'integer': 'number', 'bigint': 'number', 'boolean': 'boolean', 'jsonb': 'Json', 'json': 'Json'}
+      'numeric': 'number', 'integer': 'number', 'smallint': 'number', 'bigint': 'number', 'real': 'number', 'double precision': 'number', 'boolean': 'boolean', 'jsonb': 'Json', 'json': 'Json'}
 
 def table(t):
     cols = q(f"""select row_to_json(c) from (select column_name, data_type, udt_name, is_nullable='YES' n,

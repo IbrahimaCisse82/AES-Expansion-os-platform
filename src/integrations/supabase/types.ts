@@ -422,6 +422,7 @@ export type Database = {
       }
       budget_categories: {
         Row: {
+          code: string | null
           created_at: string
           id: string
           is_system: boolean
@@ -431,6 +432,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          code?: string | null
           created_at?: string
           id?: string
           is_system?: boolean
@@ -440,6 +442,7 @@ export type Database = {
           type?: string
         }
         Update: {
+          code?: string | null
           created_at?: string
           id?: string
           is_system?: boolean
@@ -1744,6 +1747,254 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      fin_kpi_values: {
+        Row: {
+          actual: number | null
+          comment: string | null
+          country_id: string | null
+          id: string
+          kpi_code: string
+          month: string
+          target: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          actual?: number | null
+          comment?: string | null
+          country_id?: string | null
+          id?: string
+          kpi_code: string
+          month: string
+          target?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          actual?: number | null
+          comment?: string | null
+          country_id?: string | null
+          id?: string
+          kpi_code?: string
+          month?: string
+          target?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_kpi_values_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_kpi_values_kpi_code_fkey"
+            columns: ["kpi_code"]
+            isOneToOne: false
+            referencedRelation: "fin_kpis"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      fin_kpis: {
+        Row: {
+          category: string
+          code: string
+          direction: string
+          label: string
+          sort_order: number
+          unit: string
+        }
+        Insert: {
+          category: string
+          code: string
+          direction: string
+          label: string
+          sort_order: number
+          unit: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          direction?: string
+          label?: string
+          sort_order?: number
+          unit?: string
+        }
+        Relationships: [
+        ]
+      }
+      fin_pnl_lines: {
+        Row: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          section?: string
+          sort_order?: number
+        }
+        Relationships: [
+        ]
+      }
+      fin_pnl_values: {
+        Row: {
+          actual: number
+          budget: number
+          country_id: string | null
+          fiscal_year: number
+          id: string
+          line_code: string
+          updated_at: string
+        }
+        Insert: {
+          actual?: number
+          budget?: number
+          country_id?: string | null
+          fiscal_year: number
+          id?: string
+          line_code: string
+          updated_at?: string
+        }
+        Update: {
+          actual?: number
+          budget?: number
+          country_id?: string | null
+          fiscal_year?: number
+          id?: string
+          line_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_pnl_values_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_pnl_values_line_code_fkey"
+            columns: ["line_code"]
+            isOneToOne: false
+            referencedRelation: "fin_pnl_lines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      fin_treasury_lines: {
+        Row: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          section?: string
+          sort_order?: number
+        }
+        Relationships: [
+        ]
+      }
+      fin_treasury_values: {
+        Row: {
+          amount: number
+          country_id: string | null
+          fiscal_year: number
+          id: string
+          line_code: string
+          month: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          country_id?: string | null
+          fiscal_year: number
+          id?: string
+          line_code: string
+          month: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          country_id?: string | null
+          fiscal_year?: number
+          id?: string
+          line_code?: string
+          month?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_treasury_values_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_treasury_values_line_code_fkey"
+            columns: ["line_code"]
+            isOneToOne: false
+            referencedRelation: "fin_treasury_lines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      fin_treasury_years: {
+        Row: {
+          country_id: string | null
+          fiscal_year: number
+          id: string
+          min_threshold: number
+          opening_balance: number
+          updated_at: string
+        }
+        Insert: {
+          country_id?: string | null
+          fiscal_year: number
+          id?: string
+          min_threshold?: number
+          opening_balance?: number
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string | null
+          fiscal_year?: number
+          id?: string
+          min_threshold?: number
+          opening_balance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_treasury_years_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kpi_history: {
         Row: {
@@ -3189,6 +3440,7 @@ export type Database = {
     }
     Functions: {
       tc_can: { Args: { _perm: string }; Returns: boolean }
+      fin_can: { Args: { _perm: string }; Returns: boolean }
       approver_user_ids: {
         Args: never
         Returns: {
