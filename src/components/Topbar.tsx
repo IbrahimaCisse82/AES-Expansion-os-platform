@@ -20,6 +20,7 @@ const pageNames: Record<string, string> = {
   settings: 'Paramètres',
   'country-detail': 'Fiche Pays',
   bi: 'Business Intelligence',
+  tc: 'Technico-commercial',
 };
 
 const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries', 'roadmap'];

@@ -136,7 +136,7 @@ export function marginRow(key: string, label: string, rows: SaleCalc[]): MarginR
     revenueHT, cost, grossMargin,
     grossMarginRate: revenueHT === 0 ? 0 : grossMargin / revenueHT,
     revenueTTC, collected,
-    remaining: sum(rows, s => s.remaining ?? 0),
+    remaining: sum(rows, s => Math.max(0, s.remaining ?? 0)),
     collectedRate: revenueTTC === 0 ? 0 : collected / revenueTTC,
     overdueAmount: sum(overdue, s => s.remaining ?? 0),
     overdueCount: overdue.length,
@@ -502,7 +502,7 @@ export function dgDashboard(input: {
   const collectedMonth = sum(sales, s =>
     (s.sale.deposit_date && s.sale.deposit_date >= month && s.sale.deposit_date <= monthEnd ? s.sale.deposit_amount : 0)
     + (s.sale.balance_date && s.sale.balance_date >= month && s.sale.balance_date <= monthEnd ? s.sale.balance_amount : 0));
-  const receivable = sum(sales, s => s.remaining ?? 0);
+  const receivable = sum(sales, s => Math.max(0, s.remaining ?? 0));
   const overdue = sales.filter(s => (s.daysLate ?? 0) > 0 && (s.remaining ?? 0) > 0);
   const overdueAmount = sum(overdue, s => s.remaining ?? 0);
   const soldNotDelivered = sales.filter(s => s.status === 'Vendu');

@@ -29,6 +29,7 @@ const RoadmapPage = lazy(() => import('@/pages/RoadmapPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const MarketAnalysisPage = lazy(() => import('@/pages/MarketAnalysisPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const TechnicoCommercialPage = lazy(() => import('@/pages/TechnicoCommercialPage'));
 
 const Index = () => {
   const navigate = useNavigate();
@@ -89,6 +90,7 @@ const Index = () => {
             <Route path="/countries/:countryId" element={<CountryDetailPage onBack={handleBackFromCountry} />} />
             <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/tc/*" element={<TechnicoCommercialPage />} />
             <Route path="/bi" element={<RequireBiAccess><BiPage /></RequireBiAccess>} />
             <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
             <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />
