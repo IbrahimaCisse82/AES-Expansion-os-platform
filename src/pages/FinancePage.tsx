@@ -170,7 +170,7 @@ function Treasury({ data, year, canEdit, suggestions }: { data: FinData; year: n
       </div>
       <Section title={`Trésorerie mensuelle — ${year}`} description="Mouvements réels du mois ; la dernière colonne est la prévision annuelle (budget)."
         actions={canEdit && suggestedTotal > 0 ? (
-          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => applySuggestions.mutate(undefined, { onSuccess: () => toast.success('Encaissements du journal des ventes repris'), onError: err })}>
+          <Button size="sm" variant="outline" className="min-h-8 h-auto py-1.5 whitespace-normal text-left text-xs gap-1.5" onClick={() => applySuggestions.mutate(undefined, { onSuccess: () => toast.success('Encaissements du journal des ventes repris'), onError: err })}>
             <Wand2 className="h-3.5 w-3.5" />Reprendre les encaissements du journal ({moneyShort(suggestedTotal)})
           </Button>
         ) : undefined}>
@@ -272,7 +272,7 @@ function ProfitAndLoss({ data, year, canEdit, suggestions }: { data: FinData; ye
       </div>
       <Section title={`Compte de résultat — budget vs réalisé ${year}`} description="% réalisé = réalisé / budget. Résultat net = résultat avant impôt − ITS."
         actions={canEdit && Object.keys(suggestions).length > 0 ? (
-          <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" onClick={() => apply.mutate(undefined, { onSuccess: () => toast.success('Réalisé repris des ventes et des pôles'), onError: err })}>
+          <Button size="sm" variant="outline" className="min-h-8 h-auto py-1.5 whitespace-normal text-left text-xs gap-1.5" onClick={() => apply.mutate(undefined, { onSuccess: () => toast.success('Réalisé repris des ventes et des pôles'), onError: err })}>
             <Wand2 className="h-3.5 w-3.5" />Reprendre le réalisé (ventes + pôles)
           </Button>
         ) : undefined}>

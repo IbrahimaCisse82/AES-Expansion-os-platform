@@ -123,7 +123,7 @@ async def tour(browser, key):
         leaks = []
         for e in denied:
             await a.go(ENV_NAV[e][1] if len(ENV_NAV[e]) > 1 else ENV_NAV[e][0], 900)
-            if a.path().startswith(ENV_NAV[e][0].rsplit('/', 1)[0] if e != 'expansion' else '/app/roadmap'): leaks.append(e)
+            if env_of(a.path()) == e: leaks.append(f'{e} ({a.path()})')
         if denied: check(sec, key, f'accès refusé à {", ".join(ENV_LABEL[e] for e in denied)} (redirection)', not leaks, leaks)
         # Droits d'édition visibles
         if 'tc' in envs:
@@ -310,7 +310,7 @@ async def chat_flow(browser):
         await msg.hover()
         await msg.locator('xpath=ancestor::div[.//button[@title="Répondre"]][1]').locator('button[title="Répondre"]').first.click()
         await a.page.get_by_placeholder('Répondre dans le thread…').fill('Bien reçu, merci')
-        await a.page.get_by_role('button', name='Répondre', exact=True).click(); await a.page.wait_for_timeout(1500)
+        await a.page.locator('button:not([title])', has_text='Répondre').click(); await a.page.wait_for_timeout(1500)
         rep = sql(f"select count(*) from notifications where user_id='{USERS['sales_rep']['id']}' and type='comment_reply'")
         check(sec, 'sales_rep', 'l’auteur est notifié de la réponse', int(rep or 0) >= 1, rep, await a.shot('discussion'))
 

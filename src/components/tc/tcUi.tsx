@@ -71,12 +71,12 @@ export function objectiveClass(v: number | null | undefined) {
 export function Section({ title, description, actions, children }: { title: string; description?: string; actions?: ReactNode; children: ReactNode }) {
   return (
     <Card>
-      <CardHeader className="pb-2 flex flex-row items-start justify-between gap-3 space-y-0">
+      <CardHeader className="pb-2 flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
         <div>
           <CardTitle className="text-sm">{title}</CardTitle>
           {description && <p className="text-[11.5px] text-muted-foreground mt-1">{description}</p>}
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2 max-w-full">{actions}</div>}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>

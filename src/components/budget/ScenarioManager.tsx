@@ -105,10 +105,14 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
           const cfg = STATUS_CONFIG[s.status];
           const isActive = s.id === activeScenarioId;
           return (
-            <button
+            <div
               key={s.id}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isActive}
               onClick={() => onSelect(s.id)}
-              className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all border ${
+              onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); onSelect(s.id); } }}
+              className={`cursor-pointer shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                 isActive
                   ? 'border-primary bg-primary/5 text-primary shadow-sm'
                   : 'border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -121,7 +125,7 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
               </span>
               {canWrite && isActive && s.status !== 'locked' && (
                 <Select value={s.status} onValueChange={v => handleStatusChange(s.id, v)}>
-                  <SelectTrigger className="h-5 w-5 p-0 border-0 bg-transparent [&>svg]:hidden">
+                  <SelectTrigger onClick={e => e.stopPropagation()} className="h-5 w-5 p-0 border-0 bg-transparent [&>svg]:hidden">
                     <span className="sr-only">Statut</span>
                     <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-muted-foreground"><path d="M3 5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>
                   </SelectTrigger>
@@ -156,11 +160,11 @@ export default function ScenarioManager({ scenarios, activeScenarioId, onSelect,
                 </button>
               )}
               {canWrite && isActive && (
-                <button onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} className="p-0.5 hover:bg-destructive/10 rounded">
+                <button onClick={(e) => { e.stopPropagation(); setDeleteId(s.id); }} className="p-0.5 hover:bg-destructive/10 rounded" title="Supprimer" aria-label="Supprimer le scénario">
                   <Trash2 size={10} className="text-destructive" />
                 </button>
               )}
-            </button>
+            </div>
           );
         })}
 

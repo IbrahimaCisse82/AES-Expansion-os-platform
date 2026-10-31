@@ -49,14 +49,14 @@ for r in res:
 
 ds = ''.join(f'<div class="kv"><b>{esc(v)}</b><span>{esc(DATASET.get(k, k))}</span></div>' for k, v in data['dataset'].items())
 fails = [r for r in res if not r['ok']]
-page = f"""<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Recette E2E AES</title>
+page = f"""<title>Recette E2E AES</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
 :root{{--bg:#f7f5f1;--card:#fff;--fg:#1c2b3a;--mut:#6b7280;--line:#e5e1d8;--ok:#3f7d5a;--ko:#b4412f;--okbg:#e8f2ec;--kobg:#f8e6e2}}
 @media (prefers-color-scheme:dark){{:root:not([data-theme="light"]){{--bg:#12171d;--card:#1a2129;--fg:#e8edf2;--mut:#9aa4b1;--line:#2a333d;--ok:#7cc59a;--ko:#ef8a78;--okbg:#18291f;--kobg:#2e1a17}}}}
 :root[data-theme="dark"]{{--bg:#12171d;--card:#1a2129;--fg:#e8edf2;--mut:#9aa4b1;--line:#2a333d;--ok:#7cc59a;--ko:#ef8a78;--okbg:#18291f;--kobg:#2e1a17}}
-*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}}
-main{{max-width:1100px;margin:0 auto;padding:28px 16px 60px}}h1{{font-size:24px;margin:0 0 4px}}.sub{{color:var(--mut);margin:0 0 20px}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;font-variant-numeric:tabular-nums}}
+main{{max-width:1100px;margin:0 auto;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}h1{{font-size:24px;margin:0 0 4px}}.sub{{color:var(--mut);margin:0 0 20px}}
 .score{{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 24px}}.big{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-width:150px}}
 .big b{{display:block;font-size:26px}}.big span{{color:var(--mut);font-size:12.5px}}.big.good b{{color:var(--ok)}}.big.bad b{{color:var(--ko)}}
 .ds{{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:28px}}.kv{{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}}
@@ -67,10 +67,10 @@ section{{background:var(--card);border:1px solid var(--line);border-radius:12px;
 td{{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}}tr:last-child td{{border-bottom:0}}.st{{width:22px;font-weight:700}}tr.ok .st{{color:var(--ok)}}tr.ko .st{{color:var(--ko)}}
 tr.ko{{background:var(--kobg)}}.pf{{white-space:nowrap;color:var(--mut)}}.det{{color:var(--ko);font-size:12px;margin-top:2px;word-break:break-word}}.sh{{white-space:nowrap}}
 a.thumb{{color:inherit;font-size:12px}}.gal{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}}figure{{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}}
-figure img{{width:100%;display:block;cursor:zoom-in}}figcaption{{padding:6px 10px;font-size:12px;color:var(--mut)}}
-#lb{{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}}#lb img{{max-width:100%;max-height:100%}}
+figure img{{width:100%;max-width:100%;display:block;cursor:zoom-in}}a.thumb:focus-visible,figure img:focus-visible{{outline:2px solid var(--ok)}}figcaption{{padding:6px 10px;font-size:12px;color:var(--mut)}}
+#lb{{position:fixed;inset:0;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9}}#lb img{{max-width:100%;max-height:100%}}
 .fails li{{margin-bottom:4px}}
-</style></head><body><main>
+</style><main lang="fr">
 <h1>Recette E2E — plateforme AES</h1>
 <p class="sub">Exécutée le {esc(data['run_at'].replace('T', ' à '))} · 14 profils · 4 environnements · navigateur Chromium (bureau 1440 px et mobile 390 px)</p>
 <div class="score">
@@ -83,11 +83,11 @@ figure img{{width:100%;display:block;cursor:zoom-in}}figcaption{{padding:6px 10p
 <h2 style="margin:0 0 10px">Jeu de données de recette</h2><div class="ds">{ds}</div>
 {''.join(rows_html)}
 <section><h2>Captures</h2><div class="gal">{''.join(gallery)}</div></section>
-</main><div id="lb"><img alt=""></div>
+</main><div id="lb" hidden><img alt="Capture agrandie"></div>
 <script>
 const lb=document.getElementById('lb'),li=lb.querySelector('img');
 document.addEventListener('click',e=>{{const a=e.target.closest('a.thumb');const im=e.target.closest('figure img');
-if(a){{e.preventDefault();li.src=a.dataset.src;lb.style.display='flex'}}else if(im){{li.src=im.src;lb.style.display='flex'}}else if(e.target.closest('#lb'))lb.style.display='none'}});
-</script></body></html>"""
+if(a){{e.preventDefault();li.src=a.dataset.src;lb.hidden=false}}else if(im){{li.src=im.src;lb.hidden=false}}else if(e.target.closest('#lb'))lb.hidden=true}});
+</script>"""
 open(f'{out}/rapport-recette-e2e.html', 'w').write(page)
 print(f'{out}/rapport-recette-e2e.html', ok, '/', total)

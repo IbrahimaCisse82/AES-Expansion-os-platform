@@ -227,24 +227,24 @@ SELECT sid, aid, pid, 'actual',
   round(m * 1.2, -3), round(m * 0.9, -3), round(m * (CASE WHEN pc = 'COMM' AND code = 'AES-3.1' THEN 2.4 ELSE 1.05 END), -3), 0, 0, 0
 FROM base;
 
-INSERT INTO public.fin_treasury_years (fiscal_year, opening_balance, min_threshold, country_id) VALUES (2026, 42000000, 20000000, 'bf');
+INSERT INTO public.fin_treasury_years (fiscal_year, opening_balance, min_threshold, country_id) VALUES (2026, 42000000, 20000000, NULL);
 -- Décaissements mensuels (janvier → septembre) ; les encaissements viennent du journal des ventes (bouton de reprise)
 INSERT INTO public.fin_treasury_values (fiscal_year, line_code, month, amount, country_id)
-SELECT 2026, l.code, m, round(v * (0.85 + (abs(hashtext(l.code || m)) % 30) / 100.0), -3), 'bf'
+SELECT 2026, l.code, m, round(v * (0.85 + (abs(hashtext(l.code || m)) % 30) / 100.0), -3), NULL
 FROM (VALUES ('dec_achats', 14000000), ('dec_personnel', 9500000), ('dec_loyers', 1200000), ('dec_carburant', 1800000), ('dec_telecom', 350000),
              ('dec_fournitures', 400000), ('dec_marketing', 900000), ('dec_soustraitance', 1500000), ('dec_emprunts', 1250000), ('dec_interets', 300000),
              ('dec_tva', 2100000), ('dec_invest', 0), ('dec_autres', 250000), ('enc_subv', 0), ('enc_sav', 900000), ('enc_autres', 200000)) l(code, v),
      generate_series(1, 9) m
 WHERE v > 0;
 INSERT INTO public.fin_treasury_values (fiscal_year, line_code, month, amount, country_id) VALUES
-  (2026, 'enc_subv', 4, 25000000, 'bf'), (2026, 'dec_invest', 3, 18000000, 'bf'), (2026, 'dec_invest', 8, 6500000, 'bf');
+  (2026, 'enc_subv', 4, 25000000, NULL), (2026, 'dec_invest', 3, 18000000, NULL), (2026, 'dec_invest', 8, 6500000, NULL);
 -- Prévisions annuelles (mois 0)
 INSERT INTO public.fin_treasury_values (fiscal_year, line_code, month, amount, country_id)
-SELECT 2026, code, 0, v, 'bf' FROM (VALUES ('enc_pv', 260000000), ('enc_pompage', 300000000), ('enc_sav', 12000000), ('enc_subv', 25000000),
+SELECT 2026, code, 0, v, NULL FROM (VALUES ('enc_pv', 260000000), ('enc_pompage', 300000000), ('enc_sav', 12000000), ('enc_subv', 25000000),
   ('dec_achats', 170000000), ('dec_personnel', 115000000), ('dec_tva', 26000000)) x(code, v);
 
 INSERT INTO public.fin_pnl_values (fiscal_year, line_code, budget, actual, country_id)
-SELECT 2026, code, b, a, 'bf' FROM (VALUES
+SELECT 2026, code, b, a, NULL FROM (VALUES
   ('ca_pv', 260000000, 0), ('ca_pompage', 300000000, 0), ('ca_froid', 30000000, 4500000), ('ca_elec', 20000000, 9800000), ('ca_sav', 12000000, 8100000),
   ('ca_subv', 25000000, 25000000), ('cv_marchandises', 330000000, 0), ('cv_matieres', 15000000, 11200000), ('cv_soustraitance', 18000000, 13100000),
   ('cv_commissions', 0, 0), ('pe_salaires', 96000000, 71500000), ('pe_cnss', 15400000, 11450000), ('pe_primes', 6000000, 3900000),
@@ -263,7 +263,7 @@ SELECT k.code, m::date,
       WHEN 'RH3' THEN 0.06 WHEN 'RH4' THEN 0.12 WHEN 'RH5' THEN 0.6 + extract(month FROM m) / 30 WHEN 'RH6' THEN 2.8 WHEN 'RH7' THEN 1.5
       WHEN 'RH8' THEN 0.74 WHEN 'RH9' THEN 3 ELSE 0.1 * extract(month FROM m) END
   END,
-  CASE WHEN k.code = 'C8' AND m = '2026-09-01' THEN 'CAC en hausse : campagne radio peu efficace' END, 'bf'
+  CASE WHEN k.code = 'C8' AND m = '2026-09-01' THEN 'CAC en hausse : campagne radio peu efficace' END, NULL
 FROM public.fin_kpis k CROSS JOIN generate_series('2026-01-01'::date, '2026-09-01'::date, '1 month') m;
 
 -- ---------------------------------------------------------------------

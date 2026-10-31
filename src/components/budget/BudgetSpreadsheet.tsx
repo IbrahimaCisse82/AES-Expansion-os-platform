@@ -110,6 +110,7 @@ export default function BudgetSpreadsheet({
     return (
       <>
         {/* Section header */}
+        <tbody>
         <tr className="bg-primary/5 border-b border-border">
           <td className="sticky left-0 bg-primary/5 z-10 px-3 py-2 text-[12px] font-bold text-primary uppercase tracking-wider" colSpan={1}>
             {sectionLabel}
@@ -120,6 +121,7 @@ export default function BudgetSpreadsheet({
           <td className="px-3 py-2 text-[12px] font-bold text-primary text-right">{formatK(sectionGrand)}</td>
           <td className="px-2 py-2" />
         </tr>
+        </tbody>
 
         {cats.map(cat => {
           const catLines = getLinesForCategory(cat.id);
