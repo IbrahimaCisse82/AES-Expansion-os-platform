@@ -11,8 +11,14 @@ import { STATUS_LABEL, canReview, useReportingRole, useReports, type Report } fr
 import { FREQUENCY_LABEL, REPORT_TEMPLATES, defaultPeriod, periodLabel, templateByCode } from '@/lib/reporting/templates';
 
 /** Rapports périodiques attendus pour la dernière période écoulée (A9 : semaine en cours). */
-function expected() {
-  return REPORT_TEMPLATES.filter(t => t.frequency !== 'adhoc').map(t => ({
+/** Rédacteurs attendus des rapports périodiques (fiches « Réf. » du classeur). La direction les suit tous. */
+const PERIODIC_AUTHORS: Record<string, string[]> = {
+  A1: ['commercial_director', 'technical_director', 'raf', 'dhr'],
+  A2: ['commercial_director'], A3: ['technical_director'], A4: ['raf'], A5: ['dhr'], A9: ['director'], A10: ['director'],
+};
+function expected(role: string | null) {
+  const all = role === 'admin' || role === 'director';
+  return REPORT_TEMPLATES.filter(t => t.frequency !== 'adhoc' && (all || (PERIODIC_AUTHORS[t.code] ?? []).includes(role ?? ''))).map(t => ({
     t, period: defaultPeriod(t.period, t.code === 'A9' ? new Date() : previousAnchor(t.period)),
   }));
 }
@@ -37,9 +43,9 @@ export function ReportingHome({ embedded = false, view = 'overview' }: { embedde
           <p className="text-xs text-muted-foreground mt-1">Les 12 rapports normalisés du classeur AES (A1–A12) : rédaction, pré-remplissage depuis la plateforme, validation par la direction et export PDF.</p>
         </div>
       )}
-      {view === 'overview' && <Section title="À produire" description="Rapports périodiques attendus pour la dernière période écoulée.">
+      {view === 'overview' && expected(me.role).length > 0 && <Section title="À produire" description={me.role === 'admin' || me.role === 'director' ? 'Rapports périodiques attendus pour la dernière période écoulée (tous les pôles).' : 'Vos rapports périodiques pour la dernière période écoulée.'}>
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-2">
-          {expected().map(({ t, period }) => {
+          {expected(me.role).map(({ t, period }) => {
             const existing = (reports ?? []).find(r => r.template_code === t.code && r.period === period);
             return (
               <button key={t.code} type="button" onClick={() => (existing ? open(existing) : navigate(`/app/reporting/nouveau/${t.code}?periode=${period}`))}

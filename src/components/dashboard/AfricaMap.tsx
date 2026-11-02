@@ -40,7 +40,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AfricaMap({ countries }: { countries: Country[] }) {
   const markers = useMemo(() => {
     return countries.map(c => {
-      const coords = COUNTRY_COORDS[c.id];
+      const coords = COUNTRY_COORDS[c.id.toUpperCase()];
       if (!coords) return null;
       return { ...c, ...coords };
     }).filter(Boolean) as (Country & { x: number; y: number })[];

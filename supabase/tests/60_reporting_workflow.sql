@@ -70,6 +70,17 @@ BEGIN
   UPDATE public.bi_report_instances SET status = 'validated' WHERE id = _a4;
   PERFORM test_utils.logout();
   PERFORM test_utils.assert((SELECT status FROM public.bi_report_instances WHERE id = _a4) = 'validated', 'le RAF valide l''A4');
+  -- Confidentialité : une évaluation individuelle (A6) n'est visible que de l'auteur, des valideurs RH et de la direction
+  PERFORM test_utils.login(_raf);
+  INSERT INTO public.bi_report_instances (template_code, title, period) VALUES ('A6', 'Évaluation', '2026-09-30');
+  PERFORM test_utils.logout();
+  PERFORM test_utils.login(_com);
+  PERFORM test_utils.assert(NOT EXISTS (SELECT 1 FROM public.bi_report_instances WHERE template_code = 'A6'), 'une évaluation individuelle n''est pas visible d''un autre collaborateur');
+  PERFORM test_utils.assert(EXISTS (SELECT 1 FROM public.bi_report_instances WHERE template_code = 'A2'), 'un rapport non confidentiel reste visible');
+  PERFORM test_utils.logout();
+  PERFORM test_utils.login(_dg);
+  PERFORM test_utils.assert(EXISTS (SELECT 1 FROM public.bi_report_instances WHERE template_code = 'A6'), 'la direction voit l''évaluation');
+  PERFORM test_utils.logout();
   RAISE NOTICE 'reporting workflow: OK';
 END $$;
 ROLLBACK;
