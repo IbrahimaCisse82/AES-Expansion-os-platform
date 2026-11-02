@@ -84,7 +84,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
     const result = milestoneSchema.safeParse(form);
     if (!result.success) {
       const fe: Record<string, string> = {};
-      result.error.errors.forEach(e => { fe[e.path[0] as string] = e.message; });
+      result.error.issues.forEach(e => { fe[e.path[0] as string] = e.message; });
       setErrors(fe); return;
     }
     const payload = {
