@@ -70,7 +70,8 @@ export function useBiFacts() {
         category_name: (r as Record<string, unknown>).category_name as string | null,
         category_type: (r as Record<string, unknown>).category_type as string | null,
         line_type: r.line_type as string,
-        months: [r.m1, r.m2, r.m3, r.m4, r.m5, r.m6, r.m7, r.m8, r.m9, r.m10, r.m11, r.m12].map(v => Number(v) || 0),
+        // budget_lines est saisi en milliers de FCFA : le BI travaille en FCFA
+        months: [r.m1, r.m2, r.m3, r.m4, r.m5, r.m6, r.m7, r.m8, r.m9, r.m10, r.m11, r.m12].map(v => (Number(v) || 0) * 1000),
       }));
     },
   });

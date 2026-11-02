@@ -1,6 +1,6 @@
 import KpiCard from '@/components/KpiCard';
 import StatusPill from '@/components/StatusPill';
-import { useCountries, useTasks, useActivityLog, useRisks, useMilestones, useBudgetEntries } from '@/hooks/useExpansionData';
+import { useCountries, useTasks, useActivityLog, useRisks, useMilestones, useBudgetEntries, useCountryStats } from '@/hooks/useExpansionData';
 import { useKpiHistory } from '@/hooks/useKpiHistory';
 import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard, KpiTrendChart, NvsN1Card } from '@/components/dashboard/DashboardCharts';
 import AfricaMap from '@/components/dashboard/AfricaMap';
@@ -10,7 +10,9 @@ import { computeMarketScore, buildScoreInputs } from '@/lib/marketScoring';
 import { formatDateFr } from '@/lib/dates';
 
 export default function DashboardPage() {
-  const { data: countries = [] } = useCountries();
+  const { data: rawCountries = [] } = useCountries();
+  const stats = useCountryStats();
+  const countries = rawCountries.map(c => ({ ...c, risk_count: stats[c.id]?.risks ?? c.risk_count, team_size: stats[c.id]?.team ?? c.team_size }));
   const { data: tasks = [] } = useTasks();
   const { data: activity = [] } = useActivityLog();
   const { data: risks = [] } = useRisks();

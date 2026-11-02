@@ -202,7 +202,8 @@ export function EditableTable<R extends { id: string }>({
             {rows.map(r => (
               <TableRow key={r.id}>
                 {columns.map((c, ci) => (
-                  <TableCell key={`${c.key}-${ci}`} className={`text-xs py-1.5 ${c.render && c.align === 'right' ? 'text-right tabular-nums' : ''}`}>
+                  <TableCell key={`${c.key}-${ci}`} className={`text-xs py-1.5 ${c.render && c.align === 'right' ? 'text-right tabular-nums' : ''}`}
+                    style={!c.render && c.width ? { minWidth: c.width } : undefined}>
                     {c.render ? c.render(r) : (
                       <EditableCell value={r[c.key]} type={c.type ?? 'text'} disabled={!canEdit || !!c.readOnly}
                         onCommit={v => onSave(r.id, { [c.key]: v } as Partial<R>)} />

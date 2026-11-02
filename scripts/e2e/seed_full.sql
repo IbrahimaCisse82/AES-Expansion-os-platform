@@ -220,11 +220,11 @@ p AS (SELECT id, code, CASE code WHEN 'COMM' THEN 1.2 WHEN 'TECH' THEN 1.5 WHEN 
 base AS (SELECT s.id sid, acc.id aid, p.id pid, round((150000 + (abs(hashtext(acc.code || p.code)) % 9) * 50000) * p.f, -3) AS m, acc.code, p.code pc
          FROM s, acc, p)
 INSERT INTO public.budget_lines (scenario_id, category_id, pole_id, line_type, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12)
-SELECT sid, aid, pid, 'budget', m, m, m, m, m, m, m, m, m, m, m, m FROM base
+SELECT sid, aid, pid, 'budget', m/1000, m/1000, m/1000, m/1000, m/1000, m/1000, m/1000, m/1000, m/1000, m/1000, m/1000, m/1000 FROM base -- milliers de FCFA
 UNION ALL
 SELECT sid, aid, pid, 'actual',
-  round(m * 0.9, -3), round(m * 1.05, -3), round(m * 0.95, -3), round(m * 1.1, -3), round(m * 0.85, -3), round(m * 1.0, -3),
-  round(m * 1.2, -3), round(m * 0.9, -3), round(m * (CASE WHEN pc = 'COMM' AND code = 'AES-3.1' THEN 2.4 ELSE 1.05 END), -3), 0, 0, 0
+  round(m * 0.9, -3)/1000, round(m * 1.05, -3)/1000, round(m * 0.95, -3)/1000, round(m * 1.1, -3)/1000, round(m * 0.85, -3)/1000, round(m * 1.0, -3)/1000,
+  round(m * 1.2, -3)/1000, round(m * 0.9, -3)/1000, round(m * (CASE WHEN pc = 'COMM' AND code = 'AES-3.1' THEN 2.4 ELSE 1.05 END), -3)/1000, 0, 0, 0
 FROM base;
 
 INSERT INTO public.fin_treasury_years (fiscal_year, opening_balance, min_threshold, country_id) VALUES (2026, 42000000, 20000000, NULL);
@@ -250,6 +250,21 @@ SELECT 2026, code, b, a, NULL FROM (VALUES
   ('cv_commissions', 0, 0), ('pe_salaires', 96000000, 71500000), ('pe_cnss', 15400000, 11450000), ('pe_primes', 6000000, 3900000),
   ('op_loyers', 14400000, 10800000), ('op_carburant', 21600000, 17300000), ('op_telecom', 4200000, 3150000), ('op_marketing', 10800000, 9700000),
   ('op_autres', 6000000, 4100000), ('fi_interets', 3600000, 2700000), ('fi_frais', 1200000, 950000), ('is_its', 15000000, 0)) x(code, b, a);
+
+-- Encaissements et chiffre d'affaires déjà repris du journal des ventes (comme le bouton « Reprendre » du RAF)
+INSERT INTO public.fin_treasury_values (fiscal_year, line_code, month, amount, country_id)
+SELECT 2026, CASE WHEN k.solution_code = 'LORENTZ' THEN 'enc_pompage' ELSE 'enc_pv' END, extract(month FROM x.d)::int, sum(x.a), NULL
+FROM (SELECT kit_id, deposit_date d, deposit_amount a FROM tc_sales WHERE deposit_amount > 0 AND deposit_date >= '2026-01-01'
+      UNION ALL SELECT kit_id, balance_date, balance_amount FROM tc_sales WHERE balance_amount > 0 AND balance_date >= '2026-01-01') x
+JOIN tc_kits k ON k.id = x.kit_id
+GROUP BY 2, 3;
+UPDATE public.fin_pnl_values v SET actual = s.ht FROM (
+  SELECT CASE WHEN k.solution_code = 'LORENTZ' THEN 'ca_pompage' ELSE 'ca_pv' END code, round(sum(p.ttc) / 1.18, -3) ht
+  FROM seed_prices p JOIN tc_sales t ON t.id = p.id JOIN tc_kits k ON k.id = t.kit_id GROUP BY 1) s
+WHERE v.line_code = s.code AND v.fiscal_year = 2026;
+UPDATE public.fin_pnl_values v SET actual = round((SELECT actual FROM public.fin_pnl_values WHERE line_code IN ('ca_pv')) * 0.62 + (SELECT actual FROM public.fin_pnl_values WHERE line_code = 'ca_pompage') * 0.6, -3)
+WHERE line_code = 'cv_marchandises';
+UPDATE public.fin_pnl_values SET actual = round((SELECT sum(actual) FROM public.fin_pnl_values WHERE line_code IN ('ca_pv','ca_pompage')) * 0.02, -3) WHERE line_code = 'cv_commissions';
 
 -- KPI : objectifs pour tous les mois, réalisés pour les KPI non calculés automatiquement
 INSERT INTO public.fin_kpi_values (kpi_code, month, target, actual, comment, country_id)

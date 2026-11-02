@@ -219,8 +219,8 @@ async def finance_flow(browser):
         await a.page.get_by_role('button', name='COMM', exact=True).click(); await a.page.wait_for_timeout(500)
         inp = a.page.locator('main table input').first
         await inp.fill('3456000'); await inp.press('Enter'); await a.page.wait_for_timeout(1500)
-        v = sql("select m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+m12 from budget_lines bl join bi_poles p on p.id = bl.pole_id where p.code='COMM' and line_type='budget' order by (m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+m12 = 3456000) desc limit 1")
-        check(sec, 'raf', 'budget annuel d’un poste saisi et réparti sur 12 mois', v.startswith('3456000'), v)
+        v = sql("select m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+m12 from budget_lines bl join bi_poles p on p.id = bl.pole_id where p.code='COMM' and line_type='budget' order by (m1+m2+m3+m4+m5+m6+m7+m8+m9+m10+m11+m12 = 3456) desc limit 1")
+        check(sec, 'raf', 'budget annuel d’un poste saisi et réparti sur 12 mois (stocké en milliers)', v.startswith('3456'), v)
         await a.go('/app', 800); await a.go('/app/finance', 1200)
         check(sec, 'raf', 'vue d’ensemble Finance cohérente (4 indicateurs)', await a.page.get_by_text('Exécution budgétaire').count() == 1, '', await a.shot('finance', True))
         check(sec, 'raf', 'aucune erreur JavaScript', not a.errors, a.errors[:2])

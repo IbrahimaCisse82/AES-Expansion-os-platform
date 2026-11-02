@@ -17,7 +17,7 @@ const pageNames: Record<string, string> = {
   kpis: 'KPIs Post-Lancement',
   budget: 'Budget & Finances',
   risks: 'Registre des Risques',
-  comments: 'Commentaires',
+  comments: 'Discussions',
   history: 'Historique',
   team: 'Équipe',
   profile: 'Mon profil',
@@ -54,7 +54,8 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
     const env = envForPath(pathname);
     if (!env) return pageNames[activePage] || activePage;
     const items = ENVIRONMENTS.flatMap(e => e.nav.flatMap(g => g.items)).filter(i => pathname === i.path || pathname.startsWith(`${i.path}/`)).sort((a, b) => b.path.length - a.path.length);
-    const label = items[0]?.label ?? pageNames[activePage] ?? activePage;
+    const exact = items[0] && (pathname === items[0].path || items[0].path !== envById(env).home);
+    const label = (exact ? items[0]?.label : null) ?? (env === 'reporting' ? 'Rapport' : env === 'expansion' && pathname.startsWith('/app/countries/') ? 'Fiche pays' : items[0]?.label) ?? pageNames[activePage] ?? activePage;
     return env === 'expansion' ? label : `${envById(env).label} · ${label}`;
   })();
   const unread = mine.filter(n => !n.is_read).length;

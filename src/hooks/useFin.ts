@@ -7,6 +7,10 @@ import { useCurrentUserRole } from './useUserRoles';
 
 type Tables = Database['public']['Tables'];
 const n = (v: unknown) => Number(v ?? 0) || 0;
+/** budget_lines est en milliers de FCFA (convention du module Budget et du BI) ; la Finance AES travaille en FCFA. */
+export const K = 1000;
+const fromK = (v: unknown) => Math.round(n(v) * K);
+export const toK = (fcfa: number) => fcfa / K;
 
 export interface FinData {
   scenario: Tables['budget_scenarios']['Row'] | null;
@@ -48,7 +52,7 @@ export function useFinData(year: number) {
         const q = supabase.from('budget_lines').select('id, category_id, pole_id, line_type, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12')
           .eq('scenario_id', scenario.id).not('pole_id', 'is', null).order('id');
         lines = (await fetchAllRows((from, to) => q.range(from, to))).map(l => ({
-          ...l, m1: n(l.m1), m2: n(l.m2), m3: n(l.m3), m4: n(l.m4), m5: n(l.m5), m6: n(l.m6), m7: n(l.m7), m8: n(l.m8), m9: n(l.m9), m10: n(l.m10), m11: n(l.m11), m12: n(l.m12),
+          ...l, m1: fromK(l.m1), m2: fromK(l.m2), m3: fromK(l.m3), m4: fromK(l.m4), m5: fromK(l.m5), m6: fromK(l.m6), m7: fromK(l.m7), m8: fromK(l.m8), m9: fromK(l.m9), m10: fromK(l.m10), m11: fromK(l.m11), m12: fromK(l.m12),
         }));
       }
       return {

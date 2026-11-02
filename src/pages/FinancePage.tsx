@@ -13,7 +13,7 @@ import { useReports, STATUS_LABEL } from '@/hooks/useReporting';
 import { periodLabel } from '@/lib/reporting/templates';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useFinCan, useFinData, useFinMutation, must, scenarioName, type FinData } from '@/hooks/useFin';
+import { useFinCan, useFinData, useFinMutation, must, scenarioName, toK, type FinData } from '@/hooks/useFin';
 import { useTcEngine } from '@/hooks/useTc';
 import {
   KPI_CATEGORY_LABEL, MONTH_KEYS, autoKpis, finSuggestions, kpiAttainment, kpiStatus, pnl, poleGrid, spreadAnnual, treasury,
@@ -52,9 +52,10 @@ function PoleBudgets({ data, year, canEdit }: { data: FinData; year: number; can
     if (!scenario) return;
     const id = kind === 'budget' ? row.budgetLineId : row.actualLineId;
     const existing = data.lines.find(l => l.id === id);
-    const patch = kind === 'budget'
+    const fcfa: Record<string, number> = kind === 'budget'
       ? spreadAnnual(value, existing ? MONTH_KEYS.map(k => existing[k]) : undefined)
       : { [MONTH_KEYS[month as number]]: value };
+    const patch = Object.fromEntries(Object.entries(fcfa).map(([k, v]) => [k, toK(v)]));
     if (existing) await must(supabase.from('budget_lines').update(patch).eq('id', existing.id));
     else await must(supabase.from('budget_lines').insert({ scenario_id: scenario.id, category_id: row.account.id, pole_id: poleId, line_type: kind, ...patch }));
   });
@@ -408,7 +409,9 @@ function FinanceOverview({ data, year, consolidated, auto, suggestions }: {
   const t = useMemo(() => treasury(data.treasuryLines, data.treasuryValues, Number(data.treasuryYear?.opening_balance ?? 0), Number(data.treasuryYear?.min_threshold ?? 0)), [data]);
   const r = useMemo(() => pnl(data.pnlLines, data.pnlValues), [data]);
   const now = new Date();
-  const month = `${year}-${String(now.getFullYear() === year ? now.getMonth() + 1 : 12).padStart(2, '0')}-01`;
+  const current = `${year}-${String(now.getFullYear() === year ? now.getMonth() + 1 : 12).padStart(2, '0')}-01`;
+  // Dernier mois renseigné de l'exercice (le mois en cours est souvent encore vide)
+  const month = data.kpiValues.map(v => v.month).filter(m => m <= current && m.startsWith(String(year))).sort().pop() ?? current;
   const computed = useMemo(() => auto(month), [auto, month]);
   const statuses = data.kpis.map(k => {
     const v = data.kpiValues.find(x => x.kpi_code === k.code && x.month === month);

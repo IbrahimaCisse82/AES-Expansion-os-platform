@@ -123,3 +123,29 @@ export function useRoadmapBars() {
     },
   });
 }
+
+/**
+ * Indicateurs réels par pays (risques ouverts, membres d'équipe, budget alloué en K FCFA),
+ * à la place des colonnes figées countries.risk_count / team_size / budget.
+ */
+export function useCountryStats(opts: { enabled?: boolean } = {}) {
+  const enabled = opts.enabled ?? true;
+  const { data: risks = [] } = useRisks({ enabled });
+  const { data: budget = [] } = useBudgetEntries();
+  const { data: members = [] } = useQuery({
+    queryKey: ['country_members', 'stats'],
+    enabled,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('country_members').select('country_id');
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const stats: Record<string, { risks: number; team: number; budgetK: number }> = {};
+  const get = (id: string | null | undefined) => (id ? (stats[id] ??= { risks: 0, team: 0, budgetK: 0 }) : null);
+  for (const r of risks) { const s = get(r.country_id); if (s && (r as { risk_status?: string | null }).risk_status !== 'closed') s.risks += 1; }
+  for (const m of members) { const s = get(m.country_id); if (s) s.team += 1; }
+  for (const b of budget) { const s = get(b.country_id); if (s) s.budgetK += Number(b.allocated_k) || 0; }
+  return stats;
+}
