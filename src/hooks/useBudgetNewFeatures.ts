@@ -84,7 +84,7 @@ export interface CloseTask {
   status: string;
   assigned_to: string | null;
   assigned_name: string;
-  due_date: string;
+  due_date: string | null;
   completed_at: string | null;
   completed_by: string | null;
   notes: string;
@@ -210,7 +210,7 @@ export interface Investment {
   subsidiary_entity_id: string;
   subsidiary_entity_label: string;
   ownership_pct: number;
-  acquisition_date: string;
+  acquisition_date: string | null;
   acquisition_cost: number;
   book_value: number;
   consolidation_method: string;

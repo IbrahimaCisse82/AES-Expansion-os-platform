@@ -22,6 +22,83 @@
       "when": 1791249306663,
       "tag": "0002_revoke_trigger_function_execute",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792591572659,
+      "tag": "0003_security_lockdown",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792591749978,
+      "tag": "0004_country_isolation",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792592478182,
+      "tag": "0005_typed_dates_and_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792605637347,
+      "tag": "0006_tc_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792605749058,
+      "tag": "0007_tc_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792605749079,
+      "tag": "0008_tc_aes_seed",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792690878778,
+      "tag": "0009_finance_aes",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792691588634,
+      "tag": "0010_reporting_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792692668478,
+      "tag": "0011_chat_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792711443143,
+      "tag": "0012_environments",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793645406266,
+      "tag": "0013_report_confidentiality",
+      "breakpoints": true
     }
   ]
 }

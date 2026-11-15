@@ -1,18 +1,24 @@
 import KpiCard from '@/components/KpiCard';
 import StatusPill from '@/components/StatusPill';
-import { useCountries, useTasks, useActivityLog, useRisks, useMilestones } from '@/hooks/useExpansionData';
+import { useCountries, useTasks, useActivityLog, useRisks, useMilestones, useBudgetEntries, useCountryStats } from '@/hooks/useExpansionData';
+import { useKpiHistory } from '@/hooks/useKpiHistory';
 import { PipelineChart, RiskWeatherChart, ProgressChart, MarketScoreCard, KpiTrendChart, NvsN1Card } from '@/components/dashboard/DashboardCharts';
 import AfricaMap from '@/components/dashboard/AfricaMap';
 import BurndownChart from '@/components/dashboard/BurndownChart';
 import RadarComparison from '@/components/dashboard/RadarComparison';
-import { computeMarketScore } from '@/lib/marketScoring';
+import { computeMarketScore, buildScoreInputs } from '@/lib/marketScoring';
+import { formatDateFr } from '@/lib/dates';
 
 export default function DashboardPage() {
-  const { data: countries = [] } = useCountries();
+  const { data: rawCountries = [] } = useCountries();
+  const stats = useCountryStats();
+  const countries = rawCountries.map(c => ({ ...c, risk_count: stats[c.id]?.risks ?? c.risk_count, team_size: stats[c.id]?.team ?? c.team_size }));
   const { data: tasks = [] } = useTasks();
   const { data: activity = [] } = useActivityLog();
   const { data: risks = [] } = useRisks();
   const { data: milestones = [] } = useMilestones(null);
+  const { data: kpiHistory = [] } = useKpiHistory();
+  const { data: budgetEntries = [] } = useBudgetEntries();
 
   const lateTasks = tasks.filter(t => t.status === 'late').length;
   const totalTeam = countries.reduce((s, c) => s + (c.team_size || 0), 0);
@@ -21,7 +27,7 @@ export default function DashboardPage() {
   const colorMap: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]' };
   const dotColors: Record<string, string> = { sage: 'bg-accent', sky: 'bg-[hsl(var(--sky))]', gold: 'bg-[hsl(var(--gold))]', terracotta: 'bg-destructive', plum: 'bg-[hsl(var(--plum))]', navy: 'bg-primary' };
 
-  const scores = countries.map(c => ({ name: c.name, flag: c.flag, score: computeMarketScore(c) }));
+  const scores = countries.map(c => ({ name: c.name, flag: c.flag, score: computeMarketScore(c, buildScoreInputs(c.id, { milestones, risks, kpiHistory, budgetEntries })) }));
 
   const isEmpty = countries.length === 0 && tasks.length === 0;
 
@@ -136,7 +142,7 @@ export default function DashboardPage() {
                     <div className="text-[13px] font-medium">{task.title}</div>
                     <div className="text-[11px] text-muted-foreground flex gap-2 flex-wrap">
                       {task.country_label && <span>{task.country_label}</span>}
-                      {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
+                      {task.due_date && <><span>·</span><span>📅 {formatDateFr(task.due_date)}</span></>}
                       {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
                     </div>
                   </div>

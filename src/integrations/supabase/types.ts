@@ -174,8 +174,12 @@ export type Database = {
           id: string
           period: string
           pole_id: string | null
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           sent_at: string | null
           status: string
+          submitted_at: string | null
           template_code: string
           title: string
           updated_at: string
@@ -189,8 +193,12 @@ export type Database = {
           id?: string
           period?: string
           pole_id?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sent_at?: string | null
           status?: string
+          submitted_at?: string | null
           template_code: string
           title: string
           updated_at?: string
@@ -204,8 +212,12 @@ export type Database = {
           id?: string
           period?: string
           pole_id?: string | null
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           sent_at?: string | null
           status?: string
+          submitted_at?: string | null
           template_code?: string
           title?: string
           updated_at?: string
@@ -422,6 +434,7 @@ export type Database = {
       }
       budget_categories: {
         Row: {
+          code: string | null
           created_at: string
           id: string
           is_system: boolean
@@ -431,6 +444,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          code?: string | null
           created_at?: string
           id?: string
           is_system?: boolean
@@ -440,6 +454,7 @@ export type Database = {
           type?: string
         }
         Update: {
+          code?: string | null
           created_at?: string
           id?: string
           is_system?: boolean
@@ -1712,6 +1727,30 @@ export type Database = {
         }
         Relationships: []
       }
+      environment_access: {
+        Row: {
+          enabled: boolean
+          env: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          env: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          env?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           created_at: string
@@ -1744,6 +1783,254 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      fin_kpi_values: {
+        Row: {
+          actual: number | null
+          comment: string | null
+          country_id: string | null
+          id: string
+          kpi_code: string
+          month: string
+          target: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          actual?: number | null
+          comment?: string | null
+          country_id?: string | null
+          id?: string
+          kpi_code: string
+          month: string
+          target?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          actual?: number | null
+          comment?: string | null
+          country_id?: string | null
+          id?: string
+          kpi_code?: string
+          month?: string
+          target?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_kpi_values_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_kpi_values_kpi_code_fkey"
+            columns: ["kpi_code"]
+            isOneToOne: false
+            referencedRelation: "fin_kpis"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      fin_kpis: {
+        Row: {
+          category: string
+          code: string
+          direction: string
+          label: string
+          sort_order: number
+          unit: string
+        }
+        Insert: {
+          category: string
+          code: string
+          direction: string
+          label: string
+          sort_order: number
+          unit: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          direction?: string
+          label?: string
+          sort_order?: number
+          unit?: string
+        }
+        Relationships: [
+        ]
+      }
+      fin_pnl_lines: {
+        Row: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          section?: string
+          sort_order?: number
+        }
+        Relationships: [
+        ]
+      }
+      fin_pnl_values: {
+        Row: {
+          actual: number
+          budget: number
+          country_id: string | null
+          fiscal_year: number
+          id: string
+          line_code: string
+          updated_at: string
+        }
+        Insert: {
+          actual?: number
+          budget?: number
+          country_id?: string | null
+          fiscal_year: number
+          id?: string
+          line_code: string
+          updated_at?: string
+        }
+        Update: {
+          actual?: number
+          budget?: number
+          country_id?: string | null
+          fiscal_year?: number
+          id?: string
+          line_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_pnl_values_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_pnl_values_line_code_fkey"
+            columns: ["line_code"]
+            isOneToOne: false
+            referencedRelation: "fin_pnl_lines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      fin_treasury_lines: {
+        Row: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          label: string
+          section: string
+          sort_order: number
+        }
+        Update: {
+          code?: string
+          label?: string
+          section?: string
+          sort_order?: number
+        }
+        Relationships: [
+        ]
+      }
+      fin_treasury_values: {
+        Row: {
+          amount: number
+          country_id: string | null
+          fiscal_year: number
+          id: string
+          line_code: string
+          month: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          country_id?: string | null
+          fiscal_year: number
+          id?: string
+          line_code: string
+          month: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          country_id?: string | null
+          fiscal_year?: number
+          id?: string
+          line_code?: string
+          month?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_treasury_values_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fin_treasury_values_line_code_fkey"
+            columns: ["line_code"]
+            isOneToOne: false
+            referencedRelation: "fin_treasury_lines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      fin_treasury_years: {
+        Row: {
+          country_id: string | null
+          fiscal_year: number
+          id: string
+          min_threshold: number
+          opening_balance: number
+          updated_at: string
+        }
+        Insert: {
+          country_id?: string | null
+          fiscal_year: number
+          id?: string
+          min_threshold?: number
+          opening_balance?: number
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string | null
+          fiscal_year?: number
+          id?: string
+          min_threshold?: number
+          opening_balance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fin_treasury_years_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kpi_history: {
         Row: {
@@ -2391,6 +2678,691 @@ export type Database = {
           },
         ]
       }
+      tc_catalog_items: {
+        Row: {
+          category: string | null
+          designation: string
+          id: string
+          odoo_cost: number
+        }
+        Insert: {
+          category?: string | null
+          designation: string
+          id?: string
+          odoo_cost?: number
+        }
+        Update: {
+          category?: string | null
+          designation?: string
+          id?: string
+          odoo_cost?: number
+        }
+        Relationships: [
+        ]
+      }
+      tc_kit_items: {
+        Row: {
+          designation: string
+          id: string
+          kit_id: string
+          line_no: number
+          quantity: number
+          unit: string
+        }
+        Insert: {
+          designation: string
+          id?: string
+          kit_id: string
+          line_no: number
+          quantity: number
+          unit?: string
+        }
+        Update: {
+          designation?: string
+          id?: string
+          kit_id?: string
+          line_no?: number
+          quantity?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_kit_items_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "tc_kits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_kit_labor: {
+        Row: {
+          hours_per_person: number
+          id: string
+          kit_id: string
+          line_no: number
+          people: number
+          profile_id: string
+        }
+        Insert: {
+          hours_per_person?: number
+          id?: string
+          kit_id: string
+          line_no: number
+          people?: number
+          profile_id: string
+        }
+        Update: {
+          hours_per_person?: number
+          id?: string
+          kit_id?: string
+          line_no?: number
+          people?: number
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_kit_labor_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "tc_kits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tc_kit_labor_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "tc_labor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_kits: {
+        Row: {
+          active: boolean
+          code: string
+          country_id: string | null
+          customer_need: string | null
+          id: string
+          margin_rate: number | null
+          name: string
+          solution_code: string
+          sort_order: number
+          transport_cost: number
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          country_id?: string | null
+          customer_need?: string | null
+          id?: string
+          margin_rate?: number | null
+          name: string
+          solution_code: string
+          sort_order?: number
+          transport_cost?: number
+          updated_at?: string
+          variant: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          country_id?: string | null
+          customer_need?: string | null
+          id?: string
+          margin_rate?: number | null
+          name?: string
+          solution_code?: string
+          sort_order?: number
+          transport_cost?: number
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_kits_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tc_kits_solution_code_fkey"
+            columns: ["solution_code"]
+            isOneToOne: false
+            referencedRelation: "tc_solutions"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      tc_labor_profiles: {
+        Row: {
+          comment: string | null
+          country_id: string | null
+          hourly_rate: number
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          country_id?: string | null
+          hourly_rate?: number
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          country_id?: string | null
+          hourly_rate?: number
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_labor_profiles_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_objectives: {
+        Row: {
+          id: string
+          kits_target: number
+          month: string
+          revenue_target: number
+          solution_code: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kits_target?: number
+          month: string
+          revenue_target?: number
+          solution_code: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kits_target?: number
+          month?: string
+          revenue_target?: number
+          solution_code?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_objectives_solution_code_fkey"
+            columns: ["solution_code"]
+            isOneToOne: false
+            referencedRelation: "tc_solutions"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "tc_objectives_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tc_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_raci: {
+        Row: {
+          activity: string
+          assignments: Json
+          frequency: string | null
+          id: string
+          process: string
+          screen: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          activity: string
+          assignments?: Json
+          frequency?: string | null
+          id?: string
+          process: string
+          screen?: string | null
+          sort_order: number
+          updated_at?: string
+        }
+        Update: {
+          activity?: string
+          assignments?: Json
+          frequency?: string | null
+          id?: string
+          process?: string
+          screen?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+        ]
+      }
+      tc_sales: {
+        Row: {
+          applied_price: number | null
+          balance_amount: number
+          balance_date: string | null
+          catalog_price_snapshot: number | null
+          client: string
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          delivery_date: string | null
+          deposit_amount: number
+          deposit_date: string | null
+          discount_rate: number
+          id: string
+          install_hours_snapshot: number | null
+          kit_id: string
+          lost: boolean
+          mission_people: number | null
+          planned_install_date: string | null
+          probability: number | null
+          quantity: number
+          quote_date: string
+          quote_no: string
+          remark: string | null
+          sale_date: string | null
+          salesperson: string | null
+          team_id: string
+          unit_cost_snapshot: number | null
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          applied_price?: number | null
+          balance_amount?: number
+          balance_date?: string | null
+          catalog_price_snapshot?: number | null
+          client: string
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery_date?: string | null
+          deposit_amount?: number
+          deposit_date?: string | null
+          discount_rate?: number
+          id?: string
+          install_hours_snapshot?: number | null
+          kit_id: string
+          lost?: boolean
+          mission_people?: number | null
+          planned_install_date?: string | null
+          probability?: number | null
+          quantity?: number
+          quote_date: string
+          quote_no: string
+          remark?: string | null
+          sale_date?: string | null
+          salesperson?: string | null
+          team_id: string
+          unit_cost_snapshot?: number | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          applied_price?: number | null
+          balance_amount?: number
+          balance_date?: string | null
+          catalog_price_snapshot?: number | null
+          client?: string
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivery_date?: string | null
+          deposit_amount?: number
+          deposit_date?: string | null
+          discount_rate?: number
+          id?: string
+          install_hours_snapshot?: number | null
+          kit_id?: string
+          lost?: boolean
+          mission_people?: number | null
+          planned_install_date?: string | null
+          probability?: number | null
+          quantity?: number
+          quote_date?: string
+          quote_no?: string
+          remark?: string | null
+          sale_date?: string | null
+          salesperson?: string | null
+          team_id?: string
+          unit_cost_snapshot?: number | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_sales_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tc_sales_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "tc_kits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tc_sales_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tc_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tc_sales_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "tc_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_settings: {
+        Row: {
+          bonus_rate: number
+          bonus_threshold: number
+          commission_rate: number
+          contingency_rate: number
+          cost_per_km: number
+          country_id: string | null
+          currency: string
+          default_mission_people: number
+          default_probability: number
+          id: string
+          inventory_date: string | null
+          lodging_per_night: number
+          margin_rate: number
+          payment_delay_days: number
+          per_diem: number
+          updated_at: string
+          vat_rate: number
+          warranty_rate: number
+        }
+        Insert: {
+          bonus_rate?: number
+          bonus_threshold?: number
+          commission_rate?: number
+          contingency_rate?: number
+          cost_per_km?: number
+          country_id?: string | null
+          currency?: string
+          default_mission_people?: number
+          default_probability?: number
+          id?: string
+          inventory_date?: string | null
+          lodging_per_night?: number
+          margin_rate?: number
+          payment_delay_days?: number
+          per_diem?: number
+          updated_at?: string
+          vat_rate?: number
+          warranty_rate?: number
+        }
+        Update: {
+          bonus_rate?: number
+          bonus_threshold?: number
+          commission_rate?: number
+          contingency_rate?: number
+          cost_per_km?: number
+          country_id?: string | null
+          currency?: string
+          default_mission_people?: number
+          default_probability?: number
+          id?: string
+          inventory_date?: string | null
+          lodging_per_night?: number
+          margin_rate?: number
+          payment_delay_days?: number
+          per_diem?: number
+          updated_at?: string
+          vat_rate?: number
+          warranty_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_settings_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_solutions: {
+        Row: {
+          active: boolean
+          code: string
+          color: string
+          description: string | null
+          label: string
+          reservation_priority: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          color?: string
+          description?: string | null
+          label: string
+          reservation_priority: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          color?: string
+          description?: string | null
+          label?: string
+          reservation_priority?: number
+        }
+        Relationships: [
+        ]
+      }
+      tc_stock_items: {
+        Row: {
+          country_id: string | null
+          designation: string
+          id: string
+          inventory_category: string | null
+          quantity: number
+          solution_code: string | null
+          unit: string
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          country_id?: string | null
+          designation: string
+          id?: string
+          inventory_category?: string | null
+          quantity?: number
+          solution_code?: string | null
+          unit?: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string | null
+          designation?: string
+          id?: string
+          inventory_category?: string | null
+          quantity?: number
+          solution_code?: string | null
+          unit?: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_stock_items_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_supplier_prices: {
+        Row: {
+          contact: string | null
+          country_id: string | null
+          designation: string
+          id: string
+          lead_days: number | null
+          quote_date: string | null
+          remark: string | null
+          supplier: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          contact?: string | null
+          country_id?: string | null
+          designation: string
+          id?: string
+          lead_days?: number | null
+          quote_date?: string | null
+          remark?: string | null
+          supplier: string
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          contact?: string | null
+          country_id?: string | null
+          designation?: string
+          id?: string
+          lead_days?: number | null
+          quote_date?: string | null
+          remark?: string | null
+          supplier?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_supplier_prices_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_teams: {
+        Row: {
+          active: boolean
+          availability_rate: number
+          country_id: string | null
+          hours_per_day: number
+          id: string
+          manager: string | null
+          name: string
+          region: string | null
+          sort_order: number
+          technicians: number
+          updated_at: string
+          working_days: number
+        }
+        Insert: {
+          active?: boolean
+          availability_rate?: number
+          country_id?: string | null
+          hours_per_day?: number
+          id?: string
+          manager?: string | null
+          name: string
+          region?: string | null
+          sort_order?: number
+          technicians?: number
+          updated_at?: string
+          working_days?: number
+        }
+        Update: {
+          active?: boolean
+          availability_rate?: number
+          country_id?: string | null
+          hours_per_day?: number
+          id?: string
+          manager?: string | null
+          name?: string
+          region?: string | null
+          sort_order?: number
+          technicians?: number
+          updated_at?: string
+          working_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_teams_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tc_zones: {
+        Row: {
+          country_id: string | null
+          distance_km: number
+          id: string
+          mission_days: number
+          name: string
+          nights: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          country_id?: string | null
+          distance_km?: number
+          id?: string
+          mission_days?: number
+          name: string
+          nights?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string | null
+          distance_km?: number
+          id?: string
+          mission_days?: number
+          name?: string
+          nights?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tc_zones_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -2503,6 +3475,8 @@ export type Database = {
       }
     }
     Functions: {
+      tc_can: { Args: { _perm: string }; Returns: boolean }
+      fin_can: { Args: { _perm: string }; Returns: boolean }
       approver_user_ids: {
         Args: never
         Returns: {
@@ -2569,6 +3543,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      report_can_review: {
+        Args: { _template: string; _uid: string }
+        Returns: boolean
+      }
       user_scope_country: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
@@ -2583,6 +3561,9 @@ export type Database = {
         | "dhr"
         | "technical_director"
         | "commercial_director"
+        | "sales_rep"
+        | "technician"
+        | "logistics"
       country_status: "active" | "planning" | "done" | "paused"
       risk_level: "high" | "medium" | "low"
       task_priority: "high" | "med" | "low"
@@ -2725,6 +3706,9 @@ export const Constants = {
         "dhr",
         "technical_director",
         "commercial_director",
+        "sales_rep",
+        "technician",
+        "logistics",
       ],
       country_status: ["active", "planning", "done", "paused"],
       risk_level: ["high", "medium", "low"],

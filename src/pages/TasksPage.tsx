@@ -19,6 +19,7 @@ import KanbanBoard from '@/components/tasks/KanbanBoard';
 import SubtaskList from '@/components/tasks/SubtaskList';
 import { exportToCSV } from '@/lib/csvExport';
 import { sendNotificationEmail, notifyAdminsViaEmail } from '@/lib/notificationEmail';
+import { formatDateFr } from '@/lib/dates';
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, 'Le titre est requis').max(200),
@@ -149,7 +150,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
     const result = taskSchema.safeParse(form);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result.error.errors.forEach(e => { fieldErrors[e.path[0] as string] = e.message; });
+      result.error.issues.forEach(e => { fieldErrors[e.path[0] as string] = e.message; });
       setErrors(fieldErrors);
       return;
     }
@@ -318,7 +319,7 @@ export default function TasksPage({ addSignal, searchQuery = '' }: { addSignal?:
                   const ms = allMilestones.find(m => m.id === task.milestone_id);
                   return ms ? <><span>·</span><span>🎯 {ms.title}</span></> : null;
                 })()}
-                {task.due_date && <><span>·</span><span>📅 {task.due_date}</span></>}
+                {task.due_date && <><span>·</span><span>📅 {formatDateFr(task.due_date)}</span></>}
                 {task.owner_name && <><span>·</span><span>{task.owner_name}</span></>}
                 {task.recurrence && task.recurrence !== 'none' && (
                   <><span>·</span><span className="text-accent">🔄 {RECURRENCE_OPTIONS.find(r => r.value === task.recurrence)?.label || task.recurrence}</span></>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { parseAmount } from '@/lib/parseAmount';
 
 interface Country {
   id: string;
@@ -19,8 +20,7 @@ interface Country {
 const COLORS = ['hsl(var(--accent))', 'hsl(var(--sky))', 'hsl(var(--gold))'];
 
 function parseNum(v?: string | null): number {
-  if (!v || v === 'N/A') return 0;
-  return parseFloat(v.replace(/[^\d.]/g, '')) || 0;
+  return parseAmount(v) ?? 0;
 }
 
 export default function RadarComparison({ countries }: { countries: Country[] }) {
@@ -45,7 +45,7 @@ export default function RadarComparison({ countries }: { countries: Country[] })
         case 'Équipe': val = Math.min(c.team_size * 10, 100); break;
         case 'NPS': val = parseNum(c.kpi_nps); break;
         case 'Rétention': val = parseNum(c.kpi_retention); break;
-        case 'CA': val = Math.min(parseNum(c.kpi_ca) / 1000, 100); break;
+        case 'CA': val = Math.min(parseNum(c.kpi_ca) / 10_000, 100); break; // 1 M = 100
       }
       entry[`${c.flag} ${c.name}`] = val;
     });

@@ -7,8 +7,10 @@ import CountryDocuments from '@/components/country/CountryDocuments';
 import CountryMembers from '@/components/country/CountryMembers';
 import CountryKpiCharts from '@/components/country/CountryKpiCharts';
 import CountryNotes from '@/components/country/CountryNotes';
-import { computeMarketScore, getScoreColor, getScoreLabel } from '@/lib/marketScoring';
-import { useCountries, useMilestones } from '@/hooks/useExpansionData';
+import { computeMarketScore, getScoreColor, getScoreLabel, buildScoreInputs } from '@/lib/marketScoring';
+import { useCountries, useMilestones, useRisks, useBudgetEntries } from '@/hooks/useExpansionData';
+import { useKpiHistory } from '@/hooks/useKpiHistory';
+import { formatFCFACompact } from '@/lib/currency';
 import { useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/hooks/useMilestoneMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -43,6 +45,11 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
   const { countryId } = useParams<{ countryId: string }>();
   const { data: countries = [] } = useCountries();
   const { data: milestones = [] } = useMilestones(countryId ?? undefined);
+  const { data: risks = [] } = useRisks();
+  const { data: kpiHistory = [] } = useKpiHistory(countryId ?? undefined);
+  const { data: budgetEntries = [] } = useBudgetEntries();
+  // Dernier mois de KPI saisi : source de vérité des indicateurs affichés
+  const lastKpi = kpiHistory.length > 0 ? kpiHistory.reduce((a, b) => (b.month > a.month ? b : a)) : null;
   const { data: myRole } = useCurrentUserRole();
   const createMilestone = useCreateMilestone();
   const updateMilestone = useUpdateMilestone();
@@ -77,7 +84,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
     const result = milestoneSchema.safeParse(form);
     if (!result.success) {
       const fe: Record<string, string> = {};
-      result.error.errors.forEach(e => { fe[e.path[0] as string] = e.message; });
+      result.error.issues.forEach(e => { fe[e.path[0] as string] = e.message; });
       setErrors(fe); return;
     }
     const payload = {
@@ -190,7 +197,7 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">Scoring Marché</h3>
           {(() => {
-            const score = computeMarketScore(country);
+            const score = computeMarketScore(country, buildScoreInputs(country.id, { milestones, risks, kpiHistory, budgetEntries }));
             const colorClass = getScoreColor(score);
             const label = getScoreLabel(score);
             return (
@@ -219,9 +226,14 @@ export default function CountryDetailPage({ onBack }: CountryDetailPageProps) {
 
         {/* KPIs snapshot */}
         <div className="bg-card border border-border rounded-lg p-5 col-span-2">
-          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">KPIs</h3>
+          <h3 className="font-display text-[15.5px] font-semibold text-primary mb-4">
+            KPIs{lastKpi && <span className="ml-2 text-[11px] font-normal text-muted-foreground">({lastKpi.month})</span>}
+          </h3>
           <div className="grid grid-cols-4 gap-3">
-            {[['CA Mensuel', country.kpi_ca, 'sage'], ['Clients', country.kpi_clients, 'sky'], ['NPS', country.kpi_nps, 'gold'], ['Rétention', country.kpi_retention, 'terracotta']].map(([label, value, color]) => (
+            {(lastKpi
+              ? [['CA Mensuel', formatFCFACompact(lastKpi.ca), 'sage'], ['Clients', lastKpi.clients.toLocaleString('fr-FR'), 'sky'], ['NPS', String(lastKpi.nps), 'gold'], ['Rétention', `${lastKpi.retention} %`, 'terracotta']]
+              : [['CA Mensuel', country.kpi_ca || 'N/A', 'sage'], ['Clients', country.kpi_clients || 'N/A', 'sky'], ['NPS', country.kpi_nps || 'N/A', 'gold'], ['Rétention', country.kpi_retention || 'N/A', 'terracotta']]
+            ).map(([label, value, color]) => (
               <div key={label} className="bg-muted rounded-lg p-4 text-center">
                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">{label}</div>
                 <div className={`font-display text-[22px] font-bold ${value === 'N/A' ? 'text-muted-foreground' : (colorMap[color as string] || 'text-sage')}`}>{value}</div>

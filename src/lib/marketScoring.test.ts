@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeMarketScoreDetailed, getScoreLabel } from './marketScoring';
+import { computeMarketScoreDetailed, getScoreLabel, buildScoreInputs } from './marketScoring';
 
 const baseCountry = {
   pct: 0,
@@ -124,5 +124,60 @@ describe('getScoreLabel', () => {
     expect(getScoreLabel(60)).toBe('Bon');
     expect(getScoreLabel(30)).toBe('Moyen');
     expect(getScoreLabel(10)).toBe('Faible');
+  });
+});
+describe('buildScoreInputs', () => {
+  const src = {
+    milestones: [
+      { country_id: 'sn', is_done: true },
+      { country_id: 'sn', is_done: false },
+      { country_id: 'ci', is_done: true },
+    ],
+    risks: [{ country_id: 'ci', level: 'high' }],
+    kpiHistory: [
+      { country_id: 'sn', month: '2026-08', ca: 10, clients: 10, nps: 10, retention: 10, target_ca: 100, target_clients: 100, target_nps: 100, target_retention: 100 },
+      { country_id: 'sn', month: '2026-09', ca: 90, clients: 85, nps: 20, retention: 0, target_ca: 100, target_clients: 100, target_nps: 100, target_retention: 0 },
+    ],
+    budgetEntries: [
+      { country_id: 'sn', allocated_k: 1000, spent_k: 600 },
+      { country_id: 'sn', allocated_k: 1000, spent_k: 600 },
+    ],
+  };
+
+  it('ne garde que les données du pays', () => {
+    const i = buildScoreInputs('sn', src);
+    expect(i.milestones).toHaveLength(2);
+    expect(i.risks).toEqual([]);
+    expect(i.budget).toEqual({ allocated_k: 2000, spent_k: 1200 });
+  });
+
+  it('utilise le dernier mois de KPI et ignore les cibles nulles', () => {
+    const i = buildScoreInputs('sn', src);
+    expect(i.kpis).toEqual([
+      { value: 90, target: 100 },
+      { value: 85, target: 100 },
+      { value: 20, target: 100 },
+    ]);
+  });
+
+  it('les jalons comptent enfin dans le score', () => {
+    const r = computeMarketScoreDetailed(baseCountry, buildScoreInputs('sn', src));
+    expect(r.milestones).toBe(50);
+    expect(r.kpis).toBe(67); // 2 KPI verts sur 3
+    expect(r.risks).toBe(100); // aucun risque pour ce pays
+  });
+
+  it('un pays sans aucune donnée retombe sur la fiche', () => {
+    expect(buildScoreInputs('zz', { })).toEqual({});
+  });
+});
+
+describe('repli sur les champs texte de la fiche pays', () => {
+  it('lit correctement les suffixes et séparateurs de milliers', () => {
+    const r = computeMarketScoreDetailed({
+      ...baseCountry, kpi_ca: '284K€', kpi_clients: '1,240', kpi_nps: '72', kpi_retention: '89%',
+    });
+    // (0.284 + 1 [plafonné] + 0.72 + 0.89) / 4 ≈ 72 %
+    expect(r.kpis).toBe(72);
   });
 });

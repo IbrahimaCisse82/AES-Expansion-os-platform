@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Bell, Plus, LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ENVIRONMENTS, envForLink, envForPath, envById } from '@/lib/environments';
+import GlobalSearch, { GlobalSearchButton } from '@/components/GlobalSearch';
+import { useMarkNotificationsRead, useMyNotifications } from '@/hooks/useMyNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityLog } from '@/hooks/useExpansionData';
 import { useTheme } from '@/hooks/useTheme';
@@ -13,13 +17,16 @@ const pageNames: Record<string, string> = {
   kpis: 'KPIs Post-Lancement',
   budget: 'Budget & Finances',
   risks: 'Registre des Risques',
-  comments: 'Commentaires',
+  comments: 'Discussions',
   history: 'Historique',
   team: 'Équipe',
   profile: 'Mon profil',
   settings: 'Paramètres',
   'country-detail': 'Fiche Pays',
   bi: 'Business Intelligence',
+  tc: 'Technico-commercial',
+  finance: 'Finance AES',
+  reporting: 'Reporting AES',
 };
 
 const ADDABLE_PAGES = ['tasks', 'risks', 'budget', 'comments', 'countries', 'roadmap'];
@@ -37,6 +44,21 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
   const { data: activity = [] } = useActivityLog();
   const { isDark, toggleTheme } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notifTab, setNotifTab] = useState<'mine' | 'activity'>('mine');
+  const { data: mine = [] } = useMyNotifications();
+  const markRead = useMarkNotificationsRead();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const title = (() => {
+    const env = envForPath(pathname);
+    if (!env) return pageNames[activePage] || activePage;
+    const items = ENVIRONMENTS.flatMap(e => e.nav.flatMap(g => g.items)).filter(i => pathname === i.path || pathname.startsWith(`${i.path}/`)).sort((a, b) => b.path.length - a.path.length);
+    const exact = items[0] && (pathname === items[0].path || items[0].path !== envById(env).home);
+    const label = (exact ? items[0]?.label : null) ?? (env === 'reporting' ? 'Rapport' : env === 'expansion' && pathname.startsWith('/app/countries/') ? 'Fiche pays' : items[0]?.label) ?? pageNames[activePage] ?? activePage;
+    return env === 'expansion' ? label : `${envById(env).label} · ${label}`;
+  })();
+  const unread = mine.filter(n => !n.is_read).length;
   const notifRef = useRef<HTMLDivElement>(null);
 
   const initials = user?.user_metadata?.full_name
@@ -61,10 +83,11 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
       </button>
 
       <h1 className="font-display text-base lg:text-lg font-semibold text-primary flex-1 truncate">
-        {pageNames[activePage] || activePage}
+        {title}
       </h1>
 
-      <div className="relative hidden sm:block">
+      {envForPath(pathname) === 'expansion' && (
+        <div className="relative hidden lg:block">
         <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
@@ -73,7 +96,10 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
           placeholder="Rechercher…"
           className="pl-8 pr-3 py-2 border-[1.5px] border-border rounded-lg text-[13px] w-[160px] lg:w-[200px] bg-card outline-none focus:border-accent focus:w-[200px] lg:focus:w-[240px] transition-all font-sans"
         />
-      </div>
+        </div>
+      )}
+      <GlobalSearchButton onClick={() => setSearchOpen(true)} />
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
       {showAdd && (
         <button
@@ -89,19 +115,49 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
       <div className="relative" ref={notifRef}>
         <button
           onClick={() => setNotifOpen(prev => !prev)}
+          aria-label={unread ? `Notifications (${unread} non lues)` : 'Notifications'}
           className="relative w-[34px] h-[34px] border border-border rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
         >
           <Bell size={16} />
-          {activity.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border-[1.5px] border-card" />
+          {unread > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-destructive text-destructive-foreground text-[9.5px] font-bold rounded-full border-[1.5px] border-card flex items-center justify-center">{unread > 9 ? '9+' : unread}</span>
           )}
         </button>
 
         {notifOpen && (
           <div className="absolute right-0 top-[42px] w-[300px] sm:w-[340px] bg-card border border-border rounded-lg shadow-elevated z-50 overflow-hidden">
-            <div className="px-4 py-3 border-b border-border">
-              <h3 className="text-[13px] font-semibold text-primary">Activité récente</h3>
+            <div className="px-3 py-2 border-b border-border flex items-center gap-1">
+              {(['mine', 'activity'] as const).map(t => (
+                <button key={t} onClick={() => setNotifTab(t)} className={`px-2.5 py-1 rounded-md text-[12px] font-medium ${notifTab === t ? 'bg-muted text-primary' : 'text-muted-foreground hover:bg-muted/60'}`}>
+                  {t === 'mine' ? `Pour moi${unread ? ` (${unread})` : ''}` : 'Activité'}
+                </button>
+              ))}
+              {notifTab === 'mine' && unread > 0 && <button onClick={() => markRead.mutate('all')} className="ml-auto text-[11px] text-accent hover:underline">Tout marquer comme lu</button>}
             </div>
+            {notifTab === 'mine' && (
+              <div className="max-h-[360px] overflow-y-auto">
+                {mine.length === 0 && <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">Aucune notification</div>}
+                {mine.map(n => (
+                  <button key={n.id} type="button" className={`w-full text-left px-4 py-2.5 border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors ${n.is_read ? '' : 'bg-accent/5'}`}
+                    onClick={() => {
+                      if (!n.is_read) markRead.mutate([n.id]);
+                      setNotifOpen(false);
+                      const link = n.link || '';
+                      if (link) navigate(link.startsWith('/app') ? link : `/app${link.startsWith('/') ? '' : '/'}${link}`);
+                    }}>
+                    <div className="flex items-start gap-2">
+                      {!n.is_read && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />}
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-medium text-primary leading-snug">{n.title}</div>
+                        {n.message && <div className="text-[11.5px] text-muted-foreground line-clamp-2">{n.message}</div>}
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{(() => { const e = envForLink(n.link); return e && e !== 'common' ? <span className="inline-flex items-center gap-1 mr-1.5"><span className={`h-1.5 w-1.5 rounded-full ${envById(e).accent}`} />{envById(e).label} ·</span> : null; })()}{new Date(n.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {notifTab === 'activity' && (
             <div className="max-h-[320px] overflow-y-auto">
               {activity.length === 0 && (
                 <div className="px-4 py-6 text-center text-[12px] text-muted-foreground">Aucune activité</div>
@@ -118,6 +174,7 @@ export default function Topbar({ activePage, onAdd, searchQuery, onSearchChange,
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
       </div>

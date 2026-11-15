@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/lib/fetchAll';
 
 export interface KpiHistoryEntry {
   id: string;
@@ -27,9 +28,8 @@ export function useKpiHistory(countryId?: string) {
         .select('*')
         .order('month', { ascending: true });
       if (countryId) q = q.eq('country_id', countryId);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as KpiHistoryEntry[];
+      const ordered = q.order('id');
+      return (await fetchAllRows((from, to) => ordered.range(from, to))) as KpiHistoryEntry[];
     },
   });
 }

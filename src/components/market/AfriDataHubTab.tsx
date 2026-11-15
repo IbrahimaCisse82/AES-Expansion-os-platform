@@ -686,6 +686,11 @@ const TAB_CONFIG = [
 export default function AfriDataHubTab() {
   return (
     <div className="space-y-4">
+      <div role="note" className="rounded-lg border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-[12px] text-amber-900 dark:text-amber-200">
+        <strong>Données d'illustration.</strong> Les accords, programmes, bailleurs et appels d'offres ci-dessous
+        sont un jeu d'exemples intégré à l'application, non mis à jour automatiquement. Vérifiez chaque
+        information auprès de la source officielle avant toute décision.
+      </div>
       <Tabs defaultValue="accords" className="space-y-4">
         <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
           {TAB_CONFIG.map(tab => (

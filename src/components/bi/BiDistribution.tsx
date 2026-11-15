@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Clock } from 'lucide-react';
 import { useReportSchedules, useSavedReports, useBiReportMutations } from '@/hooks/useBiReports';
-import { BI_REPORT_TEMPLATES } from '@/lib/biReportTemplates';
+import { REPORT_TEMPLATES as BI_REPORT_TEMPLATES } from '@/lib/reporting/templates';
 
 const FREQ_LABELS: Record<string, string> = { daily: 'Quotidien', weekly: 'Hebdomadaire', monthly: 'Mensuel' };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import StatusPill from '@/components/StatusPill';
-import { useCountries } from '@/hooks/useExpansionData';
+import { useCountries, useCountryStats } from '@/hooks/useExpansionData';
+import { formatFCFACompact } from '@/lib/currency';
 import { useCreateCountry, useUpdateCountry, useDeleteCountry } from '@/hooks/useCountryMutations';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -39,7 +40,9 @@ interface CountriesPageProps {
 }
 
 export default function CountriesPage({ onSelectCountry, addSignal }: CountriesPageProps) {
-  const { data: countries = [], isLoading } = useCountries();
+  const { data: rawCountries = [], isLoading } = useCountries();
+  const stats = useCountryStats();
+  const countries = rawCountries.map(c => ({ ...c, risk_count: stats[c.id]?.risks ?? c.risk_count, team_size: stats[c.id]?.team ?? c.team_size, budget: stats[c.id]?.budgetK ? formatFCFACompact(stats[c.id].budgetK * 1000) : c.budget }));
   const { data: myRole } = useCurrentUserRole();
   const createCountry = useCreateCountry();
   const updateCountry = useUpdateCountry();
@@ -75,7 +78,7 @@ export default function CountriesPage({ onSelectCountry, addSignal }: CountriesP
     const result = countrySchema.safeParse(form);
     if (!result.success) {
       const fe: Record<string, string> = {};
-      result.error.errors.forEach(e => { fe[e.path[0] as string] = e.message; });
+      result.error.issues.forEach(e => { fe[e.path[0] as string] = e.message; });
       setErrors(fe);
       return;
     }

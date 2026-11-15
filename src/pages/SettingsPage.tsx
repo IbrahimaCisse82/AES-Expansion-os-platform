@@ -16,6 +16,7 @@ import { Plus, Pencil, Trash2, Download, Mail, Bell, Shield } from 'lucide-react
 import { useCountries, useTasks, useRisks, useBudgetEntries } from '@/hooks/useExpansionData';
 import { exportToCSV } from '@/lib/csvExport';
 import ExchangeRatesSettings from '@/components/settings/ExchangeRatesSettings';
+import EnvironmentAccessSettings from '@/components/settings/EnvironmentAccessSettings';
 
 const COLOR_OPTIONS = [
   { value: 'sage', label: 'Vert', css: 'bg-sage' },
@@ -449,6 +450,7 @@ export default function SettingsPage() {
       <p className="text-[12.5px] text-muted-foreground mb-8">Gérez les paramètres de votre plateforme</p>
 
       <div className="space-y-6 max-w-xl">
+        <EnvironmentAccessSettings />
         <CurrencySettingsSection />
         <ExchangeRatesSettings />
         <ThemeCustomizationSection />

@@ -1,0 +1,453 @@
+{
+ "source": "AES TABLEAU DE BORD TECHNICO-COMMERCIAL.xlsm, recalculé par LibreOffice 24.2 avec ce jeu de données",
+ "stock": [
+  {
+   "designation": "POMPE LORENTZ PU 150 - BOOST",
+   "quantity": 1,
+   "unit_cost": 299044,
+   "solution_code": "LORENTZ"
+  },
+  {
+   "designation": "POMPE LORENTZ PS 600 C-SJ 8-5",
+   "quantity": 2,
+   "unit_cost": 517890,
+   "solution_code": "LORENTZ"
+  },
+  {
+   "designation": "POMPE SOLAIRE PS 1800 C-SJ 5-12",
+   "quantity": 6,
+   "unit_cost": 598649,
+   "solution_code": "LORENTZ"
+  },
+  {
+   "designation": "ROTOR POMPE LORENTZ MOTEUR HR PU 1800",
+   "quantity": 5,
+   "unit_cost": 378500,
+   "solution_code": "LORENTZ"
+  }
+ ],
+ "suppliers": [
+  [
+   "POMPE LORENTZ PS 600 C-SJ 8-5",
+   "Fourn1",
+   600000
+  ],
+  [
+   "POMPE LORENTZ PS 600 C-SJ 8-5",
+   "Fourn2",
+   550000
+  ],
+  [
+   "ARTICLE HORS STOCK TEST",
+   "Fourn3",
+   12345
+  ],
+  [
+   "POMPE SOLAIRE PS 1800 C-SJ 5-12",
+   "Fourn1",
+   99999
+  ]
+ ],
+ "rates": [
+  5000,
+  4000,
+  3000,
+  2500,
+  1500,
+  1000
+ ],
+ "profiles": [
+  "Ingénieur / Chef de projet",
+  "Chef d'équipe / Technicien supérieur",
+  "Technicien électricien",
+  "Technicien plombier / pompiste",
+  "Aide-technicien / Manœuvre",
+  "Chauffeur"
+ ],
+ "plan": {
+  "VICTRON|0": [
+   [
+    [
+     "POMPE LORENTZ PS 600 C-SJ 8-5",
+     1
+    ],
+    [
+     "POMPE SOLAIRE PS 1800 C-SJ 5-12",
+     3
+    ],
+    [
+     "ARTICLE HORS STOCK TEST",
+     2
+    ]
+   ],
+   [
+    [
+     2,
+     2,
+     8
+    ],
+    [
+     4,
+     1,
+     4
+    ]
+   ],
+   25000
+  ],
+  "VICTRON|1": [
+   [
+    [
+     "POMPE LORENTZ PS 600 C-SJ 8-5",
+     2
+    ],
+    [
+     "POMPE LORENTZ PU 150 - BOOST",
+     1
+    ],
+    [
+     "POMPE SOLAIRE PS 1800 C-SJ 5-12",
+     4
+    ]
+   ],
+   [
+    [
+     1,
+     1,
+     16
+    ]
+   ],
+   0
+  ],
+  "HUAWEI|0": [
+   [
+    [
+     "POMPE LORENTZ PS 600 C-SJ 8-5",
+     1
+    ],
+    [
+     "POMPE LORENTZ PU 150 - BOOST",
+     2
+    ],
+    [
+     "ROTOR POMPE LORENTZ MOTEUR HR PU 1800",
+     1
+    ]
+   ],
+   [
+    [
+     3,
+     2,
+     6
+    ]
+   ],
+   10000
+  ],
+  "LORENTZ|2": [
+   [
+    [
+     "POMPE SOLAIRE PS 1800 C-SJ 5-12",
+     1
+    ],
+    [
+     "ARTICLE HORS STOCK TEST",
+     1
+    ]
+   ],
+   [],
+   5000
+  ],
+  "SPARK|0": [
+   [
+    [
+     "ROTOR POMPE LORENTZ MOTEUR HR PU 1800",
+     500
+    ]
+   ],
+   [
+    [
+     5,
+     3,
+     2
+    ]
+   ],
+   0
+  ]
+ },
+ "expected": {
+  "VICTRON|0": {
+   "lines": [
+    {
+     "E": 2,
+     "F": 0,
+     "G": 2,
+     "H": 1,
+     "I": 0,
+     "J": 517890,
+     "K": 550000,
+     "L": "Fourn2",
+     "M": 517890,
+     "N": 0,
+     "O": 517890,
+     "P": "Stock OK",
+     "B": "POMPE LORENTZ PS 600 C-SJ 8-5"
+    },
+    {
+     "E": 6,
+     "F": 0,
+     "G": 6,
+     "H": 3,
+     "I": 0,
+     "J": 598649,
+     "K": 99999,
+     "L": "Fourn1",
+     "M": 1795947,
+     "N": 0,
+     "O": 1795947,
+     "P": "Stock OK",
+     "B": "POMPE SOLAIRE PS 1800 C-SJ 5-12"
+    },
+    {
+     "E": 0,
+     "F": 0,
+     "G": 0,
+     "H": 0,
+     "I": 2,
+     "J": 0,
+     "K": 12345,
+     "L": "Fourn3",
+     "M": 0,
+     "N": 24690,
+     "O": 24690,
+     "P": "Achat requis",
+     "B": "ARTICLE HORS STOCK TEST"
+    }
+   ],
+   "recap": {
+    "stock": 2313837,
+    "buy": 24690,
+    "mat": 2338527,
+    "mo": 54000,
+    "transport": 25000,
+    "contingency": 120876.35,
+    "cost": 2538403.35,
+    "margin": 634600.8375,
+    "ht": 3173004.1875,
+    "vat": 571140.75375,
+    "ttc": 3744144.94125,
+    "share": 0.989442071868317,
+    "hours": 20
+   }
+  },
+  "VICTRON|1": {
+   "lines": [
+    {
+     "E": 2,
+     "F": 1,
+     "G": 1,
+     "H": 1,
+     "I": 1,
+     "J": 517890,
+     "K": 550000,
+     "L": "Fourn2",
+     "M": 517890,
+     "N": 550000,
+     "O": 1067890,
+     "P": "Achat requis",
+     "B": "POMPE LORENTZ PS 600 C-SJ 8-5"
+    },
+    {
+     "E": 1,
+     "F": 0,
+     "G": 1,
+     "H": 1,
+     "I": 0,
+     "J": 299044,
+     "K": 0,
+     "L": null,
+     "M": 299044,
+     "N": 0,
+     "O": 299044,
+     "P": "Stock OK",
+     "B": "POMPE LORENTZ PU 150 - BOOST"
+    },
+    {
+     "E": 6,
+     "F": 3,
+     "G": 3,
+     "H": 3,
+     "I": 1,
+     "J": 598649,
+     "K": 99999,
+     "L": "Fourn1",
+     "M": 1795947,
+     "N": 99999,
+     "O": 1895946,
+     "P": "Achat requis",
+     "B": "POMPE SOLAIRE PS 1800 C-SJ 5-12"
+    }
+   ],
+   "recap": {
+    "stock": 2612881,
+    "buy": 649999,
+    "mat": 3262880,
+    "mo": 64000,
+    "transport": 0,
+    "contingency": 166344,
+    "cost": 3493224,
+    "margin": 873306,
+    "ht": 4366530,
+    "vat": 785975.4,
+    "ttc": 5152505.4,
+    "share": 0.800789793066248,
+    "hours": 16
+   }
+  },
+  "HUAWEI|0": {
+   "lines": [
+    {
+     "E": 2,
+     "F": 2,
+     "G": 0,
+     "H": 0,
+     "I": 1,
+     "J": 517890,
+     "K": 550000,
+     "L": "Fourn2",
+     "M": 0,
+     "N": 550000,
+     "O": 550000,
+     "P": "Achat requis",
+     "B": "POMPE LORENTZ PS 600 C-SJ 8-5"
+    },
+    {
+     "E": 1,
+     "F": 1,
+     "G": 0,
+     "H": 0,
+     "I": 2,
+     "J": 299044,
+     "K": 0,
+     "L": null,
+     "M": 0,
+     "N": 0,
+     "O": 0,
+     "P": "Prix fournisseur manquant",
+     "B": "POMPE LORENTZ PU 150 - BOOST"
+    },
+    {
+     "E": 5,
+     "F": 0,
+     "G": 5,
+     "H": 1,
+     "I": 0,
+     "J": 378500,
+     "K": 0,
+     "L": null,
+     "M": 378500,
+     "N": 0,
+     "O": 378500,
+     "P": "Stock OK",
+     "B": "ROTOR POMPE LORENTZ MOTEUR HR PU 1800"
+    }
+   ],
+   "recap": {
+    "stock": 378500,
+    "buy": 550000,
+    "mat": 928500,
+    "mo": 30000,
+    "transport": 10000,
+    "contingency": 48425,
+    "cost": 1016925,
+    "margin": 254231.25,
+    "ht": 1271156.25,
+    "vat": 228808.125,
+    "ttc": 1499964.375,
+    "share": 0.407646742057081,
+    "hours": 12
+   }
+  },
+  "LORENTZ|2": {
+   "lines": [
+    {
+     "E": 6,
+     "F": 6,
+     "G": 0,
+     "H": 0,
+     "I": 1,
+     "J": 598649,
+     "K": 99999,
+     "L": "Fourn1",
+     "M": 0,
+     "N": 99999,
+     "O": 99999,
+     "P": "Achat requis",
+     "B": "POMPE SOLAIRE PS 1800 C-SJ 5-12"
+    },
+    {
+     "E": 0,
+     "F": 0,
+     "G": 0,
+     "H": 0,
+     "I": 1,
+     "J": 0,
+     "K": 12345,
+     "L": "Fourn3",
+     "M": 0,
+     "N": 12345,
+     "O": 12345,
+     "P": "Achat requis",
+     "B": "ARTICLE HORS STOCK TEST"
+    }
+   ],
+   "recap": {
+    "stock": 0,
+    "buy": 112344,
+    "mat": 112344,
+    "mo": 0,
+    "transport": 5000,
+    "contingency": 5867.2,
+    "cost": 123211.2,
+    "margin": 30802.8,
+    "ht": 154014,
+    "vat": 27722.52,
+    "ttc": 181736.52,
+    "share": 0,
+    "hours": 0
+   }
+  },
+  "SPARK|0": {
+   "lines": [
+    {
+     "E": 5,
+     "F": 1,
+     "G": 4,
+     "H": 4,
+     "I": 496,
+     "J": 378500,
+     "K": 0,
+     "L": null,
+     "M": 1514000,
+     "N": 0,
+     "O": 1514000,
+     "P": "Prix fournisseur manquant",
+     "B": "ROTOR POMPE LORENTZ MOTEUR HR PU 1800"
+    }
+   ],
+   "recap": {
+    "stock": 1514000,
+    "buy": 0,
+    "mat": 1514000,
+    "mo": 6000,
+    "transport": 0,
+    "contingency": 76000,
+    "cost": 1596000,
+    "margin": 399000,
+    "ht": 1995000,
+    "vat": 359100,
+    "ttc": 2354100,
+    "share": 1,
+    "hours": 6
+   }
+  }
+ }
+}

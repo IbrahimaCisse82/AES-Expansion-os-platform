@@ -1,15 +1,34 @@
-import { useState, useCallback, lazy, Suspense, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
 import Topbar from '@/components/Topbar';
 import { useCountries } from '@/hooks/useExpansionData';
 import { useCurrentUserRole } from '@/hooks/useUserRoles';
 import { canAccessBi } from '@/lib/biAccess';
+import { envForPath, readLastEnv, writeLastEnv, type EnvId } from '@/lib/environments';
+import { useMyEnvironments } from '@/hooks/useEnvironments';
 
 function RequireBiAccess({ children }: { children: ReactNode }) {
   const { data: role, isPending } = useCurrentUserRole();
   if (isPending) return <div className="text-muted-foreground text-sm">Chargement…</div>;
-  if (!canAccessBi(role)) return <Navigate to="/app/dashboard" replace />;
+  if (!canAccessBi(role)) return <Navigate to="/app" replace />;
+  return <>{children}</>;
+}
+
+/** /app : arrivée dans l'environnement par défaut du rôle (ou le dernier utilisé). */
+function EnvHome() {
+  const { isPending, defaultEnv } = useMyEnvironments();
+  if (isPending) return <div className="text-muted-foreground text-sm">Chargement…</div>;
+  const env = defaultEnv(readLastEnv());
+  if (!env) return <p className="text-sm text-muted-foreground py-10 text-center">Aucun environnement n'est ouvert pour votre profil. Contactez l'administrateur.</p>;
+  return <Navigate to={env.home} replace />;
+}
+
+/** Un environnement non autorisé pour le rôle renvoie vers l'environnement par défaut. */
+function RequireEnv({ env, children }: { env: EnvId; children: ReactNode }) {
+  const { isPending, envs } = useMyEnvironments();
+  if (isPending) return <div className="text-muted-foreground text-sm">Chargement…</div>;
+  if (!envs.some(e => e.id === env)) return <Navigate to="/app" replace />;
   return <>{children}</>;
 }
 
@@ -29,6 +48,9 @@ const RoadmapPage = lazy(() => import('@/pages/RoadmapPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const MarketAnalysisPage = lazy(() => import('@/pages/MarketAnalysisPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const TechnicoCommercialPage = lazy(() => import('@/pages/TechnicoCommercialPage'));
+const FinancePage = lazy(() => import('@/pages/FinancePage'));
+const ReportingPage = lazy(() => import('@/pages/ReportingPage'));
 
 const Index = () => {
   const navigate = useNavigate();
@@ -36,7 +58,17 @@ const Index = () => {
   const [addSignal, setAddSignal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { data: countries = [] } = useCountries();
+  const myEnvs = useMyEnvironments();
+  const pathEnv = envForPath(location.pathname);
+  const [env, setEnv] = useState<EnvId>(() => {
+    const last = readLastEnv();
+    return pathEnv ?? (last === 'expansion' || last === 'tc' || last === 'finance' || last === 'reporting' ? last : 'expansion');
+  });
+  useEffect(() => {
+    if (pathEnv) { setEnv(pathEnv); writeLastEnv(pathEnv); }
+    else if (!myEnvs.isPending) { const d = myEnvs.defaultEnv(readLastEnv()); if (d && !myEnvs.envs.some(e => e.id === env)) setEnv(d.id); }
+  }, [pathEnv, myEnvs, env]);
+  const { data: countries = [] } = useCountries({ enabled: env === 'expansion' });
 
   const getActivePage = () => {
     const path = location.pathname.replace(/^\/app\/?/, '').split('/')[0] || 'dashboard';
@@ -45,11 +77,6 @@ const Index = () => {
 
   const activePage = getActivePage();
   const avgPct = countries.length ? Math.round(countries.reduce((s, c) => s + c.pct, 0) / countries.length) : 0;
-
-  const handleNavigate = (page: string) => {
-    navigate(`/app/${page}`);
-    setSearchQuery('');
-  };
 
   const handleAdd = useCallback(() => {
     setAddSignal(prev => prev + 1);
@@ -66,13 +93,12 @@ const Index = () => {
   return (
     <div className="flex min-h-screen">
       <AppSidebar
-        activePage={activePage === 'countries' || activePage.startsWith('countries/') ? 'countries' : activePage}
-        onNavigate={handleNavigate}
+        env={env}
         globalProgress={avgPct}
         mobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
       />
-      <main className="lg:ml-[248px] flex-1 flex flex-col min-h-screen">
+      <main className="lg:ml-[248px] flex-1 min-w-0 flex flex-col min-h-screen">
         <Topbar
           activePage={activePage}
           onAdd={handleAdd}
@@ -80,25 +106,29 @@ const Index = () => {
           onSearchChange={setSearchQuery}
           onMenuToggle={() => setMobileMenuOpen(prev => !prev)}
         />
-        <div className="p-4 lg:p-8 flex-1">
+        <div className="p-4 lg:p-8 flex-1 min-w-0">
           <Suspense fallback={<div className="text-muted-foreground text-sm">Chargement…</div>}>
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/countries" element={<CountriesPage onSelectCountry={handleSelectCountry} addSignal={addSignal} />} />
-            <Route path="/countries/:countryId" element={<CountryDetailPage onBack={handleBackFromCountry} />} />
-            <Route path="/tasks" element={<TasksPage addSignal={addSignal} searchQuery={searchQuery} />} />
-            <Route path="/budget" element={<BudgetPage addSignal={addSignal} searchQuery={searchQuery} />} />
-            <Route path="/bi" element={<RequireBiAccess><BiPage /></RequireBiAccess>} />
-            <Route path="/risks" element={<RisksPage addSignal={addSignal} searchQuery={searchQuery} />} />
-            <Route path="/history" element={<HistoryPage searchQuery={searchQuery} />} />
+            <Route path="/" element={<EnvHome />} />
+            <Route path="/dashboard" element={<RequireEnv env="expansion"><DashboardPage /></RequireEnv>} />
+            <Route path="/countries" element={<RequireEnv env="expansion"><CountriesPage onSelectCountry={handleSelectCountry} addSignal={addSignal} /></RequireEnv>} />
+            <Route path="/countries/:countryId" element={<RequireEnv env="expansion"><CountryDetailPage onBack={handleBackFromCountry} /></RequireEnv>} />
+            <Route path="/tasks" element={<RequireEnv env="expansion"><TasksPage addSignal={addSignal} searchQuery={searchQuery} /></RequireEnv>} />
+            <Route path="/budget" element={<RequireEnv env="expansion"><BudgetPage addSignal={addSignal} searchQuery={searchQuery} /></RequireEnv>} />
+            <Route path="/tc/*" element={<RequireEnv env="tc"><TechnicoCommercialPage /></RequireEnv>} />
+            <Route path="/finance/*" element={<RequireEnv env="finance"><FinancePage /></RequireEnv>} />
+            <Route path="/reporting/*" element={<RequireEnv env="reporting"><ReportingPage /></RequireEnv>} />
+            <Route path="/bi" element={<RequireEnv env="expansion"><RequireBiAccess><BiPage /></RequireBiAccess></RequireEnv>} />
+            <Route path="/risks" element={<RequireEnv env="expansion"><RisksPage addSignal={addSignal} searchQuery={searchQuery} /></RequireEnv>} />
+            <Route path="/history" element={<RequireEnv env="expansion"><HistoryPage searchQuery={searchQuery} /></RequireEnv>} />
             <Route path="/team" element={<TeamPage />} />
             <Route path="/comments" element={<CommentsPage addSignal={addSignal} searchQuery={searchQuery} />} />
-            <Route path="/kpis" element={<KpisPage />} />
-            <Route path="/market-analysis" element={<MarketAnalysisPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/roadmap" element={<RoadmapPage addSignal={addSignal} searchQuery={searchQuery} />} />
+            <Route path="/kpis" element={<RequireEnv env="expansion"><KpisPage /></RequireEnv>} />
+            <Route path="/market-analysis" element={<RequireEnv env="expansion"><MarketAnalysisPage /></RequireEnv>} />
+            <Route path="/calendar" element={<RequireEnv env="expansion"><CalendarPage /></RequireEnv>} />
+            <Route path="/roadmap" element={<RequireEnv env="expansion"><RoadmapPage addSignal={addSignal} searchQuery={searchQuery} /></RequireEnv>} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<Navigate to="/app" replace />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>
           </Suspense>

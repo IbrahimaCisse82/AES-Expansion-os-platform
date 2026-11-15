@@ -39,7 +39,7 @@ export default function InvestmentRegister({ scenarioId, countries, canWrite }: 
       parent_entity_id: parentId, parent_entity_label: parent ? `${parent.flag} ${parent.name}` : parentId,
       subsidiary_entity_id: subId, subsidiary_entity_label: sub ? `${sub.flag} ${sub.name}` : subId,
       ownership_pct: Number(ownershipPct) || 100,
-      acquisition_date: acqDate, acquisition_cost: Number(acqCost) || 0,
+      acquisition_date: acqDate || null, acquisition_cost: Number(acqCost) || 0,
       book_value: Number(bookValue) || 0, consolidation_method: method,
       status: 'active', notes,
     }, {

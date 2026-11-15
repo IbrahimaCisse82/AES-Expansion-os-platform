@@ -1,3 +1,5 @@
+import { parseAmount } from './parseAmount';
+
 /**
  * ExpansionOS — Score de marché (formule officielle 25/20/25/20/10)
  *
@@ -42,9 +44,56 @@ export interface ScoreBreakdown {
 }
 
 function parseNumeric(val: string | null): number | null {
-  if (!val || val === 'N/A') return null;
-  const n = parseFloat(val.replace(/[^0-9.,]/g, '').replace(',', '.'));
-  return isNaN(n) ? null : n;
+  return parseAmount(val);
+}
+
+/** Lignes brutes utiles au score (types minimaux pour rester découplé de Supabase). */
+export interface ScoreSourceData {
+  milestones?: { country_id: string; is_done: boolean }[];
+  risks?: { country_id: string | null; level: string }[];
+  kpiHistory?: {
+    country_id: string; month: string;
+    ca: number; clients: number; nps: number; retention: number;
+    target_ca: number; target_clients: number; target_nps: number; target_retention: number;
+  }[];
+  budgetEntries?: { country_id: string | null; allocated_k: number; spent_k: number }[];
+}
+
+/**
+ * Assemble les entrées structurées du score d'un pays à partir des données
+ * réelles (jalons, risques, dernier mois de KPI, budget). Sans ces entrées,
+ * le score retombait sur les champs texte de la fiche pays et la composante
+ * « jalons » valait toujours 0.
+ */
+export function buildScoreInputs(countryId: string, src: ScoreSourceData): ScoreInputs {
+  const inputs: ScoreInputs = {};
+
+  const ms = src.milestones?.filter(m => m.country_id === countryId);
+  if (ms && ms.length > 0) inputs.milestones = ms;
+
+  const rs = src.risks?.filter(r => r.country_id === countryId);
+  if (src.risks) inputs.risks = rs ?? [];
+
+  const months = src.kpiHistory?.filter(k => k.country_id === countryId) ?? [];
+  if (months.length > 0) {
+    const last = months.reduce((a, b) => (b.month > a.month ? b : a));
+    inputs.kpis = [
+      { value: last.ca, target: last.target_ca },
+      { value: last.clients, target: last.target_clients },
+      { value: last.nps, target: last.target_nps },
+      { value: last.retention, target: last.target_retention },
+    ].filter(k => k.target > 0);
+    if (inputs.kpis.length === 0) delete inputs.kpis;
+  }
+
+  const be = src.budgetEntries?.filter(b => b.country_id === countryId) ?? [];
+  if (be.length > 0) {
+    inputs.budget = {
+      allocated_k: be.reduce((s, b) => s + (b.allocated_k || 0), 0),
+      spent_k: be.reduce((s, b) => s + (b.spent_k || 0), 0),
+    };
+  }
+  return inputs;
 }
 
 /**
@@ -79,7 +128,8 @@ export function computeMarketScoreDetailed(c: CountryData, inputs: ScoreInputs =
   // 4. Exposition risque (100 = pas de risque)
   const rs = inputs.risks;
   let exposure: number;
-  if (rs && rs.length > 0) {
+  if (rs) {
+    // données de risques chargées : aucun risque = aucune exposition
     const weight = (lvl: string) => (lvl === 'high' ? 30 : lvl === 'medium' ? 15 : 5);
     exposure = clamp(rs.reduce((acc, r) => acc + weight(r.level), 0));
   } else {

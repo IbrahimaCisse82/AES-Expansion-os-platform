@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { MONTH_LABELS, applyFilters, formatCompact, type BiFact, type BiFilters } from '@/lib/biAggregate';
+import { fetchAllRows } from '@/lib/fetchAll';
 
 interface Props { facts: BiFact[]; filters: BiFilters }
 
@@ -26,9 +27,8 @@ export function BiYearOverYear({ facts, filters }: Props) {
     queryKey: ['bi_kpi_years'],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from('kpi_history').select('country_id, month, ca, clients');
-      if (error) throw error;
-      return data;
+      const ordered = supabase.from('kpi_history').select('country_id, month, ca, clients').order('id');
+      return fetchAllRows((from, to) => ordered.range(from, to));
     },
   });
 

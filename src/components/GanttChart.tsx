@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useCountries, useMilestones } from '@/hooks/useExpansionData';
+import { formatDateFr } from '@/lib/dates';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 const currentMonth = new Date().getMonth(); // 0-indexed
@@ -144,8 +145,8 @@ export default function GanttChart() {
                         <div className="font-semibold">{milestone.icon} {milestone.title}</div>
                         <div className="text-muted-foreground mt-0.5">
                           {milestone.start_date && milestone.end_date
-                            ? `${milestone.start_date} → ${milestone.end_date}`
-                            : milestone.target_date} · {milestone.is_done ? '✅ Terminé' : '⏳ En cours'}
+                            ? `${formatDateFr(milestone.start_date)} → ${formatDateFr(milestone.end_date)}`
+                            : formatDateFr(milestone.target_date)} · {milestone.is_done ? '✅ Terminé' : '⏳ En cours'}
                         </div>
                       </div>
                     </div>

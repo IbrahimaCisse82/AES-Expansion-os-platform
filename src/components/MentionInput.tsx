@@ -1,3 +1,4 @@
+import { ROLE_LABEL } from '@/lib/roles';
 import { useState, useRef, useEffect, useCallback, KeyboardEvent, ChangeEvent } from 'react';
 import { useAllUsersWithRoles } from '@/hooks/useUserRoles';
 
@@ -133,18 +134,7 @@ export default function MentionInput({ value, onChange, placeholder, maxLength, 
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const ROLE_LABELS: Record<string, string> = {
-    admin: 'Admin',
-    director: 'Directeur',
-    country_manager: 'Country Manager',
-    technical_director: 'Directeur Technique',
-    commercial_director: 'Directeur Commercial',
-    dhr: 'DRH',
-    raf: 'RAF',
-    analyst: 'Analyste',
-    observer: 'Observateur',
-    partner: 'Partenaire',
-  };
+  const ROLE_LABELS = ROLE_LABEL;
 
   return (
     <div className="relative">

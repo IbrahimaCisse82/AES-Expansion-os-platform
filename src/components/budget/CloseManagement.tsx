@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Plus, Trash2, Check, Clock, ClipboardList } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDateFr } from '@/lib/dates';
 
 interface CloseManagementProps {
   scenarioId: string;
@@ -59,7 +60,7 @@ export default function CloseManagement({ scenarioId, countries, canWrite }: Clo
     createTask.mutate({
       scenario_id: scenarioId, task_name: taskName, task_order: tasks.length,
       country_id: countryId || null, country_label: country ? `${country.flag} ${country.name}` : 'Groupe',
-      status: 'pending', assigned_to: null, assigned_name: '', due_date: dueDate, notes: '',
+      status: 'pending', assigned_to: null, assigned_name: '', due_date: dueDate || null, notes: '',
     }, {
       onSuccess: () => { toast.success('Tâche ajoutée'); setAddOpen(false); setTaskName(''); },
       onError: (e: Error) => toast.error(e.message),
@@ -71,12 +72,12 @@ export default function CloseManagement({ scenarioId, countries, canWrite }: Clo
       ? countries.flatMap((c, ci) => DEFAULT_TASKS.map((t, ti) => ({
           scenario_id: scenarioId, task_name: t, task_order: ci * DEFAULT_TASKS.length + ti,
           country_id: c.id, country_label: `${c.flag} ${c.name}`,
-          status: 'pending', assigned_to: null, assigned_name: '', due_date: '', notes: '',
+          status: 'pending', assigned_to: null, assigned_name: '', due_date: null, notes: '',
         })))
       : DEFAULT_TASKS.map((t, i) => ({
           scenario_id: scenarioId, task_name: t, task_order: i,
           country_id: null, country_label: 'Groupe',
-          status: 'pending', assigned_to: null, assigned_name: '', due_date: '', notes: '',
+          status: 'pending', assigned_to: null, assigned_name: '', due_date: null, notes: '',
         }));
 
     Promise.all(items.map(item => createTask.mutateAsync(item)))
@@ -137,7 +138,7 @@ export default function CloseManagement({ scenarioId, countries, canWrite }: Clo
                         {t.status === 'completed' && <Check className="w-2.5 h-2.5" />}
                       </button>
                       <span className={`text-[11px] flex-1 ${t.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>{t.task_name}</span>
-                      {t.due_date && <span className="text-[9px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{t.due_date}</span>}
+                      {t.due_date && <span className="text-[9px] text-muted-foreground flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{formatDateFr(t.due_date)}</span>}
                       {canWrite && <button onClick={() => deleteTask.mutate({ id: t.id, scenarioId })} className="p-0.5 hover:text-destructive"><Trash2 className="w-2.5 h-2.5" /></button>}
                     </div>
                   ))}

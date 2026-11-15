@@ -1,5 +1,6 @@
 // notifications-cron — runs daily. Generates J-7 milestone reminders + monthly KPI/budget summary.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { requireServiceCaller } from '../_shared/service-auth.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,6 +18,9 @@ function isoPlusDays(days: number): string {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const denied = requireServiceCaller(req, corsHeaders)
+  if (denied) return denied
+
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
   const summary: Record<string, number> = { milestones_j7: 0, monthly_report: 0 }
@@ -49,7 +53,7 @@ Deno.serve(async (req) => {
             type: 'milestone_j7',
             title: '⏰ Jalon dans 7 jours',
             message: `${country?.flag ?? ''} ${country?.name ?? m.country_id} — « ${m.title} » est attendu le ${m.target_date}`,
-            link: `/pays/${m.country_id}`,
+            link: `/app/countries/${m.country_id}`,
             entity_type: 'milestone',
             entity_id: m.id,
           })
@@ -81,7 +85,7 @@ Deno.serve(async (req) => {
         type: 'monthly_report',
         title: '📊 Rapport mensuel ExpansionOS',
         message: summaryMsg,
-        link: '/tableau-de-bord',
+        link: '/app/dashboard',
         entity_type: 'report',
         entity_id: today.toISOString().slice(0, 7),
       }))

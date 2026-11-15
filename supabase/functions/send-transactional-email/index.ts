@@ -2,6 +2,7 @@ import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
+import { isServiceCaller } from '../_shared/service-auth.ts'
 
 // Configuration baked in at scaffold time — do NOT change these manually.
 // To update, re-run the email domain setup flow.
@@ -30,9 +31,9 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// Modèles qu'un utilisateur ne doit jamais pouvoir déclencher lui-même
+// (ils contiennent des identifiants ou sont émis par des tâches serveur).
+const SERVER_ONLY_TEMPLATES = new Set(['invitation', 'invitation-resend', 'kpi-recurring-alert'])
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -103,6 +104,33 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
+  }
+
+  // 1b. Contrôle de l'appelant. La clé publique (anon) ne suffit plus :
+  //   - serveur (clé service_role) : tous les modèles, tout destinataire ;
+  //   - utilisateur connecté : modèles de notification uniquement, et
+  //     seulement vers un utilisateur de la plateforme (__user__:<id>) ou
+  //     les administrateurs (__admins__) — jamais une adresse libre, pour
+  //     empêcher l'envoi d'emails d'hameçonnage depuis notre domaine.
+  if (!isServiceCaller(req)) {
+    const authHeader = req.headers.get('Authorization') ?? ''
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const callerClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+    const { data: { user: caller } } = await callerClient.auth.getUser()
+    const deny = (status: number, error: string) =>
+      new Response(JSON.stringify({ error }), {
+        status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    if (!caller) return deny(401, 'Authentification requise')
+    if (SERVER_ONLY_TEMPLATES.has(templateName)) return deny(403, 'Modèle réservé au serveur')
+    const target = String(recipientEmail ?? '')
+    if (target !== '__admins__' && !target.startsWith('__user__:')) {
+      return deny(403, 'Destinataire non autorisé')
+    }
   }
 
   // Resolve effective recipient: template-level `to` takes precedence over

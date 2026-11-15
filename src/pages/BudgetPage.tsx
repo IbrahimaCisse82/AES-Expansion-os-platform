@@ -213,7 +213,7 @@ export default function BudgetPage({ addSignal, searchQuery = '' }: { addSignal?
             <Button onClick={async () => {
               if (!activeScenario) return;
               const { exportBudgetXLSX } = await import('@/lib/budgetExport');
-              exportBudgetXLSX({ lines, categories, scenarioName: activeScenario.name, fiscalYear });
+              await exportBudgetXLSX({ lines, categories, scenarioName: activeScenario.name, fiscalYear });
             }} variant="outline" size="sm" className="gap-1.5 text-[12px] h-[34px]" disabled={lines.length === 0}>
               <FileSpreadsheet className="w-3.5 h-3.5" /> XLSX
             </Button>

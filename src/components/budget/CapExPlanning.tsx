@@ -46,7 +46,8 @@ export default function CapExPlanning({ scenarioId, categories, countries, canWr
       country_id: countryId === '_global' ? null : countryId,
       country_label: country ? `${country.flag} ${country.name}` : 'Global',
       category_id: categoryId || null,
-      acquisition_date: acqDate,
+      // vide -> date du jour (défaut en base)
+      ...(acqDate ? { acquisition_date: acqDate } : {}),
       acquisition_cost: Number(acqCost),
       useful_life_months: Number(lifeMonths) || 60,
       depreciation_method: method,
